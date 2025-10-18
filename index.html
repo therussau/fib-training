@@ -271,6 +271,32 @@
     color: #9ca3af;
   }
 
+  .add-trainee-btn {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+  }
+
+  .add-trainee-btn:hover {
+    background: rgba(34, 197, 94, 0.3);
+  }
+
+  .name-cell-wrapper {
+    display: flex;
+    align-items: center;
+  }
+
   .division-cell {
     font-weight: 500;
     color: #d1d5db;
@@ -875,8 +901,52 @@
         row.appendChild(badgeTd);
         
         const nameTd = document.createElement('td');
-        nameTd.textContent = agent.name;
         nameTd.className = 'name-cell';
+        
+        const nameWrapper = document.createElement('div');
+        nameWrapper.className = 'name-cell-wrapper';
+        
+        const nameText = document.createElement('span');
+        nameText.textContent = agent.name;
+        nameWrapper.appendChild(nameText);
+        
+        const addButton = document.createElement('button');
+        addButton.className = 'add-trainee-btn';
+        addButton.textContent = '+';
+        addButton.title = 'Add as trainee';
+        addButton.onclick = () => {
+          const existingTrainee = trainees.find(t => t.name === agent.name);
+          if (existingTrainee) {
+            alert('This agent is already in the trainee list.');
+            return;
+          }
+          
+          const trainee = {
+            name: agent.name,
+            skills: {
+              '10Codes': { completed: false, instructor: '' },
+              'CaseLaws': { completed: false, instructor: '' },
+              'Pursuit': { completed: false, instructor: '' },
+              'Hostage': { completed: false, instructor: '' },
+              'TrafficStop': { completed: false, instructor: '' },
+              'Breaching': { completed: false, instructor: '' },
+              'SceneControl': { completed: false, instructor: '' },
+              'COMMS': { completed: false, instructor: '' },
+              'UseOfForce': { completed: false, instructor: '' },
+              'FilingCharges': { completed: false, instructor: '' },
+              'Reports': { completed: false, instructor: '' },
+              'Gunfight': { completed: false, instructor: '' }
+            }
+          };
+          
+          trainees.push(trainee);
+          saveTrainees();
+          updateTrainingTable();
+          alert(`Added ${agent.name} to trainees list.`);
+        };
+        nameWrapper.appendChild(addButton);
+        
+        nameTd.appendChild(nameWrapper);
         row.appendChild(nameTd);
         
         const divisionTd = document.createElement('td');
