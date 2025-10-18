@@ -190,10 +190,198 @@
   .instructor-row:hover {
     background: none !important;
   }
+
+  /* Classified Entry Screen */
+  .classified-entry {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #000000 0%, #0a0a0a 25%, #000000 50%, #0a0a0a 75%, #000000 100%);
+    background-size: 400% 400%;
+    animation: classifiedBg 8s ease-in-out infinite;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  @keyframes classifiedBg {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .classified-content {
+    text-align: center;
+    max-width: 800px;
+    padding: 40px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    box-shadow: 
+      0 0 30px rgba(0, 255, 0, 0.3),
+      inset 0 0 30px rgba(0, 255, 0, 0.1);
+    animation: classifiedGlow 2s ease-in-out infinite alternate;
+    position: relative;
+    z-index: 2;
+  }
+
+  @keyframes classifiedGlow {
+    0% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.3), inset 0 0 30px rgba(0, 255, 0, 0.1); }
+    100% { box-shadow: 0 0 50px rgba(0, 255, 0, 0.5), inset 0 0 50px rgba(0, 255, 0, 0.2); }
+  }
+
+  .classified-logo {
+    font-size: 72px;
+    font-weight: 900;
+    color: #00ff00;
+    text-shadow: 0 0 20px #00ff00;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    letter-spacing: 8px;
+    margin-bottom: 20px;
+    animation: logoPulse 1.5s ease-in-out infinite;
+    position: relative;
+    z-index: 2;
+  }
+
+  @keyframes logoPulse {
+    0%, 100% { transform: scale(1); text-shadow: 0 0 20px #00ff00; }
+    50% { transform: scale(1.05); text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00; }
+  }
+
+  .classified-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  }
+
+  .classified-subtitle {
+    font-size: 16px;
+    color: #00ff00;
+    letter-spacing: 2px;
+    margin-bottom: 40px;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  }
+
+  .access-sequence {
+    text-align: left;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .access-line {
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeInLine 0.5s ease-in forwards;
+  }
+
+  .access-line:nth-child(1) { animation-delay: 0.5s; }
+  .access-line:nth-child(2) { animation-delay: 1s; }
+  .access-line:nth-child(3) { animation-delay: 1.5s; }
+  .access-line:nth-child(4) { animation-delay: 2s; }
+  .access-line:nth-child(5) { animation-delay: 3.5s; }
+  .access-line:nth-child(6) { animation-delay: 4s; }
+  .access-line:nth-child(7) { animation-delay: 4.5s; }
+
+  @keyframes fadeInLine {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .prompt {
+    color: #00ff00;
+    font-weight: 600;
+  }
+
+  .password-display {
+    color: #ff0000;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+
+  .verification-status {
+    color: #00ff00;
+    font-weight: 700;
+  }
+
+  .access-status {
+    color: #00ff00;
+    font-weight: 700;
+  }
+
+  .welcome-message {
+    color: #00ff00;
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .delete-btn {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .delete-btn:hover {
+    background: rgba(239, 68, 68, 0.3);
+  }
+
+  #mainContent {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
 </style>
 </head>
 <body>
-  <div class="wrap">
+  <!-- CLASSIFIED ENTRY SCREEN -->
+  <div id="classifiedEntry" class="classified-entry">
+    <div class="classified-content">
+      <div class="classified-logo">FIB</div>
+      <div class="classified-title">FEDERAL INVESTIGATION BUREAU</div>
+      <div class="classified-subtitle">TRAINING DATABASE ACCESS</div>
+      
+      <div class="access-sequence">
+        <div class="access-line">
+          <span class="prompt">> ACCESSING SECURE SERVER...</span>
+        </div>
+        <div class="access-line">
+          <span class="prompt">> ENCRYPTION: AES-256</span>
+        </div>
+        <div class="access-line">
+          <span class="prompt">> AUTHENTICATING USER...</span>
+        </div>
+        <div class="access-line">
+          <span class="prompt">> PASSWORD: </span>
+          <span id="passwordDisplay" class="password-display"></span>
+        </div>
+        <div class="access-line">
+          <span class="prompt">> VERIFICATION: </span>
+          <span id="verificationStatus" class="verification-status"></span>
+        </div>
+        <div class="access-line">
+          <span class="prompt">> STATUS: </span>
+          <span id="accessStatus" class="access-status"></span>
+        </div>
+        <div class="access-line">
+          <span class="prompt">> WELCOME: </span>
+          <span id="welcomeMessage" class="welcome-message"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap" id="mainContent">
     <div id="top" class="toolbar">
       <button id="collapseBtn" class="collapse-btn" type="button">
         <span class="collapse-text">Collapse</span>
@@ -244,6 +432,60 @@
   </div>
 
   <script>
+    // Password protection
+    const CORRECT_PASSWORD = 'FIB2024'; // Change this to your desired password
+    
+    function runClassifiedSequence() {
+      let passwordAttempts = 0;
+      const maxAttempts = 3;
+      
+      function checkPassword() {
+        const password = prompt(`Enter access password (${maxAttempts - passwordAttempts} attempts remaining):`);
+        
+        if (password === null) {
+          document.getElementById('passwordDisplay').textContent = '****';
+          document.getElementById('verificationStatus').textContent = 'CANCELLED';
+          document.getElementById('accessStatus').textContent = 'ACCESS DENIED';
+          document.getElementById('welcomeMessage').textContent = 'UNAUTHORIZED';
+          return;
+        }
+        
+        document.getElementById('passwordDisplay').textContent = '*'.repeat(password.length);
+        
+        if (password === CORRECT_PASSWORD) {
+          document.getElementById('verificationStatus').textContent = 'SUCCESS';
+          document.getElementById('accessStatus').textContent = 'ACCESS GRANTED';
+          document.getElementById('welcomeMessage').textContent = 'ADMINISTRATOR';
+          
+          setTimeout(() => {
+            const classifiedEntry = document.getElementById('classifiedEntry');
+            const mainContent = document.getElementById('mainContent');
+            
+            classifiedEntry.style.opacity = '0';
+            mainContent.style.display = 'block';
+            
+            setTimeout(() => {
+              classifiedEntry.style.display = 'none';
+              mainContent.style.opacity = '1';
+            }, 500);
+          }, 1500);
+        } else {
+          passwordAttempts++;
+          document.getElementById('verificationStatus').textContent = 'FAILED';
+          document.getElementById('accessStatus').textContent = 'ACCESS DENIED';
+          document.getElementById('welcomeMessage').textContent = 'UNAUTHORIZED';
+          
+          if (passwordAttempts < maxAttempts) {
+            setTimeout(checkPassword, 1500);
+          } else {
+            alert('Maximum password attempts exceeded. Please refresh the page to try again.');
+          }
+        }
+      }
+      
+      setTimeout(checkPassword, 2000);
+    }
+
     // Handle toolbar collapse/expand
     document.addEventListener('DOMContentLoaded', () => {
       const toolbar = document.getElementById('top');
@@ -254,6 +496,9 @@
         toolbar.classList.toggle('collapsed');
         collapseText.textContent = toolbar.classList.contains('collapsed') ? 'Expand' : 'Collapse';
       });
+
+      // Start the classified sequence
+      runClassifiedSequence();
 
       // Load saved trainees
       loadTrainees();
@@ -307,6 +552,14 @@
       nameInput.value = '';
     }
 
+    function deleteTrainee(index) {
+      if (confirm(`Are you sure you want to delete ${trainees[index].name}?`)) {
+        trainees.splice(index, 1);
+        saveTrainees();
+        updateTrainingTable();
+      }
+    }
+
     function updateTrainingTable() {
       const tbody = document.getElementById('trainingTableBody');
       tbody.innerHTML = '';
@@ -319,7 +572,22 @@
         
         // Name cell spanning two rows
         const nameCell = document.createElement('td');
-        nameCell.textContent = trainee.name;
+        const nameWrapper = document.createElement('div');
+        nameWrapper.style.display = 'flex';
+        nameWrapper.style.alignItems = 'center';
+        nameWrapper.style.gap = '8px';
+        
+        const nameText = document.createElement('span');
+        nameText.textContent = trainee.name;
+        nameWrapper.appendChild(nameText);
+        
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-btn';
+        deleteButton.textContent = 'Delete';
+        deleteButton.onclick = () => deleteTrainee(index);
+        nameWrapper.appendChild(deleteButton);
+        
+        nameCell.appendChild(nameWrapper);
         nameCell.rowSpan = 2;
         mainRow.appendChild(nameCell);
 
