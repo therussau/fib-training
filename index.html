@@ -187,6 +187,17 @@
     border-bottom: 2px solid rgba(255,255,255,.1) !important;
   }
 
+  .section-header td {
+    background: rgba(253,224,71,.1);
+    color: #fde047;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 8px !important;
+    text-align: center;
+  }
+
   .instructor-row:hover {
     background: none !important;
   }
@@ -924,6 +935,7 @@
           const trainee = {
             name: agent.name,
             skills: {
+              // Basic Skills
               '10Codes': { completed: false, instructor: '' },
               'CaseLaws': { completed: false, instructor: '' },
               'Pursuit': { completed: false, instructor: '' },
@@ -935,7 +947,13 @@
               'UseOfForce': { completed: false, instructor: '' },
               'FilingCharges': { completed: false, instructor: '' },
               'Reports': { completed: false, instructor: '' },
-              'Gunfight': { completed: false, instructor: '' }
+              'Gunfight': { completed: false, instructor: '' },
+              
+              // Departmental Training
+              'Supernatural': { completed: false, instructor: '' },
+              'Analyst': { completed: false, instructor: '' },
+              'Investigator': { completed: false, instructor: '' },
+              'FieldAgent': { completed: false, instructor: '' }
             }
           };
           
@@ -1028,6 +1046,7 @@
       const trainee = {
         name: name,
         skills: {
+          // Basic Skills
           '10Codes': { completed: false, instructor: '' },
           'CaseLaws': { completed: false, instructor: '' },
           'Pursuit': { completed: false, instructor: '' },
@@ -1039,7 +1058,13 @@
           'UseOfForce': { completed: false, instructor: '' },
           'FilingCharges': { completed: false, instructor: '' },
           'Reports': { completed: false, instructor: '' },
-          'Gunfight': { completed: false, instructor: '' }
+          'Gunfight': { completed: false, instructor: '' },
+          
+          // Departmental Training
+          'Supernatural': { completed: false, instructor: '' },
+          'Analyst': { completed: false, instructor: '' },
+          'Investigator': { completed: false, instructor: '' },
+          'FieldAgent': { completed: false, instructor: '' }
         }
       };
 
@@ -1062,12 +1087,7 @@
       tbody.innerHTML = '';
 
       trainees.forEach((trainee, index) => {
-        // Create two rows for each trainee
-        const mainRow = document.createElement('tr');
-        const instructorRow = document.createElement('tr');
-        instructorRow.className = 'instructor-row';
-        
-        // Name cell spanning two rows
+        // Name cell spanning all rows (2 for basic skills + 2 for departmental)
         const nameCell = document.createElement('td');
         const nameWrapper = document.createElement('div');
         nameWrapper.style.display = 'flex';
@@ -1085,14 +1105,35 @@
         nameWrapper.appendChild(deleteButton);
         
         nameCell.appendChild(nameWrapper);
-        nameCell.rowSpan = 2;
-        mainRow.appendChild(nameCell);
+        nameCell.rowSpan = 4; // 2 rows each for basic and departmental sections
 
-        // Skill cells
-        Object.entries(trainee.skills).forEach(([skill, data]) => {
-          // Checkbox cell
-          const checkboxCell = document.createElement('td');
-          checkboxCell.className = 'checkbox-cell';
+        // Basic Skills Header
+        const basicHeader = document.createElement('tr');
+        basicHeader.className = 'section-header';
+        const basicHeaderCell = document.createElement('td');
+        basicHeaderCell.textContent = 'Basic Training';
+        basicHeaderCell.colSpan = 12; // Number of basic skills
+        basicHeader.appendChild(basicHeaderCell);
+        tbody.appendChild(basicHeader);
+
+        // Basic Skills Rows
+        const basicRow = document.createElement('tr');
+        const basicInstructorRow = document.createElement('tr');
+        basicInstructorRow.className = 'instructor-row';
+        basicRow.appendChild(nameCell); // Add name cell to first row
+
+        // Basic Skills
+        const basicSkills = [
+          '10Codes', 'CaseLaws', 'Pursuit', 'Hostage', 'TrafficStop', 
+          'Breaching', 'SceneControl', 'COMMS', 'UseOfForce', 
+          'FilingCharges', 'Reports', 'Gunfight'
+        ];
+
+        // Add basic skills checkboxes
+        basicSkills.forEach(skill => {
+          const data = trainee.skills[skill];
+          const cell = document.createElement('td');
+          cell.className = 'checkbox-cell';
           
           const checkbox = document.createElement('input');
           checkbox.type = 'checkbox';
@@ -1116,22 +1157,93 @@
             }
           });
           
-          checkboxCell.appendChild(checkbox);
-          mainRow.appendChild(checkboxCell);
+          cell.appendChild(checkbox);
+          basicRow.appendChild(cell);
 
-          // Instructor name cell
+          // Add instructor name to instructor row
           const instructorCell = document.createElement('td');
           instructorCell.className = 'instructor-name';
           if (data.completed && data.instructor) {
             instructorCell.textContent = data.instructor;
           } else {
-            instructorCell.innerHTML = '&nbsp;'; // Empty space to maintain height
+            instructorCell.innerHTML = '&nbsp;';
           }
-          instructorRow.appendChild(instructorCell);
+          basicInstructorRow.appendChild(instructorCell);
         });
 
-        tbody.appendChild(mainRow);
-        tbody.appendChild(instructorRow);
+        tbody.appendChild(basicRow);
+        tbody.appendChild(basicInstructorRow);
+
+        // Departmental Training Header
+        const deptHeader = document.createElement('tr');
+        deptHeader.className = 'section-header';
+        const deptHeaderCell = document.createElement('td');
+        deptHeaderCell.textContent = 'Departmental Training';
+        deptHeaderCell.colSpan = 12; // Match column count for consistency
+        deptHeader.appendChild(deptHeaderCell);
+        tbody.appendChild(deptHeader);
+
+        // Departmental Training Rows
+        const deptRow = document.createElement('tr');
+        const deptInstructorRow = document.createElement('tr');
+        deptInstructorRow.className = 'instructor-row';
+
+        // Add departmental skills
+        const deptSkills = ['Supernatural', 'Analyst', 'Investigator', 'FieldAgent'];
+        
+        deptSkills.forEach(skill => {
+          const data = trainee.skills[skill];
+          const cell = document.createElement('td');
+          cell.className = 'checkbox-cell';
+          
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = data.completed;
+          checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+              const instructor = prompt('Enter instructor name:');
+              if (instructor) {
+                trainee.skills[skill].completed = true;
+                trainee.skills[skill].instructor = instructor;
+                saveTrainees();
+                updateTrainingTable();
+              } else {
+                e.target.checked = false;
+              }
+            } else {
+              trainee.skills[skill].completed = false;
+              trainee.skills[skill].instructor = '';
+              saveTrainees();
+              updateTrainingTable();
+            }
+          });
+          
+          cell.appendChild(checkbox);
+          deptRow.appendChild(cell);
+
+          // Add instructor name to instructor row
+          const instructorCell = document.createElement('td');
+          instructorCell.className = 'instructor-name';
+          if (data.completed && data.instructor) {
+            instructorCell.textContent = data.instructor;
+          } else {
+            instructorCell.innerHTML = '&nbsp;';
+          }
+          deptInstructorRow.appendChild(instructorCell);
+        });
+
+        // Add empty cells to match column count
+        const emptyCellCount = 8; // 12 total - 4 dept skills
+        for (let i = 0; i < emptyCellCount; i++) {
+          const emptyCell = document.createElement('td');
+          deptRow.appendChild(emptyCell);
+          const emptyInstructorCell = document.createElement('td');
+          emptyInstructorCell.innerHTML = '&nbsp;';
+          deptInstructorRow.appendChild(emptyInstructorCell);
+        }
+
+        tbody.appendChild(deptRow);
+        tbody.appendChild(deptInstructorRow);
       });
     }
   </script>
