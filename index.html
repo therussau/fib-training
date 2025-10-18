@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FIB Training Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0b0b0f; color:#fff; }
+
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+  .toolbar {
+    position: sticky; top: 0; z-index: 50;
+    display:flex; flex-direction: column; gap:16px; margin-bottom:24px;
+    padding: 10px 0 14px 0; background: #0b0b0f;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    transition: all 0.3s ease;
+  }
+  .toolbar.collapsed {
+    padding: 8px 0;
+  }
+  .toolbar.collapsed .brand img {
+    height: 48px;
+  }
+  .toolbar.collapsed h1 {
+    font-size: 24px;
+  }
+  .collapse-btn {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    background: rgba(0,0,0,.3);
+    color: #fde047;
+    border: 2px solid #fde047;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .collapse-btn:hover {
+    background: rgba(253,224,71,.2);
+    color: #fde047;
+    border-color: #fde047;
+  }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .brand img { height: 128px; width:auto; border-radius:4px; }
+  h1 { font-size:42px; font-weight:800; margin:0; letter-spacing:.02em; color: #fde047; font-family: 'Courier New', 'Monaco', 'Menlo', monospace; text-shadow: 0 0 10px rgba(253,224,71,.3); }
+
+  /* Training Table Styles */
+  .training-section {
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .training-section h2 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fde047;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    text-shadow: 0 0 8px rgba(253,224,71,.2);
+    border-bottom: 2px solid #fde047;
+    padding-bottom: 8px;
+  }
+
+  .training-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(0,0,0,.3);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .training-table th {
+    background: #fde047;
+    color: #000;
+    padding: 12px 8px;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    text-align: left;
+  }
+
+  .training-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    font-size: 13px;
+    color: #fff;
+  }
+
+  .training-table tr:hover {
+    background: rgba(253,224,71,.1);
+  }
+
+  /* Form Styles */
+  .add-trainee-form {
+    background: rgba(0,0,0,.3);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .form-title {
+    color: #fde047;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .form-group {
+    flex: 1;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #fff;
+    font-size: 14px;
+  }
+
+  .form-group input {
+    width: 100%;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #fff;
+    font-size: 14px;
+  }
+
+  .save-btn {
+    background: #fde047;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .save-btn:hover {
+    background: #fff;
+  }
+
+  .checkbox-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .checkbox-cell input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+
+  .instructor-name {
+    font-size: 12px;
+    color: #fde047;
+    margin-left: 4px;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="top" class="toolbar">
+      <button id="collapseBtn" class="collapse-btn" type="button">
+        <span class="collapse-text">Collapse</span>
+      </button>
+      <div class="brand">
+        <img src="https://kappa.lol/3qib3z" alt="FIB Logo" />
+        <h1>FIB TRAINING TRACKER</h1>
+      </div>
+    </div>
+
+    <div class="add-trainee-form">
+      <div class="form-title">Add New Trainee</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="traineeName">Trainee Name</label>
+          <input type="text" id="traineeName" placeholder="Enter trainee name">
+        </div>
+      </div>
+      <button type="button" class="save-btn" onclick="addNewTrainee()">Add Trainee</button>
+    </div>
+
+    <div class="training-section">
+      <h2>Training Progress</h2>
+      <div class="table-container">
+        <table class="training-table" id="trainingTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>10 Codes</th>
+              <th>Case Laws</th>
+              <th>Pursuit</th>
+              <th>Hostage</th>
+              <th>Traffic Stop</th>
+              <th>Breaching</th>
+              <th>Scene Control</th>
+              <th>COMMS</th>
+              <th>Use of Force</th>
+              <th>Filing Charges</th>
+              <th>Reports</th>
+              <th>Gunfight</th>
+            </tr>
+          </thead>
+          <tbody id="trainingTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Handle toolbar collapse/expand
+    document.addEventListener('DOMContentLoaded', () => {
+      const toolbar = document.getElementById('top');
+      const collapseBtn = document.getElementById('collapseBtn');
+      const collapseText = collapseBtn.querySelector('.collapse-text');
+      
+      collapseBtn.addEventListener('click', () => {
+        toolbar.classList.toggle('collapsed');
+        collapseText.textContent = toolbar.classList.contains('collapsed') ? 'Expand' : 'Collapse';
+      });
+
+      // Load saved trainees
+      loadTrainees();
+    });
+
+    // Training data management
+    let trainees = [];
+
+    function loadTrainees() {
+      const savedTrainees = localStorage.getItem('trainees');
+      if (savedTrainees) {
+        trainees = JSON.parse(savedTrainees);
+        updateTrainingTable();
+      }
+    }
+
+    function saveTrainees() {
+      localStorage.setItem('trainees', JSON.stringify(trainees));
+    }
+
+    function addNewTrainee() {
+      const nameInput = document.getElementById('traineeName');
+      const name = nameInput.value.trim();
+      
+      if (!name) {
+        alert('Please enter a trainee name');
+        return;
+      }
+
+      const trainee = {
+        name: name,
+        skills: {
+          '10Codes': { completed: false, instructor: '' },
+          'CaseLaws': { completed: false, instructor: '' },
+          'Pursuit': { completed: false, instructor: '' },
+          'Hostage': { completed: false, instructor: '' },
+          'TrafficStop': { completed: false, instructor: '' },
+          'Breaching': { completed: false, instructor: '' },
+          'SceneControl': { completed: false, instructor: '' },
+          'COMMS': { completed: false, instructor: '' },
+          'UseOfForce': { completed: false, instructor: '' },
+          'FilingCharges': { completed: false, instructor: '' },
+          'Reports': { completed: false, instructor: '' },
+          'Gunfight': { completed: false, instructor: '' }
+        }
+      };
+
+      trainees.push(trainee);
+      saveTrainees();
+      updateTrainingTable();
+      nameInput.value = '';
+    }
+
+    function updateTrainingTable() {
+      const tbody = document.getElementById('trainingTableBody');
+      tbody.innerHTML = '';
+
+      trainees.forEach((trainee, index) => {
+        const row = document.createElement('tr');
+        
+        // Name cell
+        const nameCell = document.createElement('td');
+        nameCell.textContent = trainee.name;
+        row.appendChild(nameCell);
+
+        // Skill cells
+        Object.entries(trainee.skills).forEach(([skill, data]) => {
+          const cell = document.createElement('td');
+          cell.className = 'checkbox-cell';
+          
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = data.completed;
+          checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+              const instructor = prompt('Enter instructor name:');
+              if (instructor) {
+                trainee.skills[skill].completed = true;
+                trainee.skills[skill].instructor = instructor;
+                saveTrainees();
+                updateTrainingTable();
+              } else {
+                e.target.checked = false;
+              }
+            } else {
+              trainee.skills[skill].completed = false;
+              trainee.skills[skill].instructor = '';
+              saveTrainees();
+              updateTrainingTable();
+            }
+          });
+          
+          cell.appendChild(checkbox);
+          
+          if (data.completed && data.instructor) {
+            const instructorSpan = document.createElement('span');
+            instructorSpan.className = 'instructor-name';
+            instructorSpan.textContent = data.instructor;
+            cell.appendChild(instructorSpan);
+          }
+          
+          row.appendChild(cell);
+        });
+
+        tbody.appendChild(row);
+      });
+    }
+  </script>
+</body>
+</html>
