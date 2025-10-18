@@ -169,20 +169,26 @@
   }
 
   .checkbox-cell {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    text-align: center;
+    padding: 8px 4px !important;
   }
 
   .checkbox-cell input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
   }
 
-  .instructor-name {
-    font-size: 12px;
+  .instructor-row td {
+    text-align: center;
+    font-size: 11px;
     color: #fde047;
-    margin-left: 4px;
+    padding: 4px !important;
+    border-bottom: 2px solid rgba(255,255,255,.1) !important;
+  }
+
+  .instructor-row:hover {
+    background: none !important;
   }
 </style>
 </head>
@@ -306,17 +312,22 @@
       tbody.innerHTML = '';
 
       trainees.forEach((trainee, index) => {
-        const row = document.createElement('tr');
+        // Create two rows for each trainee
+        const mainRow = document.createElement('tr');
+        const instructorRow = document.createElement('tr');
+        instructorRow.className = 'instructor-row';
         
-        // Name cell
+        // Name cell spanning two rows
         const nameCell = document.createElement('td');
         nameCell.textContent = trainee.name;
-        row.appendChild(nameCell);
+        nameCell.rowSpan = 2;
+        mainRow.appendChild(nameCell);
 
         // Skill cells
         Object.entries(trainee.skills).forEach(([skill, data]) => {
-          const cell = document.createElement('td');
-          cell.className = 'checkbox-cell';
+          // Checkbox cell
+          const checkboxCell = document.createElement('td');
+          checkboxCell.className = 'checkbox-cell';
           
           const checkbox = document.createElement('input');
           checkbox.type = 'checkbox';
@@ -340,19 +351,22 @@
             }
           });
           
-          cell.appendChild(checkbox);
-          
+          checkboxCell.appendChild(checkbox);
+          mainRow.appendChild(checkboxCell);
+
+          // Instructor name cell
+          const instructorCell = document.createElement('td');
+          instructorCell.className = 'instructor-name';
           if (data.completed && data.instructor) {
-            const instructorSpan = document.createElement('span');
-            instructorSpan.className = 'instructor-name';
-            instructorSpan.textContent = data.instructor;
-            cell.appendChild(instructorSpan);
+            instructorCell.textContent = data.instructor;
+          } else {
+            instructorCell.innerHTML = '&nbsp;'; // Empty space to maintain height
           }
-          
-          row.appendChild(cell);
+          instructorRow.appendChild(instructorCell);
         });
 
-        tbody.appendChild(row);
+        tbody.appendChild(mainRow);
+        tbody.appendChild(instructorRow);
       });
     }
   </script>
