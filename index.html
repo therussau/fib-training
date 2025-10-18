@@ -208,6 +208,91 @@
     overflow: hidden;
   }
 
+  .classified-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: auto;
+    opacity: 0.15;
+    z-index: 1;
+    filter: drop-shadow(0 0 30px #00ff00);
+    animation: watermarkPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes watermarkPulse {
+    0%, 100% { 
+      opacity: 0.1;
+      filter: drop-shadow(0 0 20px #00ff00);
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% { 
+      opacity: 0.2;
+      filter: drop-shadow(0 0 40px #00ff00);
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+  }
+
+  .password-dialog {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 10000;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+    text-align: center;
+    min-width: 300px;
+  }
+
+  .password-dialog-title {
+    color: #00ff00;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  }
+
+  .password-input {
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    padding: 8px 12px;
+    width: 100%;
+    margin-bottom: 16px;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    outline: none;
+  }
+
+  .password-input::placeholder {
+    color: rgba(0, 255, 0, 0.5);
+  }
+
+  .password-dialog-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .password-dialog-btn {
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  }
+
+  .password-dialog-btn:hover {
+    background: rgba(0, 255, 0, 0.2);
+  }
+
   @keyframes classifiedBg {
     0%, 100% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
@@ -344,8 +429,19 @@
 </style>
 </head>
 <body>
+  <!-- Password Dialog -->
+  <div id="passwordDialog" class="password-dialog">
+    <div class="password-dialog-title">Enter Access Password</div>
+    <input type="password" id="passwordInput" class="password-input" placeholder="Password">
+    <div class="password-dialog-buttons">
+      <button class="password-dialog-btn" onclick="submitPassword()">Submit</button>
+      <button class="password-dialog-btn" onclick="cancelPassword()">Cancel</button>
+    </div>
+  </div>
+
   <!-- CLASSIFIED ENTRY SCREEN -->
   <div id="classifiedEntry" class="classified-entry">
+    <img src="https://kappa.lol/3qib3z" alt="FIB Logo" class="classified-watermark">
     <div class="classified-content">
       <div class="classified-logo">FIB</div>
       <div class="classified-title">FEDERAL INVESTIGATION BUREAU</div>
@@ -435,55 +531,76 @@
     // Password protection
     const CORRECT_PASSWORD = 'FIB2024'; // Change this to your desired password
     
-    function runClassifiedSequence() {
-      let passwordAttempts = 0;
-      const maxAttempts = 3;
-      
-      function checkPassword() {
-        const password = prompt(`Enter access password (${maxAttempts - passwordAttempts} attempts remaining):`);
-        
-        if (password === null) {
-          document.getElementById('passwordDisplay').textContent = '****';
-          document.getElementById('verificationStatus').textContent = 'CANCELLED';
-          document.getElementById('accessStatus').textContent = 'ACCESS DENIED';
-          document.getElementById('welcomeMessage').textContent = 'UNAUTHORIZED';
-          return;
+    let passwordAttempts = 0;
+    const maxAttempts = 3;
+
+    function showPasswordDialog() {
+      const dialog = document.getElementById('passwordDialog');
+      const input = document.getElementById('passwordInput');
+      dialog.style.display = 'block';
+      input.value = '';
+      input.focus();
+
+      // Add enter key listener
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          submitPassword();
         }
+      });
+    }
+
+    function hidePasswordDialog() {
+      const dialog = document.getElementById('passwordDialog');
+      dialog.style.display = 'none';
+    }
+
+    function submitPassword() {
+      const password = document.getElementById('passwordInput').value;
+      hidePasswordDialog();
+      
+      document.getElementById('passwordDisplay').textContent = '*'.repeat(password.length);
+      
+      if (password === CORRECT_PASSWORD) {
+        document.getElementById('verificationStatus').textContent = 'SUCCESS';
+        document.getElementById('accessStatus').textContent = 'ACCESS GRANTED';
+        document.getElementById('welcomeMessage').textContent = 'ADMINISTRATOR';
         
-        document.getElementById('passwordDisplay').textContent = '*'.repeat(password.length);
-        
-        if (password === CORRECT_PASSWORD) {
-          document.getElementById('verificationStatus').textContent = 'SUCCESS';
-          document.getElementById('accessStatus').textContent = 'ACCESS GRANTED';
-          document.getElementById('welcomeMessage').textContent = 'ADMINISTRATOR';
+        setTimeout(() => {
+          const classifiedEntry = document.getElementById('classifiedEntry');
+          const mainContent = document.getElementById('mainContent');
+          
+          classifiedEntry.style.opacity = '0';
+          mainContent.style.display = 'block';
           
           setTimeout(() => {
-            const classifiedEntry = document.getElementById('classifiedEntry');
-            const mainContent = document.getElementById('mainContent');
-            
-            classifiedEntry.style.opacity = '0';
-            mainContent.style.display = 'block';
-            
-            setTimeout(() => {
-              classifiedEntry.style.display = 'none';
-              mainContent.style.opacity = '1';
-            }, 500);
-          }, 1500);
+            classifiedEntry.style.display = 'none';
+            mainContent.style.opacity = '1';
+          }, 500);
+        }, 1500);
+      } else {
+        passwordAttempts++;
+        document.getElementById('verificationStatus').textContent = 'FAILED';
+        document.getElementById('accessStatus').textContent = 'ACCESS DENIED';
+        document.getElementById('welcomeMessage').textContent = 'UNAUTHORIZED';
+        
+        if (passwordAttempts < maxAttempts) {
+          setTimeout(showPasswordDialog, 1500);
         } else {
-          passwordAttempts++;
-          document.getElementById('verificationStatus').textContent = 'FAILED';
-          document.getElementById('accessStatus').textContent = 'ACCESS DENIED';
-          document.getElementById('welcomeMessage').textContent = 'UNAUTHORIZED';
-          
-          if (passwordAttempts < maxAttempts) {
-            setTimeout(checkPassword, 1500);
-          } else {
-            alert('Maximum password attempts exceeded. Please refresh the page to try again.');
-          }
+          alert('Maximum password attempts exceeded. Please refresh the page to try again.');
         }
       }
-      
-      setTimeout(checkPassword, 2000);
+    }
+
+    function cancelPassword() {
+      hidePasswordDialog();
+      document.getElementById('passwordDisplay').textContent = '****';
+      document.getElementById('verificationStatus').textContent = 'CANCELLED';
+      document.getElementById('accessStatus').textContent = 'ACCESS DENIED';
+      document.getElementById('welcomeMessage').textContent = 'UNAUTHORIZED';
+    }
+
+    function runClassifiedSequence() {
+      setTimeout(showPasswordDialog, 2000);
     }
 
     // Handle toolbar collapse/expand
