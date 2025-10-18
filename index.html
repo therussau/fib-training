@@ -191,6 +191,137 @@
     background: none !important;
   }
 
+  /* Roster Styles */
+  .roster-section {
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .roster-section h2 {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fde047;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    text-shadow: 0 0 8px rgba(253,224,71,.2);
+    border-bottom: 2px solid #fde047;
+    padding-bottom: 8px;
+  }
+
+  .roster-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(0,0,0,.3);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .roster-table th {
+    background: #fde047;
+    color: #000;
+    padding: 12px 8px;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  }
+
+  .roster-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    font-size: 13px;
+    color: #fff;
+  }
+
+  .roster-table tr:hover {
+    background: rgba(253,224,71,.1);
+  }
+
+  .badge-cell {
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    font-weight: 700;
+    color: #fde047;
+    text-align: center;
+    min-width: 80px;
+  }
+
+  .name-cell {
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .rank-cell {
+    font-weight: 500;
+    color: #d1d5db;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .discord-cell {
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    font-size: 11px;
+    color: #9ca3af;
+  }
+
+  .division-cell {
+    font-weight: 500;
+    color: #d1d5db;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-badge.active {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+  }
+
+  .status-badge.inactive {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+  }
+
+  .roster-empty {
+    text-align: center;
+    color: rgba(255,255,255,.6);
+    font-style: italic;
+    padding: 20px;
+  }
+
+  .roster-loading {
+    text-align: center;
+    color: #fde047;
+    padding: 20px;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    font-size: 14px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
   /* Classified Entry Screen */
   .classified-entry {
     position: fixed;
@@ -525,6 +656,14 @@
         </table>
       </div>
     </div>
+
+    <!-- AGENT ROSTER -->
+    <div id="sec-roster" class="roster-section">
+      <h2>AGENT ROSTER</h2>
+      <div id="rosterContainer">
+        <div class="roster-loading">Loading roster data...</div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -604,6 +743,174 @@
     }
 
     // Handle toolbar collapse/expand
+    // Roster Integration
+    let rosterData = [];
+    let rosterUpdateInterval;
+
+    async function fetchRosterData() {
+      try {
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/18YPIHPxr5ki5JUFpvEEAxx0sCOKKdgrsGaeO_1rOOMU/export?format=csv&gid=1266358180';
+        
+        const response = await fetch(SHEET_URL, {
+          method: 'GET',
+          mode: 'cors',
+          headers: {
+            'Accept': 'text/csv',
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const csvText = await response.text();
+        const lines = csvText.split('\n').filter(line => line.trim() !== '');
+        
+        if (lines.length === 0) {
+          throw new Error('No data found in CSV');
+        }
+        
+        // Find the header row
+        let headerRowIndex = 0;
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].toLowerCase();
+          if (line.includes('badge') && line.includes('name') && line.includes('rank')) {
+            headerRowIndex = i;
+            break;
+          }
+        }
+        
+        const headers = lines[headerRowIndex].split(',').map(h => h.trim().replace(/"/g, ''));
+        const dataLines = lines.slice(headerRowIndex + 1);
+          
+        rosterData = dataLines.map(line => {
+          const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+          const row = {};
+          headers.forEach((header, index) => {
+            row[header.toLowerCase()] = values[index] || '';
+          });
+          return row;
+        }).filter(row => {
+          return Object.values(row).some(value => value && value.trim() !== '');
+        });
+          
+        updateRosterDisplay();
+          
+      } catch (error) {
+        console.error('Error fetching roster:', error);
+        
+        // Fallback data
+        rosterData = [
+          { name: 'John Doe', rank: 'Special Agent', status: 'Active', badge: '001', discord: 'johndoe#1234' },
+          { name: 'Jane Smith', rank: 'Senior Agent', status: 'Active', badge: '002', discord: 'janesmith#5678' },
+          { name: 'Mike Johnson', rank: 'Agent', status: 'Active', badge: '003', discord: 'mikejohnson#9012' }
+        ];
+        updateRosterDisplay();
+      }
+    }
+
+    function updateRosterDisplay() {
+      const rosterContainer = document.getElementById('rosterContainer');
+      if (!rosterContainer) return;
+      
+      rosterContainer.innerHTML = '';
+      
+      if (rosterData.length === 0) {
+        rosterContainer.innerHTML = '<div class="roster-empty">No roster data available</div>';
+        return;
+      }
+      
+      const cleanData = rosterData
+        .filter(agent => {
+          const name = agent.name || '';
+          const rank = agent.rank || '';
+          return name.trim() !== '' && name.trim() !== 'N/A' && rank.trim() !== '';
+        })
+        .map(agent => ({
+          badge: agent['badge#'] || 'N/A',
+          name: agent.name || 'Unknown Agent',
+          rank: agent.rank || 'Agent',
+          status: agent.status || 'Active',
+          discord: agent['discord id'] || 'N/A',
+          division: agent.division || '',
+        }))
+        .sort((a, b) => {
+          const rankOrder = {
+            'Director': 1,
+            'Deputy Director': 2,
+            'Special Agent': 3,
+            'Agent': 4,
+            'Recruit': 5,
+            'Trainee': 6
+          };
+          const aOrder = rankOrder[a.rank] || 99;
+          const bOrder = rankOrder[b.rank] || 99;
+          if (aOrder !== bOrder) return aOrder - bOrder;
+          return a.name.localeCompare(b.name);
+        });
+      
+      const table = document.createElement('table');
+      table.className = 'roster-table';
+      
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>Badge #</th>
+          <th>Agent Name</th>
+          <th>Division</th>
+          <th>Rank</th>
+          <th>Status</th>
+          <th>Discord</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+      
+      const tbody = document.createElement('tbody');
+      cleanData.forEach(agent => {
+        const row = document.createElement('tr');
+        
+        const badgeTd = document.createElement('td');
+        badgeTd.textContent = agent.badge;
+        badgeTd.className = 'badge-cell';
+        row.appendChild(badgeTd);
+        
+        const nameTd = document.createElement('td');
+        nameTd.textContent = agent.name;
+        nameTd.className = 'name-cell';
+        row.appendChild(nameTd);
+        
+        const divisionTd = document.createElement('td');
+        divisionTd.textContent = agent.division;
+        divisionTd.className = 'division-cell';
+        row.appendChild(divisionTd);
+        
+        const rankTd = document.createElement('td');
+        rankTd.textContent = agent.rank;
+        rankTd.className = 'rank-cell';
+        row.appendChild(rankTd);
+        
+        const statusTd = document.createElement('td');
+        const statusClass = agent.status.toLowerCase().includes('active') ? 'active' : 'inactive';
+        statusTd.innerHTML = `<span class="status-badge ${statusClass}">${agent.status}</span>`;
+        row.appendChild(statusTd);
+        
+        const discordTd = document.createElement('td');
+        discordTd.textContent = agent.discord;
+        discordTd.className = 'discord-cell';
+        row.appendChild(discordTd);
+        
+        tbody.appendChild(row);
+      });
+      
+      table.appendChild(tbody);
+      rosterContainer.appendChild(table);
+    }
+
+    function startRosterUpdates() {
+      fetchRosterData();
+      rosterUpdateInterval = setInterval(fetchRosterData, 5 * 60 * 1000);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       const toolbar = document.getElementById('top');
       const collapseBtn = document.getElementById('collapseBtn');
@@ -619,6 +926,9 @@
 
       // Load saved trainees
       loadTrainees();
+
+      // Start roster updates
+      startRosterUpdates();
     });
 
     // Training data management
