@@ -268,7 +268,7 @@
     border-radius: 8px;
     padding: 24px;
     min-width: 300px;
-    z-index: 1000;
+    z-index: 100000;
     display: none;
     box-shadow: 0 0 20px rgba(253, 224, 71, 0.1);
   }
@@ -1373,11 +1373,24 @@
     const maxAttempts = 3;
 
     function showPasswordDialog() {
+      console.log('Showing password dialog...');
       const dialog = document.getElementById('passwordDialog');
       const input = document.getElementById('passwordInput');
-      dialog.style.display = 'block';
+      
+      if (!dialog || !input) {
+        console.error('Password dialog elements not found!');
+        return;
+      }
+
+      // Reset any previous state
       input.value = '';
-      input.focus();
+      dialog.style.display = 'block';
+      dialog.style.opacity = '1';
+      
+      // Focus the input after a short delay to ensure it's visible
+      setTimeout(() => {
+        input.focus();
+      }, 100);
 
       // Add enter key listener
       input.addEventListener('keypress', function(e) {
@@ -1458,8 +1471,9 @@
       }
     });
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      // Hide main content initially
+    // Initialize the page on load
+    window.onload = () => {
+      // Hide main content
       const mainContent = document.getElementById('mainContent');
       mainContent.style.display = 'none';
       mainContent.style.opacity = '0';
@@ -1469,6 +1483,11 @@
       classifiedEntry.style.display = 'flex';
       classifiedEntry.style.opacity = '1';
 
+      // Show password dialog after animation sequence
+      setTimeout(showPasswordDialog, 2000);
+    };
+
+    document.addEventListener('DOMContentLoaded', async () => {
       // Initialize toolbar
       const toolbar = document.getElementById('top');
       const collapseBtn = document.getElementById('collapseBtn');
@@ -1478,9 +1497,6 @@
         toolbar.classList.toggle('collapsed');
         collapseText.textContent = toolbar.classList.contains('collapsed') ? 'Expand' : 'Collapse';
       });
-
-      // Start the classified sequence
-      setTimeout(showPasswordDialog, 2000);
 
       // Load saved trainees
       try {
