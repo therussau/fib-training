@@ -882,18 +882,35 @@
     display: none;
     position: absolute;
     z-index: 1000;
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
+    width: 200px;
+    background: rgba(0, 0, 0, 0.95);
     border: 2px solid rgba(253, 224, 71, 0.2);
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transition: opacity 0.2s ease;
   }
 
   .name-hover-picture img {
     width: 100%;
-    height: 100%;
+    height: 200px;
     object-fit: cover;
+    border-bottom: 1px solid rgba(253, 224, 71, 0.2);
+  }
+
+  .hover-info {
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hover-name {
+    color: #fde047;
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
   }
 
   .profile-grid {
@@ -2703,8 +2720,9 @@
       try {
         // Validate URL
         const urlInput = document.getElementById('pictureUrl');
-        if (!url.match(/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) {
-          alert('Please enter a valid image URL (ending in .jpg, .png, .gif, or .webp)');
+        // Allow both direct image URLs and kappa.lol URLs
+        if (!url.match(/^https?:\/\/(.*\.(jpg|jpeg|png|gif|webp)|kappa\.lol\/[a-zA-Z0-9]+)(\?.*)?$/i)) {
+          alert('Please enter a valid image URL (direct image URL or kappa.lol link)');
           return;
         }
 
@@ -2746,21 +2764,59 @@
     function showNameHover(event, trainee) {
       if (!trainee.profilePicture) return;
 
+      // Remove any existing hovers
+      hideNameHover();
+
       const hoverDiv = document.createElement('div');
       hoverDiv.className = 'name-hover-picture';
       
       const img = document.createElement('img');
       img.src = trainee.profilePicture;
       img.alt = trainee.name;
+      img.onerror = () => {
+        img.src = 'https://kappa.lol/3qib3z'; // Default image if load fails
+      };
+      
+      const rankBadge = document.createElement('div');
+      rankBadge.className = `rank-badge ${trainee.rank || 'intern'}`;
+      rankBadge.textContent = RANKS.find(r => r.id === trainee.rank)?.abbr || 'INT';
+      
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'hover-name';
+      nameDiv.textContent = trainee.name;
+
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'hover-info';
+      infoDiv.appendChild(rankBadge);
+      infoDiv.appendChild(nameDiv);
       
       hoverDiv.appendChild(img);
+      hoverDiv.appendChild(infoDiv);
       document.body.appendChild(hoverDiv);
 
-      // Position hover near the name
+      // Position hover near the name but ensure it stays in viewport
       const rect = event.target.getBoundingClientRect();
-      hoverDiv.style.top = rect.top + window.scrollY - 160 + 'px';
-      hoverDiv.style.left = rect.left + window.scrollX - 50 + 'px';
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      
+      // Default position
+      let top = rect.top + window.scrollY - 220;
+      let left = rect.left + window.scrollX - 100;
+      
+      // Adjust if too close to edges
+      if (top < 10) top = 10;
+      if (top + 250 > viewportHeight) top = viewportHeight - 260;
+      if (left < 10) left = 10;
+      if (left + 200 > viewportWidth) left = viewportWidth - 210;
+      
+      hoverDiv.style.top = top + 'px';
+      hoverDiv.style.left = left + 'px';
       hoverDiv.style.display = 'block';
+      
+      // Add fade-in animation
+      requestAnimationFrame(() => {
+        hoverDiv.style.opacity = '1';
+      });
     }
 
     function hideNameHover() {
