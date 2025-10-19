@@ -8,60 +8,68 @@
     
     <!-- Firebase -->
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-      import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+      let database, ref, set, onValue;
 
-      // Firebase configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyC8MXihU-0-FRkYwx0qrs_Sv4CKZCVgFUs",
-        authDomain: "fib-training-tracker.firebaseapp.com",
-        projectId: "fib-training-tracker",
-        storageBucket: "fib-training-tracker.firebasestorage.app",
-        messagingSenderId: "1086248091161",
-        appId: "1:1086248091161:web:6e74e452d665123e88f488",
-        measurementId: "G-ZHPFZNV4WZ",
-        databaseURL: "https://fib-training-tracker-default-rtdb.firebaseio.com" // Add this line
-      };
+      async function initializeFirebase() {
+        try {
+          const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+          const { getDatabase, ref: dbRef, set: dbSet, onValue: dbOnValue } = 
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+          const { getAnalytics } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js");
 
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
-      const database = getDatabase(app);
+          const firebaseConfig = {
+            apiKey: "AIzaSyC8MXihU-0-FRkYwx0qrs_Sv4CKZCVgFUs",
+            authDomain: "fib-training-tracker.firebaseapp.com",
+            projectId: "fib-training-tracker",
+            storageBucket: "fib-training-tracker.firebasestorage.app",
+            messagingSenderId: "1086248091161",
+            appId: "1:1086248091161:web:6e74e452d665123e88f488",
+            measurementId: "G-ZHPFZNV4WZ",
+            databaseURL: "https://fib-training-tracker-default-rtdb.firebaseio.com"
+          };
 
-      // Check if database access has expired
-      const expiryDate = new Date(2025, 10, 18); // November 18, 2025
-      const now = new Date();
-      
-      if (now > expiryDate) {
-        const statusDot = document.querySelector('.status-dot');
-        const statusText = document.querySelector('.status-text');
-        statusDot.classList.remove('connected');
-        statusText.textContent = 'Access Expired';
-        statusText.style.color = '#ef4444';
-        alert('Database access has expired. Please contact the administrator.');
-      } else {
-        // Monitor connection state
-        const connectedRef = ref(database, '.info/connected');
-        onValue(connectedRef, (snap) => {
+          const app = initializeApp(firebaseConfig);
+          const analytics = getAnalytics(app);
+          database = getDatabase(app);
+          ref = dbRef;
+          set = dbSet;
+          onValue = dbOnValue;
+
+          // Make Firebase functions available globally
+          window.fbDatabase = database;
+          window.fbRef = ref;
+          window.fbSet = set;
+          window.fbOnValue = onValue;
+
+          // Check connection state
+          const connectedRef = ref(database, '.info/connected');
+          onValue(connectedRef, (snap) => {
+            const statusDot = document.querySelector('.status-dot');
+            const statusText = document.querySelector('.status-text');
+            
+            if (snap.val() === true) {
+              statusDot.classList.add('connected');
+              statusText.textContent = 'Connected';
+            } else {
+              statusDot.classList.remove('connected');
+              statusText.textContent = 'Disconnected';
+            }
+          });
+
+        } catch (error) {
+          console.error('Firebase initialization error:', error);
           const statusDot = document.querySelector('.status-dot');
           const statusText = document.querySelector('.status-text');
-          
-          if (snap.val() === true) {
-            statusDot.classList.add('connected');
-            statusText.textContent = 'Connected';
-          } else {
-            statusDot.classList.remove('connected');
-            statusText.textContent = 'Disconnected';
+          if (statusDot) statusDot.classList.remove('connected');
+          if (statusText) {
+            statusText.textContent = 'Offline Mode';
+            statusText.style.color = '#ef4444';
           }
-        });
+        }
       }
 
-      // Make Firebase functions available globally
-      window.fbDatabase = database;
-      window.fbRef = ref;
-      window.fbSet = set;
-      window.fbOnValue = onValue;
+      // Initialize Firebase after the animation sequence starts
+      setTimeout(initializeFirebase, 6000);
     </script>
     <style>
       :root { color-scheme: dark; }
@@ -1525,32 +1533,31 @@
 
     async function loadTrainees() {
       try {
-        // Get real-time updates from Firebase
-        const traineesRef = fbRef(fbDatabase, 'trainees');
-        fbOnValue(traineesRef, (snapshot) => {
-          const data = snapshot.val();
-          trainees = data ? Object.values(data) : [];
-          updateTrainingTable();
-        }, (error) => {
-          console.error('Error loading from Firebase:', error);
-          // Try to load from localStorage as backup
-          const savedTrainees = localStorage.getItem('trainees');
-          if (savedTrainees) {
-            trainees = JSON.parse(savedTrainees);
-          } else {
-            trainees = [];
-          }
-          updateTrainingTable();
-        });
-      } catch (error) {
-        console.error('Error in loadTrainees:', error);
-        // Try to load from localStorage as backup
+        // First try to load from localStorage
         const savedTrainees = localStorage.getItem('trainees');
         if (savedTrainees) {
           trainees = JSON.parse(savedTrainees);
+          updateTrainingTable();
         } else {
           trainees = [];
+          updateTrainingTable();
         }
+
+        // Then try to connect to Firebase if available
+        if (window.fbRef && window.fbDatabase) {
+          const traineesRef = fbRef(fbDatabase, 'trainees');
+          fbOnValue(traineesRef, (snapshot) => {
+            const data = snapshot.val();
+            trainees = data ? Object.values(data) : [];
+            updateTrainingTable();
+          }, (error) => {
+            console.error('Error loading from Firebase:', error);
+          });
+        }
+      } catch (error) {
+        console.error('Error in loadTrainees:', error);
+        // Ensure we have at least an empty array
+        trainees = trainees || [];
         updateTrainingTable();
       }
     }
