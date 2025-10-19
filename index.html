@@ -858,8 +858,24 @@
     transition: color 0.2s;
   }
 
-  .upload-btn:hover {
+  .picture-url-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(253, 224, 71, 0.2);
+    border-radius: 4px;
+    padding: 6px 8px;
     color: #fff;
+    font-size: 12px;
+    transition: all 0.2s ease;
+  }
+
+  .picture-url-input:focus {
+    border-color: rgba(253, 224, 71, 0.4);
+    outline: none;
+  }
+
+  .picture-url-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
   }
 
   .name-hover-picture {
@@ -1366,8 +1382,7 @@
             <div class="profile-picture-container" id="profilePicture">
               <img src="https://kappa.lol/3qib3z" alt="Default Profile" class="profile-picture">
               <div class="profile-picture-upload">
-                <label for="pictureUpload" class="upload-btn">Upload Picture</label>
-                <input type="file" id="pictureUpload" accept="image/*" style="display: none;" onchange="handleProfilePicture(event, currentTrainee)">
+                <input type="text" id="pictureUrl" placeholder="Paste image URL here..." class="picture-url-input" onkeydown="if(event.key === 'Enter') handleProfilePictureUrl(this.value, currentTrainee)">
               </div>
             </div>
           </div>
@@ -2470,7 +2485,7 @@
         
         // Safely set each element, checking for existence first
         const elements = {
-          'profileName': `<span class="rank-badge ${currentRank.id}">${currentRank.abbr}</span> FEDERAL INVESTIGATION BUREAU<br><span style="font-size: 16px; opacity: 0.8; font-weight: normal;">${currentRank.name === 'INTERN' ? 'Trainee' : currentRank.name === 'TRAINEE' ? 'Trainee' : currentRank.name === 'RECRUIT' ? 'Trainee' : 'Agent'}</span> ${trainee.name}`,
+          'profileName': `<span class="rank-badge ${currentRank.id}">${currentRank.abbr}</span> FEDERAL INVESTIGATION BUREAU<br><span style="font-size: 16px; opacity: 0.8; font-weight: normal;">${currentRank.name === 'SPECIAL AGENT' ? 'Special Agent' : currentRank.name === 'AGENT' ? 'Agent' : currentRank.name}</span> ${trainee.name}`,
           'profileRank': currentRank.name,
           'profileCallsign': trainee.callsign || 'Not Set',
           'profileCodename': trainee.codename || 'Not Set',
@@ -2682,31 +2697,34 @@
       document.getElementById('profileModal').style.display = 'none';
     }
     
-    async function handleProfilePicture(event, trainee) {
-      const file = event.target.files[0];
-      if (!file) return;
+    async function handleProfilePictureUrl(url, trainee) {
+      if (!url) return;
 
       try {
-        // Convert image to base64
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          const base64Image = e.target.result;
-          
-          // Update trainee's profile picture in Firebase
-          const updates = {};
-          updates[`/trainees/${trainee.id}/profilePicture`] = base64Image;
-          
-          await fbUpdate(fbRef(fbDatabase), updates);
-          
-          // Update UI
-          document.querySelectorAll(`.profile-picture[data-trainee-id="${trainee.id}"]`).forEach(img => {
-            img.src = base64Image;
-          });
-        };
-        reader.readAsDataURL(file);
+        // Validate URL
+        const urlInput = document.getElementById('pictureUrl');
+        if (!url.match(/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) {
+          alert('Please enter a valid image URL (ending in .jpg, .png, .gif, or .webp)');
+          return;
+        }
+
+        // Update trainee's profile picture in Firebase
+        const updates = {};
+        updates[`/trainees/${trainee.id}/profilePicture`] = url;
+        
+        await fbUpdate(fbRef(fbDatabase), updates);
+        
+        // Update UI
+        document.querySelectorAll(`.profile-picture[data-trainee-id="${trainee.id}"]`).forEach(img => {
+          img.src = url;
+        });
+
+        // Clear input
+        urlInput.value = '';
+        
       } catch (error) {
-        console.error('Error uploading profile picture:', error);
-        alert('Failed to upload profile picture. Please try again.');
+        console.error('Error setting profile picture:', error);
+        alert('Failed to set profile picture. Please try again with a different URL.');
       }
     }
 
