@@ -1364,6 +1364,7 @@
               <th>Alias</th>
               <th>FIB Handler</th>
               <th>Training Progress</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="trainingTableBody">
@@ -1850,9 +1851,22 @@
           nameWrapper.style.alignItems = 'center';
           nameWrapper.style.gap = '8px';
           
-          const nameText = document.createElement('span');
+          const nameText = document.createElement('button');
           nameText.textContent = trainee.name || 'Unknown';
           nameText.style.cursor = 'pointer';
+          nameText.style.background = 'rgba(253, 224, 71, 0.1)';
+          nameText.style.border = '1px solid rgba(253, 224, 71, 0.2)';
+          nameText.style.borderRadius = '4px';
+          nameText.style.padding = '4px 8px';
+          nameText.style.color = '#fde047';
+          nameText.style.fontSize = '13px';
+          nameText.style.transition = 'all 0.2s ease';
+          nameText.onmouseover = () => {
+            nameText.style.background = 'rgba(253, 224, 71, 0.2)';
+          };
+          nameText.onmouseout = () => {
+            nameText.style.background = 'rgba(253, 224, 71, 0.1)';
+          };
           nameText.onclick = () => {
             const traineeData = trainees.find(t => t.id === trainee.id);
             if (traineeData) {
@@ -1861,11 +1875,7 @@
           };
           nameWrapper.appendChild(nameText);
 
-          const deleteButton = document.createElement('button');
-          deleteButton.className = 'delete-btn';
-          deleteButton.textContent = 'Delete';
-          deleteButton.onclick = () => deleteTrainee(trainee.id);
-          nameWrapper.appendChild(deleteButton);
+          nameWrapper.appendChild(nameText);
           
           nameCell.appendChild(nameWrapper);
           row.appendChild(nameCell);
@@ -2025,6 +2035,22 @@
           progressCell.appendChild(progressBar);
           row.appendChild(progressCell);
 
+          // Delete button cell
+          const deleteCell = document.createElement('td');
+          deleteCell.style.width = '40px';
+          deleteCell.style.textAlign = 'center';
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'delete-btn';
+          deleteButton.innerHTML = '&times;';
+          deleteButton.style.width = '24px';
+          deleteButton.style.height = '24px';
+          deleteButton.style.padding = '0';
+          deleteButton.style.lineHeight = '1';
+          deleteButton.style.fontSize = '18px';
+          deleteButton.onclick = () => deleteTrainee(trainee.id);
+          deleteCell.appendChild(deleteButton);
+          row.appendChild(deleteCell);
+
           // Add row to table
           tbody.appendChild(row);
         } catch (error) {
@@ -2142,7 +2168,7 @@
 
       const title = document.createElement('div');
       title.className = 'password-dialog-title';
-      title.textContent = type === 'strike' ? 'Add Strike' : 'Add Commendation';
+      title.textContent = `Add ${type.charAt(0).toUpperCase() + type.slice(1)}`;
       dialog.appendChild(title);
 
       const form = document.createElement('div');
@@ -2426,39 +2452,53 @@
 
         // Set record (strikes and commendations)
         const setupRecordSection = (type) => {
-          const records = trainee[type] || [];
+          const records = trainee[type + 's'] || [];
           const div = document.getElementById(`profile${type.charAt(0).toUpperCase() + type.slice(1)}`);
           if (!div) return;
 
           div.innerHTML = '';
           const wrapper = document.createElement('div');
           wrapper.style.display = 'flex';
-          wrapper.style.alignItems = 'center';
+          wrapper.style.alignItems = 'flex-start';
           wrapper.style.gap = '8px';
           
-          const text = document.createElement('span');
+          const text = document.createElement('div');
           text.className = `profile-${type}`;
+          text.style.flex = '1';
           
           if (records.length > 0) {
             const list = document.createElement('div');
             list.style.display = 'flex';
             list.style.flexDirection = 'column';
-            list.style.gap = '4px';
+            list.style.gap = '8px';
             
             records.forEach(record => {
               if (typeof record === 'string' && record.includes('by')) {
-                const agent = record.match(/by (.*?)\)$/)[1];
-                const link = document.createElement('span');
-                link.style.cursor = 'pointer';
-                link.style.textDecoration = 'underline';
-                link.textContent = agent;
-                link.onclick = () => showRecordDetails(record, type.charAt(0).toUpperCase() + type.slice(1));
-                list.appendChild(link);
+                const [content, agent] = record.split(' (by ');
+                const recordDiv = document.createElement('div');
+                recordDiv.style.background = 'rgba(0, 0, 0, 0.3)';
+                recordDiv.style.padding = '8px';
+                recordDiv.style.borderRadius = '4px';
+                recordDiv.style.cursor = 'pointer';
+                recordDiv.onclick = () => showRecordDetails(record, type.charAt(0).toUpperCase() + type.slice(1));
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.style.marginBottom = '4px';
+                contentDiv.textContent = content;
+                
+                const agentDiv = document.createElement('div');
+                agentDiv.style.fontSize = '11px';
+                agentDiv.style.color = '#9ca3af';
+                agentDiv.textContent = `by ${agent.replace(')', '')}`;
+                
+                recordDiv.appendChild(contentDiv);
+                recordDiv.appendChild(agentDiv);
+                list.appendChild(recordDiv);
               }
             });
             text.appendChild(list);
           } else {
-            text.textContent = 'None';
+            text.textContent = 'No ' + type + 's on record';
           }
           wrapper.appendChild(text);
           
