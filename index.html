@@ -183,6 +183,63 @@
     background: #fff;
   }
 
+  /* Dialog Styles */
+  .password-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid rgba(253, 224, 71, 0.2);
+    border-radius: 8px;
+    padding: 24px;
+    min-width: 300px;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 0 20px rgba(253, 224, 71, 0.1);
+  }
+
+  .password-dialog-title {
+    color: #fde047;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .password-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(253, 224, 71, 0.2);
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: #fff;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  .password-dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .password-dialog-btn {
+    background: rgba(253, 224, 71, 0.1);
+    color: #fde047;
+    border: 1px solid rgba(253, 224, 71, 0.2);
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .password-dialog-btn:hover {
+    background: rgba(253, 224, 71, 0.2);
+  }
+
   .checkbox-cell {
     text-align: center;
     padding: 8px 4px !important;
@@ -876,6 +933,103 @@
   .dept-badge.ana { background: rgba(147, 51, 234, 0.1); color: #9333ea; border-color: rgba(147, 51, 234, 0.2); }
   .dept-badge.sup { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-color: rgba(59, 130, 246, 0.2); }
 
+  /* Rank Styles */
+  .rank-badge {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 11px;
+    margin-right: 8px;
+  }
+
+  .rank-badge.intern { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+  .rank-badge.trainee { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+  .rank-badge.recruit { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+  .rank-badge.agent { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+  .rank-badge.special { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+
+  .rank-select {
+    position: relative;
+    display: inline-block;
+  }
+
+  .rank-select-btn {
+    background: rgba(253, 224, 71, 0.1);
+    color: #fde047;
+    border: 1px solid rgba(253, 224, 71, 0.2);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .rank-select-btn:hover {
+    background: rgba(253, 224, 71, 0.2);
+  }
+
+  .rank-select-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 100;
+    background: #0b0b0f;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 4px;
+    min-width: 150px;
+    display: none;
+  }
+
+  .rank-select.open .rank-select-dropdown {
+    display: block;
+  }
+
+  .rank-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+  }
+
+  .rank-option:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .rank-option.selected {
+    background: rgba(253, 224, 71, 0.1);
+  }
+
+  /* Agent Info Styles */
+  .agent-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .callsign {
+    color: #fde047;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+  }
+
+  .codename {
+    color: #22c55e;
+    font-style: italic;
+  }
+
+  .uc-name {
+    color: #ef4444;
+    text-decoration: underline;
+  }
+
   /* Handler Styles */
   .handler-cell {
     position: relative;
@@ -1018,6 +1172,22 @@
         <div class="profile-section">
           <div class="profile-section-title">Basic Information</div>
           <ul class="profile-info-list">
+            <li class="profile-info-item">
+              <span class="profile-info-label">Rank:</span>
+              <span class="profile-info-value" id="profileRank"></span>
+            </li>
+            <li class="profile-info-item">
+              <span class="profile-info-label">Callsign:</span>
+              <span class="profile-info-value" id="profileCallsign" style="cursor: pointer" onclick="editField(this, 'callsign')"></span>
+            </li>
+            <li class="profile-info-item">
+              <span class="profile-info-label">Code Name:</span>
+              <span class="profile-info-value" id="profileCodename" style="cursor: pointer" onclick="editField(this, 'codename')"></span>
+            </li>
+            <li class="profile-info-item">
+              <span class="profile-info-label">Undercover Alias:</span>
+              <span class="profile-info-value" id="profileUC" style="cursor: pointer" onclick="editField(this, 'ucAlias')"></span>
+            </li>
             <li class="profile-info-item">
               <span class="profile-info-label">Date Joined:</span>
               <span class="profile-info-value" id="profileJoinDate"></span>
@@ -1185,11 +1355,16 @@
 
     // Handle toolbar collapse/expand
 
-    // Close department dropdowns and handler edit fields when clicking outside
+    // Close dropdowns and edit fields when clicking outside
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.dept-select-container')) {
         document.querySelectorAll('.dept-select-container').forEach(container => {
           container.classList.remove('open');
+        });
+      }
+      if (!e.target.closest('.rank-select')) {
+        document.querySelectorAll('.rank-select').forEach(select => {
+          select.classList.remove('open');
         });
       }
       if (!e.target.closest('.handler-edit') && !e.target.closest('.handler-text')) {
@@ -1281,15 +1456,19 @@
         }
 
         // Create new trainee object
-        const trainee = {
-          name: name,
-          handler: handler,
-          joinDate: new Date().toISOString(),
-          departments: [],
-          strikes: [],
-          commendations: [],
-          timeline: [],
-          skills: {
+      const trainee = {
+        name: name,
+        handler: handler,
+        joinDate: new Date().toISOString(),
+        rank: 'intern',
+        callsign: '',
+        codename: '',
+        ucAlias: '',
+        departments: [],
+        strikes: [],
+        commendations: [],
+        timeline: [],
+        skills: {
           '10Codes': { completed: false, instructor: '', completedDate: null },
           'CaseLaws': { completed: false, instructor: '', completedDate: null },
           'Pursuit': { completed: false, instructor: '', completedDate: null },
@@ -1366,18 +1545,69 @@
           // Create a single row for each trainee
           const mainRow = document.createElement('tr');
           
-          // Name cell
-          const nameCell = document.createElement('td');
-          const nameWrapper = document.createElement('div');
-          nameWrapper.style.display = 'flex';
-          nameWrapper.style.alignItems = 'center';
-          nameWrapper.style.gap = '8px';
-          
-          const nameText = document.createElement('span');
-          nameText.textContent = trainee.name || 'Unknown';
-          nameText.style.cursor = 'pointer';
-          nameText.onclick = () => showProfile(trainee);
-          nameWrapper.appendChild(nameText);
+        // Callsign cell
+        const callsignCell = document.createElement('td');
+        callsignCell.textContent = trainee.callsign || '#';
+        callsignCell.className = 'callsign';
+        mainRow.appendChild(callsignCell);
+
+        // Rank cell
+        const rankCell = document.createElement('td');
+        const rankSelect = document.createElement('div');
+        rankSelect.className = 'rank-select';
+        
+        const rankBtn = document.createElement('button');
+        rankBtn.className = 'rank-select-btn';
+        const currentRank = RANKS.find(r => r.id === trainee.rank) || RANKS[0];
+        rankBtn.innerHTML = `<span class="rank-badge ${currentRank.id}">${currentRank.abbr}</span>`;
+        rankBtn.onclick = (e) => {
+          e.stopPropagation();
+          rankSelect.classList.toggle('open');
+        };
+        rankSelect.appendChild(rankBtn);
+
+        const rankDropdown = document.createElement('div');
+        rankDropdown.className = 'rank-select-dropdown';
+        RANKS.forEach(rank => {
+          const option = document.createElement('div');
+          option.className = `rank-option${rank.id === trainee.rank ? ' selected' : ''}`;
+          option.innerHTML = `<span class="rank-badge ${rank.id}">${rank.abbr}</span> ${rank.name}`;
+          option.onclick = (e) => {
+            e.stopPropagation();
+            trainee.rank = rank.id;
+            saveTrainees();
+            updateTrainingTable();
+            rankSelect.classList.remove('open');
+          };
+          rankDropdown.appendChild(option);
+        });
+        rankSelect.appendChild(rankDropdown);
+        rankCell.appendChild(rankSelect);
+        mainRow.appendChild(rankCell);
+
+        // Name cell
+        const nameCell = document.createElement('td');
+        const nameWrapper = document.createElement('div');
+        nameWrapper.style.display = 'flex';
+        nameWrapper.style.alignItems = 'center';
+        nameWrapper.style.gap = '8px';
+        
+        const nameText = document.createElement('span');
+        nameText.textContent = trainee.name || 'Unknown';
+        nameText.style.cursor = 'pointer';
+        nameText.onclick = () => showProfile(trainee);
+        nameWrapper.appendChild(nameText);
+
+        // UC and Codename cells
+        const ucCell = document.createElement('td');
+        ucCell.textContent = trainee.ucAlias || '-';
+        ucCell.className = 'uc-name';
+        mainRow.appendChild(ucCell);
+
+        const codenameCell = document.createElement('td');
+        codenameCell.textContent = trainee.codename || '-';
+        codenameCell.className = 'codename';
+        mainRow.appendChild(codenameCell);
         
         const buttonWrapper = document.createElement('div');
         buttonWrapper.style.display = 'flex';
@@ -1715,9 +1945,11 @@
       reasonLabel.textContent = type === 'strike' ? 'Strike Reason:' : 'Commendation:';
       form.appendChild(reasonLabel);
 
-      const reasonInput = document.createElement('input');
+      const reasonInput = document.createElement('textarea');
       reasonInput.className = 'password-input';
-      reasonInput.placeholder = type === 'strike' ? 'Enter strike reason' : 'Enter commendation';
+      reasonInput.style.height = '100px';
+      reasonInput.style.resize = 'vertical';
+      reasonInput.placeholder = type === 'strike' ? 'Enter detailed strike reason' : 'Enter detailed commendation';
       form.appendChild(reasonInput);
 
       dialog.appendChild(form);
@@ -1766,11 +1998,105 @@
       document.body.appendChild(dialog);
     }
 
+    function showRecordDetails(record, type) {
+      const dialog = document.createElement('div');
+      dialog.className = 'password-dialog';
+      dialog.style.display = 'block';
+
+      const title = document.createElement('div');
+      title.className = 'password-dialog-title';
+      title.textContent = type;
+      dialog.appendChild(title);
+
+      const content = document.createElement('div');
+      content.style.marginBottom = '20px';
+      content.style.whiteSpace = 'pre-wrap';
+      content.style.wordBreak = 'break-word';
+      
+      const reason = record.replace(/\s*\(by .*?\)$/, '');
+      const agent = record.match(/by (.*?)\)$/)[1];
+
+      const reasonText = document.createElement('div');
+      reasonText.style.marginBottom = '16px';
+      reasonText.style.fontSize = '14px';
+      reasonText.textContent = reason;
+      content.appendChild(reasonText);
+
+      const agentText = document.createElement('div');
+      agentText.style.color = '#fde047';
+      agentText.style.fontSize = '12px';
+      agentText.textContent = `Submitted by: ${agent}`;
+      content.appendChild(agentText);
+
+      dialog.appendChild(content);
+
+      const buttonContainer = document.createElement('div');
+      buttonContainer.className = 'password-dialog-buttons';
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'password-dialog-btn';
+      closeBtn.textContent = 'Close';
+      closeBtn.onclick = () => dialog.remove();
+      buttonContainer.appendChild(closeBtn);
+      
+      dialog.appendChild(buttonContainer);
+      document.body.appendChild(dialog);
+    }
+
+    function editField(element, field) {
+      const currentValue = element.textContent;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentValue;
+      input.className = 'password-input';
+      input.style.margin = '0';
+      input.style.padding = '2px 4px';
+      input.style.fontSize = '13px';
+
+      const save = () => {
+        const newValue = input.value.trim();
+        const traineeIndex = trainees.findIndex(t => t.name === currentTrainee.name);
+        if (traineeIndex !== -1) {
+          trainees[traineeIndex][field] = newValue;
+          saveTrainees();
+          updateTrainingTable();
+          showProfile(trainees[traineeIndex]);
+        }
+      };
+
+      input.onblur = save;
+      input.onkeypress = (e) => {
+        if (e.key === 'Enter') {
+          save();
+        }
+      };
+
+      element.innerHTML = '';
+      element.appendChild(input);
+      input.focus();
+    }
+
+    const RANKS = [
+      { id: 'intern', name: 'INTERN', abbr: 'INT' },
+      { id: 'trainee', name: 'TRAINEE', abbr: 'TRN' },
+      { id: 'recruit', name: 'RECRUIT', abbr: 'RCT' },
+      { id: 'agent', name: 'AGENT', abbr: 'AGT' },
+      { id: 'special', name: 'SPECIAL AGENT', abbr: 'SA' }
+    ];
+
+    let currentTrainee = null;
+
     function showProfile(trainee) {
+      currentTrainee = trainee;
       const modal = document.getElementById('profileModal');
       
       // Set basic info
-      document.getElementById('profileName').textContent = trainee.name;
+      const currentRank = RANKS.find(r => r.id === trainee.rank) || RANKS[0];
+      document.getElementById('profileName').innerHTML = `<span class="rank-badge ${currentRank.id}">${currentRank.abbr}</span> ${trainee.name}`;
+      document.getElementById('profileRank').textContent = currentRank.name;
+      document.getElementById('profileCallsign').textContent = trainee.callsign || 'Not Set';
+      document.getElementById('profileCodename').textContent = trainee.codename || 'Not Set';
+      document.getElementById('profileUC').textContent = trainee.ucAlias || 'Not Set';
       document.getElementById('profileJoinDate').textContent = new Date(trainee.joinDate).toLocaleDateString();
       // Show departments as badges
       const deptDiv = document.getElementById('profileDivision');
@@ -1840,7 +2166,25 @@
       
       const strikesText = document.createElement('span');
       strikesText.className = 'profile-strikes';
-      strikesText.textContent = trainee.strikes.length > 0 ? trainee.strikes.join(', ') : 'None';
+      if (trainee.strikes.length > 0) {
+        const strikesList = document.createElement('div');
+        strikesList.style.display = 'flex';
+        strikesList.style.flexDirection = 'column';
+        strikesList.style.gap = '4px';
+        
+        trainee.strikes.forEach(strike => {
+          const agent = strike.match(/by (.*?)\)$/)[1];
+          const strikeLink = document.createElement('span');
+          strikeLink.style.cursor = 'pointer';
+          strikeLink.style.textDecoration = 'underline';
+          strikeLink.textContent = agent;
+          strikeLink.onclick = () => showRecordDetails(strike, 'Strike');
+          strikesList.appendChild(strikeLink);
+        });
+        strikesText.appendChild(strikesList);
+      } else {
+        strikesText.textContent = 'None';
+      }
       strikesWrapper.appendChild(strikesText);
       
       const addStrikeBtn = document.createElement('button');
@@ -1860,7 +2204,25 @@
       
       const commsText = document.createElement('span');
       commsText.className = 'profile-commendations';
-      commsText.textContent = trainee.commendations.length > 0 ? trainee.commendations.join(', ') : 'None';
+      if (trainee.commendations.length > 0) {
+        const commsList = document.createElement('div');
+        commsList.style.display = 'flex';
+        commsList.style.flexDirection = 'column';
+        commsList.style.gap = '4px';
+        
+        trainee.commendations.forEach(comm => {
+          const agent = comm.match(/by (.*?)\)$/)[1];
+          const commLink = document.createElement('span');
+          commLink.style.cursor = 'pointer';
+          commLink.style.textDecoration = 'underline';
+          commLink.textContent = agent;
+          commLink.onclick = () => showRecordDetails(comm, 'Commendation');
+          commsList.appendChild(commLink);
+        });
+        commsText.appendChild(commsList);
+      } else {
+        commsText.textContent = 'None';
+      }
       commsWrapper.appendChild(commsText);
       
       const addCommBtn = document.createElement('button');
