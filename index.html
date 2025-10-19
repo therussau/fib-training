@@ -1254,7 +1254,11 @@
           <input type="text" id="traineeHandler" placeholder="Enter FIB handler">
         </div>
       </div>
-      <button type="button" class="save-btn" id="addTraineeBtn">Add Trainee</button>
+      <div class="form-row" style="justify-content: space-between;">
+        <button type="button" class="save-btn" id="addTraineeBtn">Add Trainee</button>
+        <input type="file" id="loadBackup" accept=".json" style="display: none;">
+        <button type="button" class="save-btn" onclick="document.getElementById('loadBackup').click()">Load Backup</button>
+      </div>
     </div>
 
     <div class="training-section">
@@ -1413,76 +1417,82 @@
         console.error('Add trainee button not found!');
       }
 
-      // Set up auto-refresh to keep data in sync
-      setInterval(loadTrainees, 30000); // Refresh every 30 seconds
+      // Set up backup file loading
+      const loadBackup = document.getElementById('loadBackup');
+      loadBackup.addEventListener('change', async (event) => {
+        try {
+          const file = event.target.files[0];
+          if (!file) return;
+          
+          const text = await file.text();
+          const data = JSON.parse(text);
+          
+          if (Array.isArray(data)) {
+            trainees = data;
+            saveTrainees();
+            updateTrainingTable();
+            alert('Backup loaded successfully!');
+          } else {
+            throw new Error('Invalid backup file format');
+          }
+        } catch (error) {
+          console.error('Error loading backup:', error);
+          alert('Error loading backup file. Please make sure it is a valid backup file.');
+        }
+        loadBackup.value = ''; // Reset file input
+      });
     });
 
     // Training data management
     let trainees = [];
 
-    const SHEET_ID = '1FRyCpGBCh5xQJV-w2XkqIlpLlwFHqP18NjUDodu-4ko';
-    const SHEET_NAME = 'Sheet1';
-    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
-    const UPDATE_URL = `https://script.google.com/macros/s/AKfycbwPpHP-mSAGpDZ0u08EPWngA3yCNlFBVVUUpOpCEftkLpMoM3FUognHi2MA5nMqQTDK/exec`;
+    // Google Form submission URL (we'll create this)
+    const FORM_URL = 'https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse';
+    
+    // Function to encode data for form submission
+    function encodeFormData(data) {
+      return Object.keys(data)
+        .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))
+        .join('&');
+    }
 
     async function loadTrainees() {
       try {
-        const response = await fetch(UPDATE_URL, {
-          method: 'GET',
-          mode: 'cors'
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to load data');
-        }
-
-        const data = await response.json();
-        
-        if (data.status === 'success' && Array.isArray(data.trainees)) {
-          trainees = data.trainees;
+        // For now, just load from localStorage
+        const savedTrainees = localStorage.getItem('trainees');
+        if (savedTrainees) {
+          trainees = JSON.parse(savedTrainees);
         } else {
           trainees = [];
         }
-        
         updateTrainingTable();
       } catch (error) {
         console.error('Error loading trainees:', error);
-        // Try to load from localStorage as backup
-        const savedTrainees = localStorage.getItem('trainees');
-        if (savedTrainees) {
-          try {
-            trainees = JSON.parse(savedTrainees);
-          } catch (e) {
-            trainees = [];
-          }
-        } else {
-          trainees = [];
-        }
+        trainees = [];
         updateTrainingTable();
       }
     }
 
     async function saveTrainees() {
       try {
-        const response = await fetch(UPDATE_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ trainees: trainees })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to save data');
-        }
-
-        // Save to localStorage as backup
+        // Save to localStorage
         localStorage.setItem('trainees', JSON.stringify(trainees));
+        
+        // Create a backup file for download
+        const blob = new Blob([JSON.stringify(trainees, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `fib-training-backup-${timestamp}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Error saving trainees:', error);
-        alert('Error saving to Google Sheet. Changes will only be saved locally.');
-        // Save to localStorage as fallback
-        localStorage.setItem('trainees', JSON.stringify(trainees));
+        alert('Error saving data. Please try again.');
       }
     }
 
