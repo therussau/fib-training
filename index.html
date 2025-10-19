@@ -788,6 +788,94 @@
     color: #22c55e;
   }
 
+  /* Department Styles */
+  .dept-select-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  .dept-select-btn {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .dept-select-btn:hover {
+    background: rgba(34, 197, 94, 0.3);
+  }
+
+  .dept-select-btn::after {
+    content: '▼';
+    font-size: 8px;
+  }
+
+  .dept-select-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 100;
+    background: #0b0b0f;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 4px;
+    min-width: 150px;
+    display: none;
+  }
+
+  .dept-select-container.open .dept-select-dropdown {
+    display: block;
+  }
+
+  .dept-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+  }
+
+  .dept-option:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .dept-option input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+  }
+
+  .dept-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .dept-badge {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .dept-badge.fa { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
+  .dept-badge.inv { background: rgba(234, 179, 8, 0.1); color: #eab308; border-color: rgba(234, 179, 8, 0.2); }
+  .dept-badge.ana { background: rgba(147, 51, 234, 0.1); color: #9333ea; border-color: rgba(147, 51, 234, 0.2); }
+  .dept-badge.sup { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-color: rgba(59, 130, 246, 0.2); }
+
   #mainContent {
     display: none;
     opacity: 0;
@@ -925,6 +1013,7 @@
           <thead>
             <tr>
               <th>Name</th>
+              <th>Department</th>
               <th colspan="12">Training Progress</th>
             </tr>
           </thead>
@@ -1014,6 +1103,15 @@
 
     // Handle toolbar collapse/expand
 
+    // Close department dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.dept-select-container')) {
+        document.querySelectorAll('.dept-select-container').forEach(container => {
+          container.classList.remove('open');
+        });
+      }
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
       const toolbar = document.getElementById('top');
       const collapseBtn = document.getElementById('collapseBtn');
@@ -1068,7 +1166,7 @@
       const trainee = {
         name: name,
         joinDate: new Date().toISOString(),
-        division: '',
+        departments: [],
         strikes: [],
         commendations: [],
         timeline: [],
@@ -1138,6 +1236,85 @@
         
         nameCell.appendChild(nameWrapper);
         mainRow.appendChild(nameCell);
+
+        // Department cell
+        const deptCell = document.createElement('td');
+        const deptContainer = document.createElement('div');
+        deptContainer.className = 'dept-select-container';
+
+        const deptButton = document.createElement('button');
+        deptButton.className = 'dept-select-btn';
+        deptButton.textContent = trainee.departments.length > 0 ? 'Edit Depts' : 'Add Depts';
+        deptButton.onclick = (e) => {
+          e.stopPropagation();
+          const container = e.target.closest('.dept-select-container');
+          container.classList.toggle('open');
+        };
+        deptContainer.appendChild(deptButton);
+
+        const deptDropdown = document.createElement('div');
+        deptDropdown.className = 'dept-select-dropdown';
+
+        const departments = [
+          { id: 'fa', name: 'Field Agents', abbr: 'FA' },
+          { id: 'inv', name: 'Investigators', abbr: 'INV' },
+          { id: 'ana', name: 'Analysts', abbr: 'ANA' },
+          { id: 'sup', name: 'Supernatural', abbr: 'SUP' }
+        ];
+
+        departments.forEach(dept => {
+          const option = document.createElement('label');
+          option.className = 'dept-option';
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = trainee.departments.includes(dept.id);
+          checkbox.onchange = (e) => {
+            e.stopPropagation();
+            if (e.target.checked) {
+              trainee.departments.push(dept.id);
+              trainee.timeline.push({
+                date: new Date().toISOString(),
+                content: `Added to ${dept.name} Department`,
+                instructor: 'System'
+              });
+            } else {
+              trainee.departments = trainee.departments.filter(d => d !== dept.id);
+              trainee.timeline.push({
+                date: new Date().toISOString(),
+                content: `Removed from ${dept.name} Department`,
+                instructor: 'System'
+              });
+            }
+            saveTrainees();
+            updateTrainingTable();
+          };
+
+          option.appendChild(checkbox);
+          option.appendChild(document.createTextNode(dept.name));
+          deptDropdown.appendChild(option);
+        });
+
+        deptContainer.appendChild(deptDropdown);
+        deptCell.appendChild(deptContainer);
+
+        // Add department badges
+        if (trainee.departments.length > 0) {
+          const badgesContainer = document.createElement('div');
+          badgesContainer.className = 'dept-badges';
+
+          trainee.departments.forEach(deptId => {
+            const dept = departments.find(d => d.id === deptId);
+            const badge = document.createElement('div');
+            badge.className = `dept-badge ${deptId}`;
+            badge.textContent = dept.abbr;
+            badgesContainer.appendChild(badge);
+          });
+
+          deptCell.appendChild(badgesContainer);
+        }
+
+        mainRow.appendChild(deptCell);
 
         // Basic Skills
         const basicSkills = [
