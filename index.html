@@ -22,7 +22,7 @@
             apiKey: "AIzaSyC8MXihU-0-FRkYwx0qrs_Sv4CKZCVgFUs",
             authDomain: "fib-training-tracker.firebaseapp.com",
             projectId: "fib-training-tracker",
-            storageBucket: "fib-training-tracker.firebasestorage.app",
+            storageBucket: "fib-training-tracker.appspot.com",
             messagingSenderId: "1086248091161",
             appId: "1:1086248091161:web:6e74e452d665123e88f488",
             measurementId: "G-ZHPFZNV4WZ",
@@ -43,24 +43,6 @@
           window.fbSet = fbSet;
           window.fbOnValue = fbOnValue;
           window.fbUpdate = fbUpdate;
-
-          // Start listening for connection state
-          const connectedRef = fbRef(fbDatabase, '.info/connected');
-          fbOnValue(connectedRef, (snap) => {
-            const statusDot = document.querySelector('.status-dot');
-            const statusText = document.querySelector('.status-text');
-            
-            if (snap.val() === true) {
-              statusDot.classList.add('connected');
-              statusText.textContent = 'Connected';
-              // Load trainees after confirmed connection
-              loadTrainees();
-            } else {
-              statusDot.classList.remove('connected');
-              statusText.textContent = 'Disconnected';
-              showDatabaseError('Lost connection to database. Please check your internet connection.');
-            }
-          });
 
           return true;
         } catch (error) {
@@ -1780,89 +1762,7 @@
       }
     }
 
-    function addNewTrainee() {
-      try {
-        console.log('Adding new trainee...');
-        const nameInput = document.getElementById('traineeName');
-        if (!nameInput) {
-          console.error('Name input not found!');
-          return;
-        }
-        const name = nameInput.value.trim();
-        console.log('Name:', name);
-        
-        if (!name) {
-          alert('Please enter a trainee name');
-          return;
-        }
 
-        const handlerInput = document.getElementById('traineeHandler');
-        if (!handlerInput) {
-          console.error('Handler input not found!');
-          return;
-        }
-        const handler = handlerInput.value.trim();
-        if (!handler) {
-          alert('Please enter an FIB handler');
-          return;
-        }
-
-        // Ensure trainees array exists
-        if (!Array.isArray(trainees)) {
-          console.log('Initializing trainees array...');
-          trainees = [];
-        }
-
-        // Create new trainee object with default values
-        const trainee = {
-          name: name,
-          handler: handler,
-          joinDate: new Date().toISOString(),
-          rank: 'intern',
-          callsign: '-',
-          department: '-',
-          codename: '-',
-          alias: '-',
-          departments: [],
-          strikes: [],
-          commendations: [],
-          timeline: [],
-          skills: {
-            '10Codes': { completed: false, instructor: '', completedDate: null },
-            'CaseLaws': { completed: false, instructor: '', completedDate: null },
-            'Pursuit': { completed: false, instructor: '', completedDate: null },
-            'Hostage': { completed: false, instructor: '', completedDate: null },
-            'TrafficStop': { completed: false, instructor: '', completedDate: null },
-            'Breaching': { completed: false, instructor: '', completedDate: null },
-            'SceneControl': { completed: false, instructor: '', completedDate: null },
-            'COMMS': { completed: false, instructor: '', completedDate: null },
-            'UseOfForce': { completed: false, instructor: '', completedDate: null },
-            'FilingCharges': { completed: false, instructor: '', completedDate: null },
-            'Reports': { completed: false, instructor: '', completedDate: null },
-            'Gunfight': { completed: false, instructor: '', completedDate: null }
-          }
-        };
-
-        console.log('Created trainee:', trainee);
-        trainees.push(trainee);
-        console.log('Updated trainees array:', trainees);
-        saveTrainees();
-        updateTrainingTable();
-        nameInput.value = '';
-        handlerInput.value = '';
-      } catch (error) {
-        console.error('Error adding trainee:', error);
-        alert('There was an error adding the trainee. Please try again.');
-      }
-    }
-
-    function deleteTrainee(index) {
-      if (confirm(`Are you sure you want to delete ${trainees[index].name}?`)) {
-        trainees.splice(index, 1);
-        saveTrainees();
-        updateTrainingTable();
-      }
-    }
 
 
     function updateTrainingTable() {
