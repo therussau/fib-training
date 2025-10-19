@@ -1853,13 +1853,18 @@
           const nameText = document.createElement('span');
           nameText.textContent = trainee.name || 'Unknown';
           nameText.style.cursor = 'pointer';
-          nameText.onclick = () => showProfile(trainee);
+          nameText.onclick = () => {
+            const traineeData = trainees.find(t => t.id === trainee.id);
+            if (traineeData) {
+              showProfile(traineeData);
+            }
+          };
           nameWrapper.appendChild(nameText);
 
           const deleteButton = document.createElement('button');
           deleteButton.className = 'delete-btn';
           deleteButton.textContent = 'Delete';
-          deleteButton.onclick = () => deleteTrainee(index);
+          deleteButton.onclick = () => deleteTrainee(trainee.id);
           nameWrapper.appendChild(deleteButton);
           
           nameCell.appendChild(nameWrapper);
@@ -2256,7 +2261,7 @@
 
       const save = () => {
         const newValue = input.value.trim();
-        const traineeIndex = trainees.findIndex(t => t.name === currentTrainee.name);
+        const traineeIndex = trainees.findIndex(t => t.id === currentTrainee.id);
         if (traineeIndex !== -1) {
           trainees[traineeIndex][field] = newValue;
           saveTrainees();
