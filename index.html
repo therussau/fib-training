@@ -3,8 +3,66 @@
     <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>FIB Training Tracker</title>
+    <title>FIB Training Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyC8MXihU-0-FRkYwx0qrs_Sv4CKZCVgFUs",
+        authDomain: "fib-training-tracker.firebaseapp.com",
+        projectId: "fib-training-tracker",
+        storageBucket: "fib-training-tracker.firebasestorage.app",
+        messagingSenderId: "1086248091161",
+        appId: "1:1086248091161:web:6e74e452d665123e88f488",
+        measurementId: "G-ZHPFZNV4WZ",
+        databaseURL: "https://fib-training-tracker-default-rtdb.firebaseio.com" // Add this line
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const database = getDatabase(app);
+
+      // Check if database access has expired
+      const expiryDate = new Date(2025, 10, 18); // November 18, 2025
+      const now = new Date();
+      
+      if (now > expiryDate) {
+        const statusDot = document.querySelector('.status-dot');
+        const statusText = document.querySelector('.status-text');
+        statusDot.classList.remove('connected');
+        statusText.textContent = 'Access Expired';
+        statusText.style.color = '#ef4444';
+        alert('Database access has expired. Please contact the administrator.');
+      } else {
+        // Monitor connection state
+        const connectedRef = ref(database, '.info/connected');
+        onValue(connectedRef, (snap) => {
+          const statusDot = document.querySelector('.status-dot');
+          const statusText = document.querySelector('.status-text');
+          
+          if (snap.val() === true) {
+            statusDot.classList.add('connected');
+            statusText.textContent = 'Connected';
+          } else {
+            statusDot.classList.remove('connected');
+            statusText.textContent = 'Disconnected';
+          }
+        });
+      }
+
+      // Make Firebase functions available globally
+      window.fbDatabase = database;
+      window.fbRef = ref;
+      window.fbSet = set;
+      window.fbOnValue = onValue;
+    </script>
     <style>
       :root { color-scheme: dark; }
       * { box-sizing: border-box; }
@@ -137,7 +195,23 @@
     color: #fde047;
     font-size: 16px;
     font-weight: 600;
-    margin-bottom: 16px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    transition: background-color 0.3s ease;
+  }
+
+  .status-dot.connected {
+    background: #22c55e;
+  }
+
+  .status-text {
+    font-size: 12px;
+    color: #9ca3af;
   }
 
   .form-row {
@@ -376,7 +450,7 @@
 
   .password-dialog-btn:hover {
     background: rgba(0, 255, 0, 0.2);
-  }
+      }
 
       @keyframes classifiedBg {
         0%, 100% { background-position: 0% 50%; }
@@ -892,8 +966,8 @@
   }
 
   .dept-option {
-    display: flex;
-    align-items: center;
+        display: flex;
+        align-items: center;
     gap: 8px;
     padding: 6px 8px;
     cursor: pointer;
@@ -956,12 +1030,12 @@
 
   .rank-select-btn {
     background: rgba(253, 224, 71, 0.1);
-    color: #fde047;
+        color: #fde047;
     border: 1px solid rgba(253, 224, 71, 0.2);
     border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 11px;
-    cursor: pointer;
+        padding: 4px 8px;
+        font-size: 11px;
+        cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
@@ -1015,7 +1089,7 @@
   }
 
   .callsign {
-    color: #fde047;
+      color: #fde047;
     font-family: 'Courier New', monospace;
     font-weight: bold;
   }
@@ -1243,23 +1317,29 @@
   </div>
 
     <div class="add-trainee-form">
-      <div class="form-title">Add New Trainee</div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div class="form-title">Add New Trainee</div>
+        <div id="connectionStatus" style="display: flex; align-items: center; gap: 8px;">
+          <span class="status-dot"></span>
+          <span class="status-text">Connecting...</span>
+    </div>
+  </div>
       <div class="form-row">
         <div class="form-group">
           <label for="traineeName">Trainee Name</label>
           <input type="text" id="traineeName" placeholder="Enter trainee name">
-        </div>
+          </div>
         <div class="form-group">
           <label for="traineeHandler">FIB Handler</label>
           <input type="text" id="traineeHandler" placeholder="Enter FIB handler">
-        </div>
-      </div>
+          </div>
+          </div>
       <div class="form-row" style="justify-content: space-between;">
         <button type="button" class="save-btn" id="addTraineeBtn">Add Trainee</button>
         <input type="file" id="loadBackup" accept=".json" style="display: none;">
         <button type="button" class="save-btn" onclick="document.getElementById('loadBackup').click()">Load Backup</button>
-      </div>
-    </div>
+          </div>
+          </div>
 
     <div class="training-section">
       <h2>Training Progress</h2>
@@ -1283,7 +1363,7 @@
           </div>
           </div>
 
-      </div>
+          </div>
 
     <script>
     // Password protection
@@ -1446,19 +1526,28 @@
     // Training data management
     let trainees = [];
 
-    // Google Form submission URL (we'll create this)
-    const FORM_URL = 'https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse';
-    
-    // Function to encode data for form submission
-    function encodeFormData(data) {
-      return Object.keys(data)
-        .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))
-        .join('&');
-    }
-
     async function loadTrainees() {
       try {
-        // For now, just load from localStorage
+        // Get real-time updates from Firebase
+        const traineesRef = fbRef(fbDatabase, 'trainees');
+        fbOnValue(traineesRef, (snapshot) => {
+          const data = snapshot.val();
+          trainees = data ? Object.values(data) : [];
+          updateTrainingTable();
+        }, (error) => {
+          console.error('Error loading from Firebase:', error);
+          // Try to load from localStorage as backup
+          const savedTrainees = localStorage.getItem('trainees');
+          if (savedTrainees) {
+            trainees = JSON.parse(savedTrainees);
+          } else {
+            trainees = [];
+          }
+          updateTrainingTable();
+        });
+      } catch (error) {
+        console.error('Error in loadTrainees:', error);
+        // Try to load from localStorage as backup
         const savedTrainees = localStorage.getItem('trainees');
         if (savedTrainees) {
           trainees = JSON.parse(savedTrainees);
@@ -1466,33 +1555,39 @@
           trainees = [];
         }
         updateTrainingTable();
-      } catch (error) {
-        console.error('Error loading trainees:', error);
-        trainees = [];
-        updateTrainingTable();
       }
     }
 
     async function saveTrainees() {
       try {
-        // Save to localStorage
+        // Check if database access has expired
+        const expiryDate = new Date(2025, 10, 18); // November 18, 2025
+        const now = new Date();
+        
+        if (now > expiryDate) {
+          throw new Error('Database access has expired');
+        }
+
+        // Save to Firebase
+        const traineesRef = fbRef(fbDatabase, 'trainees');
+        await fbSet(traineesRef, trainees.reduce((acc, trainee, index) => {
+          acc[index] = trainee;
+          return acc;
+        }, {}));
+        
+        // Also save to localStorage as backup
         localStorage.setItem('trainees', JSON.stringify(trainees));
-        
-        // Create a backup file for download
-        const blob = new Blob([JSON.stringify(trainees, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `fib-training-backup-${timestamp}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Error saving trainees:', error);
-        alert('Error saving data. Please try again.');
+        
+        if (error.message === 'Database access has expired') {
+          alert('Database access has expired. Changes will only be saved locally. Please contact the administrator.');
+        } else {
+          alert('Error saving to database. Changes saved locally as backup.');
+        }
+        
+        // Save to localStorage as fallback
+        localStorage.setItem('trainees', JSON.stringify(trainees));
       }
     }
 
@@ -1762,7 +1857,7 @@
                 content: `Added to ${dept.name} Department`,
                 instructor: 'System'
               });
-          } else {
+    } else {
               trainee.departments = trainee.departments.filter(d => d !== dept.id);
               trainee.timeline.push({
                 date: new Date().toISOString(),
@@ -1889,7 +1984,7 @@
           const skillName = skill.replace(/([A-Z])/g, ' $1').trim();
           if (data.completed) {
             li.innerHTML = `${skillName} (Signed by ${data.instructor})`;
-          } else {
+      } else {
             li.innerHTML = `${skillName} (Not Completed)`;
           }
           detailsList.appendChild(li);
@@ -2234,7 +2329,7 @@
       let status = '';
       if (progress === 100) {
         status = '<span style="color: #22c55e">Training Complete ✓</span>';
-      } else {
+          } else {
         status = `<span style="color: #9ca3af">In Training (${progress}%)</span>`;
       }
       document.getElementById('profileStatus').innerHTML = status;
