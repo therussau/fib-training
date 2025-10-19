@@ -434,20 +434,6 @@
     background: rgba(239, 68, 68, 0.3);
   }
 
-  .dept-btn {
-    background: rgba(34, 197, 94, 0.2);
-    color: #22c55e;
-    border: 1px solid rgba(34, 197, 94, 0.4);
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .dept-btn:hover {
-    background: rgba(34, 197, 94, 0.3);
-  }
 
   /* Progress Bar Styles */
   .progress-cell {
@@ -933,22 +919,6 @@
       </div>
     </div>
 
-    <div class="training-section">
-      <h2>Departmental Training</h2>
-      <div class="table-container">
-        <table class="training-table" id="departmentalTable">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th colspan="4">Department Progress</th>
-            </tr>
-          </thead>
-          <tbody id="departmentalTableBody">
-          </tbody>
-        </table>
-      </div>
-    </div>
-
   </div>
 
   <script>
@@ -1088,7 +1058,6 @@
         commendations: [],
         timeline: [],
         skills: {
-          // Basic Skills
           '10Codes': { completed: false, instructor: '', completedDate: null },
           'CaseLaws': { completed: false, instructor: '', completedDate: null },
           'Pursuit': { completed: false, instructor: '', completedDate: null },
@@ -1100,13 +1069,7 @@
           'UseOfForce': { completed: false, instructor: '', completedDate: null },
           'FilingCharges': { completed: false, instructor: '', completedDate: null },
           'Reports': { completed: false, instructor: '', completedDate: null },
-          'Gunfight': { completed: false, instructor: '', completedDate: null },
-          
-          // Departmental Training
-          'Supernatural': { completed: false, instructor: '', completedDate: null },
-          'Analyst': { completed: false, instructor: '', completedDate: null },
-          'Investigator': { completed: false, instructor: '', completedDate: null },
-          'FieldAgent': { completed: false, instructor: '', completedDate: null }
+          'Gunfight': { completed: false, instructor: '', completedDate: null }
         }
       };
 
@@ -1124,58 +1087,6 @@
       }
     }
 
-    function assignDepartment(index) {
-      const trainee = trainees[index];
-      const departments = ['Supernatural', 'Analyst', 'Investigator', 'FieldAgent'];
-      
-      // Create a list of departments to select from
-      const deptList = departments.map(dept => {
-        const isAssigned = trainee.skills[dept].completed;
-        return `${dept}${isAssigned ? ' (Assigned)' : ''}`;
-      }).join('\n');
-      
-      const selectedDept = prompt(`Select a department to assign to ${trainee.name}:\n\n${deptList}\n\nType the department name exactly as shown:`);
-      
-      if (!selectedDept) return;
-      
-      const dept = departments.find(d => d.toLowerCase() === selectedDept.toLowerCase());
-      if (!dept) {
-        alert('Invalid department name. Please try again.');
-        return;
-      }
-      
-      if (trainee.skills[dept].completed) {
-        if (confirm(`${trainee.name} is already assigned to ${dept}. Do you want to remove this assignment?`)) {
-          trainee.skills[dept].completed = false;
-          trainee.skills[dept].instructor = '';
-          trainee.skills[dept].completedDate = null;
-          trainee.division = trainee.division === dept ? '' : trainee.division;
-          trainee.timeline = trainee.timeline.filter(event => 
-            !event.content.includes(`Assigned to ${dept} Division`)
-          );
-          saveTrainees();
-          updateTrainingTable();
-          updateDepartmentalTable();
-        }
-      } else {
-        const instructor = prompt(`Enter instructor name for ${dept} assignment:`);
-        if (instructor) {
-          const now = new Date();
-          trainee.skills[dept].completed = true;
-          trainee.skills[dept].instructor = instructor;
-          trainee.skills[dept].completedDate = now.toISOString();
-          trainee.division = dept;
-          trainee.timeline.push({
-            date: now.toISOString(),
-            content: `Assigned to ${dept} Division`,
-            instructor: instructor
-          });
-          saveTrainees();
-          updateTrainingTable();
-          updateDepartmentalTable();
-        }
-      }
-    }
 
     function updateTrainingTable() {
       const tbody = document.getElementById('trainingTableBody');
@@ -1203,12 +1114,6 @@
         const buttonWrapper = document.createElement('div');
         buttonWrapper.style.display = 'flex';
         buttonWrapper.style.gap = '8px';
-        
-        const deptButton = document.createElement('button');
-        deptButton.className = 'dept-btn';
-        deptButton.textContent = 'Assign Dept';
-        deptButton.onclick = () => assignDepartment(index);
-        buttonWrapper.appendChild(deptButton);
         
         const deleteButton = document.createElement('button');
         deleteButton.className = 'delete-btn';
@@ -1321,66 +1226,6 @@
       }
     }
 
-    function updateDepartmentalTable() {
-      const tbody = document.getElementById('departmentalTableBody');
-      tbody.innerHTML = '';
-
-      trainees.forEach((trainee, index) => {
-        const mainRow = document.createElement('tr');
-        
-        // Name cell
-        const nameCell = document.createElement('td');
-        nameCell.textContent = trainee.name;
-        mainRow.appendChild(nameCell);
-
-        // Departmental Skills
-        const deptSkills = ['Supernatural', 'Analyst', 'Investigator', 'FieldAgent'];
-        
-        // Calculate total progress
-        const totalSkills = deptSkills.length;
-        const completedSkills = deptSkills.filter(skill => trainee.skills[skill].completed).length;
-        const progress = Math.round((completedSkills / totalSkills) * 100);
-
-        // Add progress bar cell
-        const progressCell = document.createElement('td');
-        progressCell.className = 'progress-cell';
-        progressCell.colSpan = deptSkills.length;
-
-        const progressBar = document.createElement('div');
-        progressBar.className = 'progress-bar';
-        progressBar.onclick = () => showDeptSkillsDialog(trainee, deptSkills);
-
-        const progressFill = document.createElement('div');
-        progressFill.className = 'progress-fill';
-        progressFill.style.width = `${progress}%`;
-
-        const progressText = document.createElement('div');
-        progressText.className = 'progress-text';
-        progressText.textContent = `${progress}% Complete`;
-
-        const progressDetails = document.createElement('div');
-        progressDetails.className = 'progress-details';
-
-        const detailsList = document.createElement('ul');
-        deptSkills.forEach(skill => {
-          const data = trainee.skills[skill];
-          const li = document.createElement('li');
-          li.className = data.completed ? 'completed' : 'pending';
-          li.innerHTML = `${skill} Division${data.completed ? ` (${data.instructor})` : ''}`;
-          detailsList.appendChild(li);
-        });
-
-        progressDetails.appendChild(detailsList);
-        progressBar.appendChild(progressFill);
-        progressBar.appendChild(progressText);
-        progressCell.appendChild(progressBar);
-        progressCell.appendChild(progressDetails);
-        mainRow.appendChild(progressCell);
-
-        tbody.appendChild(mainRow);
-      });
-    }
-
     function showProfile(trainee) {
       const modal = document.getElementById('profileModal');
       
@@ -1390,26 +1235,21 @@
       document.getElementById('profileDivision').textContent = trainee.division || 'Not Assigned';
       
       // Calculate training status
-      const basicSkills = [
+      const skills = [
         '10Codes', 'CaseLaws', 'Pursuit', 'Hostage', 'TrafficStop', 
         'Breaching', 'SceneControl', 'COMMS', 'UseOfForce', 
         'FilingCharges', 'Reports', 'Gunfight'
       ];
       
-      const completedBasic = basicSkills.filter(skill => trainee.skills[skill].completed).length;
-      const totalBasic = basicSkills.length;
-      const basicProgress = Math.round((completedBasic / totalBasic) * 100);
-      
-      const deptSkills = ['Supernatural', 'Analyst', 'Investigator', 'FieldAgent'];
-      const completedDept = deptSkills.filter(skill => trainee.skills[skill].completed).length;
+      const completedSkills = skills.filter(skill => trainee.skills[skill].completed).length;
+      const totalSkills = skills.length;
+      const progress = Math.round((completedSkills / totalSkills) * 100);
       
       let status = '';
-      if (basicProgress === 100 && completedDept > 0) {
-        status = '<span style="color: #22c55e">Field Ready ✓</span>';
-      } else if (basicProgress === 100) {
-        status = '<span style="color: #eab308">Basic Training Complete</span>';
+      if (progress === 100) {
+        status = '<span style="color: #22c55e">Training Complete ✓</span>';
       } else {
-        status = `<span style="color: #9ca3af">In Training (${basicProgress}%)</span>`;
+        status = `<span style="color: #9ca3af">In Training (${progress}%)</span>`;
       }
       document.getElementById('profileStatus').innerHTML = status;
       
@@ -1417,7 +1257,7 @@
       const certificates = document.getElementById('profileCertificates');
       certificates.innerHTML = '';
       
-      [...basicSkills, ...deptSkills].forEach(skill => {
+      skills.forEach(skill => {
         if (trainee.skills[skill].completed) {
           const badge = document.createElement('div');
           badge.className = 'certificate-badge';
@@ -1439,7 +1279,7 @@
       // Add skill completions to timeline
       const events = [];
       
-      [...basicSkills, ...deptSkills].forEach(skill => {
+      skills.forEach(skill => {
         const data = trainee.skills[skill];
         if (data.completed && data.completedDate) {
           events.push({
