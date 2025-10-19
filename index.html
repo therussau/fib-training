@@ -1191,15 +1191,6 @@
     <body>
   <img src="https://kappa.lol/3qib3z" alt="FIB Seal" class="fib-seal">
   
-  <!-- Password Dialog -->
-  <div id="passwordDialog" class="password-dialog">
-    <div class="password-dialog-title">ENTER ACCESS CODE</div>
-    <input type="password" id="passwordInput" class="password-input" placeholder="ACCESS CODE" autocomplete="off">
-    <div class="password-dialog-buttons">
-      <button class="password-dialog-btn" onclick="submitPassword()">SUBMIT</button>
-      <button class="password-dialog-btn" onclick="cancelPassword()">CANCEL</button>
-    </div>
-  </div>
 
     <!-- CLASSIFIED ENTRY SCREEN -->
     <div id="classifiedEntry" class="classified-entry">
@@ -1477,49 +1468,46 @@
     });
 
     // Initialize the page on load
-    document.addEventListener('DOMContentLoaded', () => {
-      // Hide main content initially
+    window.onload = () => {
+      // Hide main content
       const mainContent = document.getElementById('mainContent');
-      if (mainContent) {
-        mainContent.style.display = 'none';
-        mainContent.style.opacity = '0';
-      }
+      mainContent.style.display = 'none';
+      mainContent.style.opacity = '0';
 
       // Show classified entry screen
       const classifiedEntry = document.getElementById('classifiedEntry');
-      if (classifiedEntry) {
-        classifiedEntry.style.display = 'flex';
-        classifiedEntry.style.opacity = '1';
-      }
+      classifiedEntry.style.display = 'flex';
+      classifiedEntry.style.opacity = '1';
 
-      // Show password dialog after a short delay
+      // Show password prompt after animation sequence
       setTimeout(() => {
-        const dialog = document.getElementById('passwordDialog');
-        if (dialog) {
-          console.log('Found password dialog, showing it...');
-          dialog.style.display = 'block';
-          dialog.style.opacity = '1';
-          dialog.style.zIndex = '100001';
+        const password = prompt('Enter access code:');
+        if (password === CORRECT_PASSWORD) {
+          document.getElementById('passwordDisplay').textContent = '*'.repeat(password.length);
+          document.getElementById('verificationStatus').textContent = 'SUCCESS';
+          document.getElementById('accessStatus').textContent = 'ACCESS GRANTED';
+          document.getElementById('welcomeMessage').textContent = 'ADMINISTRATOR';
           
-          const input = document.getElementById('passwordInput');
-          if (input) {
-            input.value = '';
-            input.focus();
+          setTimeout(() => {
+            classifiedEntry.style.opacity = '0';
+            mainContent.style.display = 'block';
             
-            // Add enter key listener
-            input.addEventListener('keypress', function(e) {
-              if (e.key === 'Enter') {
-                submitPassword();
-              }
-            });
-          } else {
-            console.error('Password input not found!');
-          }
+            setTimeout(() => {
+              classifiedEntry.style.display = 'none';
+              mainContent.style.opacity = '1';
+            }, 500);
+          }, 1500);
         } else {
-          console.error('Password dialog not found!');
+          document.getElementById('passwordDisplay').textContent = '*'.repeat(password ? password.length : 4);
+          document.getElementById('verificationStatus').textContent = 'FAILED';
+          document.getElementById('accessStatus').textContent = 'ACCESS DENIED';
+          document.getElementById('welcomeMessage').textContent = 'UNAUTHORIZED';
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
         }
-      }, 4000); // Increased delay to ensure animations complete
-    });
+      }, 2000);
+    };
 
     document.addEventListener('DOMContentLoaded', async () => {
       // Initialize toolbar
