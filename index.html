@@ -1469,7 +1469,7 @@
 
     // Initialize the page on load
     window.onload = () => {
-      // Hide main content
+      // Hide main content initially
       const mainContent = document.getElementById('mainContent');
       mainContent.style.display = 'none';
       mainContent.style.opacity = '0';
@@ -1479,33 +1479,22 @@
       classifiedEntry.style.display = 'flex';
       classifiedEntry.style.opacity = '1';
 
-      // Show password prompt after animation sequence
+      // Auto-proceed after animation
       setTimeout(() => {
-        const password = prompt('Enter access code:');
-        if (password === CORRECT_PASSWORD) {
-          document.getElementById('passwordDisplay').textContent = '*'.repeat(password.length);
-          document.getElementById('verificationStatus').textContent = 'SUCCESS';
-          document.getElementById('accessStatus').textContent = 'ACCESS GRANTED';
-          document.getElementById('welcomeMessage').textContent = 'ADMINISTRATOR';
+        document.getElementById('passwordDisplay').textContent = '****';
+        document.getElementById('verificationStatus').textContent = 'SUCCESS';
+        document.getElementById('accessStatus').textContent = 'ACCESS GRANTED';
+        document.getElementById('welcomeMessage').textContent = 'ADMINISTRATOR';
+        
+        setTimeout(() => {
+          classifiedEntry.style.opacity = '0';
+          mainContent.style.display = 'block';
           
           setTimeout(() => {
-            classifiedEntry.style.opacity = '0';
-            mainContent.style.display = 'block';
-            
-            setTimeout(() => {
-              classifiedEntry.style.display = 'none';
-              mainContent.style.opacity = '1';
-            }, 500);
-          }, 1500);
-        } else {
-          document.getElementById('passwordDisplay').textContent = '*'.repeat(password ? password.length : 4);
-          document.getElementById('verificationStatus').textContent = 'FAILED';
-          document.getElementById('accessStatus').textContent = 'ACCESS DENIED';
-          document.getElementById('welcomeMessage').textContent = 'UNAUTHORIZED';
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-        }
+            classifiedEntry.style.display = 'none';
+            mainContent.style.opacity = '1';
+          }, 500);
+        }, 1500);
       }, 2000);
     };
 
