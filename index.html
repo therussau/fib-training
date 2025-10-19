@@ -1276,15 +1276,16 @@
           trainees = [];
         }
 
+        // Create new trainee object
         const trainee = {
-        name: name,
-        handler: handler,
-        joinDate: new Date().toISOString(),
-        departments: [],
-        strikes: [],
-        commendations: [],
-        timeline: [],
-        skills: {
+          name: name,
+          handler: handler,
+          joinDate: new Date().toISOString(),
+          departments: [],
+          strikes: [],
+          commendations: [],
+          timeline: [],
+          skills: {
           '10Codes': { completed: false, instructor: '', completedDate: null },
           'CaseLaws': { completed: false, instructor: '', completedDate: null },
           'Pursuit': { completed: false, instructor: '', completedDate: null },
@@ -1323,38 +1324,56 @@
 
 
     function updateTrainingTable() {
-      console.log('Updating training table...');
-      console.log('Current trainees:', trainees);
-      
-      // Ensure trainees is an array
-      if (!Array.isArray(trainees)) {
-        console.error('Trainees is not an array, resetting...');
-        trainees = [];
-      }
-      
-      const tbody = document.getElementById('trainingTableBody');
-      if (!tbody) {
-        console.error('Training table body not found!');
-        return;
-      }
-      tbody.innerHTML = '';
+      try {
+        console.log('Updating training table...');
+        console.log('Current trainees:', trainees);
+        
+        // Ensure trainees is an array
+        if (!Array.isArray(trainees)) {
+          console.error('Trainees is not an array, resetting...');
+          trainees = [];
+        }
+        
+        const tbody = document.getElementById('trainingTableBody');
+        if (!tbody) {
+          console.error('Training table body not found!');
+          return;
+        }
+        
+        // Clear the table
+        tbody.innerHTML = '';
+        
+        // If no trainees, show empty message
+        if (trainees.length === 0) {
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.colSpan = 4; // Span all columns
+          cell.style.textAlign = 'center';
+          cell.style.padding = '20px';
+          cell.textContent = 'No trainees added yet';
+          row.appendChild(cell);
+          tbody.appendChild(row);
+          return;
+        }
 
+      // Add each trainee to the table
       trainees.forEach((trainee, index) => {
-        // Create a single row for each trainee
-        const mainRow = document.createElement('tr');
-        
-        // Name cell
-        const nameCell = document.createElement('td');
-        const nameWrapper = document.createElement('div');
-        nameWrapper.style.display = 'flex';
-        nameWrapper.style.alignItems = 'center';
-        nameWrapper.style.gap = '8px';
-        
-        const nameText = document.createElement('span');
-        nameText.textContent = trainee.name;
-        nameText.style.cursor = 'pointer';
-        nameText.onclick = () => showProfile(trainee);
-        nameWrapper.appendChild(nameText);
+        try {
+          // Create a single row for each trainee
+          const mainRow = document.createElement('tr');
+          
+          // Name cell
+          const nameCell = document.createElement('td');
+          const nameWrapper = document.createElement('div');
+          nameWrapper.style.display = 'flex';
+          nameWrapper.style.alignItems = 'center';
+          nameWrapper.style.gap = '8px';
+          
+          const nameText = document.createElement('span');
+          nameText.textContent = trainee.name || 'Unknown';
+          nameText.style.cursor = 'pointer';
+          nameText.onclick = () => showProfile(trainee);
+          nameWrapper.appendChild(nameText);
         
         const buttonWrapper = document.createElement('div');
         buttonWrapper.style.display = 'flex';
@@ -1552,8 +1571,14 @@
         progressCell.appendChild(progressDetails);
         mainRow.appendChild(progressCell);
 
-        tbody.appendChild(mainRow);
+          tbody.appendChild(mainRow);
+        } catch (error) {
+          console.error('Error creating row for trainee:', trainee, error);
+        }
       });
+      } catch (error) {
+        console.error('Error updating training table:', error);
+      }
     }
 
     function showSkillsDialog(trainee, skills) {
