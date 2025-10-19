@@ -1482,33 +1482,71 @@
 
     async function loadTrainees() {
       try {
-        // First try to load from localStorage
-        const savedTrainees = localStorage.getItem('trainees');
-        if (savedTrainees) {
-          trainees = JSON.parse(savedTrainees);
-          updateTrainingTable();
-        } else {
-          trainees = [];
-          updateTrainingTable();
-        }
+        // Check if we're running on a proper web server (not file://)
+        const isWebServer = window.location.protocol !== 'file:';
+        console.log('Running on web server:', isWebServer);
 
-        // Then try to connect to Firebase if available
-        if (window.fbRef && window.fbDatabase) {
-          const traineesRef = fbRef(fbDatabase, 'trainees');
-          fbOnValue(traineesRef, (snapshot) => {
-            const data = snapshot.val();
-            trainees = data ? Object.values(data) : [];
-            updateTrainingTable();
-          }, (error) => {
-            console.error('Error loading from Firebase:', error);
-          });
+        if (isWebServer) {
+          // Try to connect to Firebase first when on web server
+          if (window.fbRef && window.fbDatabase) {
+            console.log('Attempting Firebase connection...');
+            const traineesRef = fbRef(fbDatabase, 'trainees');
+            fbOnValue(traineesRef, (snapshot) => {
+              console.log('Firebase data received');
+              const data = snapshot.val();
+              trainees = data ? Object.values(data) : [];
+              // Also save to localStorage as backup
+              localStorage.setItem('trainees', JSON.stringify(trainees));
+              updateTrainingTable();
+            }, (error) => {
+              console.error('Error loading from Firebase:', error);
+              fallbackToLocalStorage();
+            });
+          } else {
+            console.log('Firebase not available, falling back to localStorage');
+            fallbackToLocalStorage();
+          }
+        } else {
+          // When running locally, show instructions
+          console.log('Running locally - database features limited');
+          const notice = document.createElement('div');
+          notice.style.background = 'rgba(255, 204, 0, 0.1)';
+          notice.style.border = '1px solid #fde047';
+          notice.style.borderRadius = '8px';
+          notice.style.padding = '12px';
+          notice.style.marginBottom = '16px';
+          notice.style.color = '#fde047';
+          notice.style.fontSize = '14px';
+          notice.innerHTML = `
+            <strong>⚠️ Local Mode:</strong> You're running this file directly from your computer. 
+            For full functionality including database sync, please access through the web version at 
+            <a href="https://therussau.github.io/fib-training/" style="color: #fde047; text-decoration: underline;">
+              therussau.github.io/fib-training
+            </a>
+          `;
+          
+          const addTraineeForm = document.querySelector('.add-trainee-form');
+          if (addTraineeForm) {
+            addTraineeForm.parentNode.insertBefore(notice, addTraineeForm);
+          }
+          
+          fallbackToLocalStorage();
         }
       } catch (error) {
         console.error('Error in loadTrainees:', error);
-        // Ensure we have at least an empty array
-        trainees = trainees || [];
-        updateTrainingTable();
+        fallbackToLocalStorage();
       }
+    }
+
+    function fallbackToLocalStorage() {
+      console.log('Loading from localStorage');
+      const savedTrainees = localStorage.getItem('trainees');
+      if (savedTrainees) {
+        trainees = JSON.parse(savedTrainees);
+      } else {
+        trainees = [];
+      }
+      updateTrainingTable();
     }
 
     async function saveTrainees() {
