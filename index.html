@@ -1378,7 +1378,7 @@
       }
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const toolbar = document.getElementById('top');
       const collapseBtn = document.getElementById('collapseBtn');
       const collapseText = collapseBtn.querySelector('.collapse-text');
@@ -1392,7 +1392,18 @@
       runClassifiedSequence();
 
       // Load saved trainees
-      loadTrainees();
+      try {
+        // Try to load from Google Sheet first
+        await loadTrainees();
+      } catch (error) {
+        console.error('Failed to load from Google Sheet, trying localStorage:', error);
+        // Fall back to localStorage if Google Sheet fails
+        const savedTrainees = localStorage.getItem('trainees');
+        if (savedTrainees) {
+          trainees = JSON.parse(savedTrainees);
+          updateTrainingTable();
+        }
+      }
 
       // Set up add trainee button
       const addTraineeBtn = document.getElementById('addTraineeBtn');
@@ -1401,6 +1412,9 @@
       } else {
         console.error('Add trainee button not found!');
       }
+
+      // Set up auto-refresh to keep data in sync
+      setInterval(loadTrainees, 30000); // Refresh every 30 seconds
     });
 
     // Training data management
@@ -1413,15 +1427,19 @@
 
     async function loadTrainees() {
       try {
-        const response = await fetch(SHEET_URL);
-        const text = await response.text();
-        const data = JSON.parse(text.substring(47).slice(0, -2));
+        const response = await fetch(UPDATE_URL, {
+          method: 'GET',
+          mode: 'cors'
+        });
         
-        if (data && data.table && data.table.rows) {
-          trainees = data.table.rows.map(row => {
-            if (!row.c[0]) return null; // Skip empty rows
-            return JSON.parse(row.c[0].v);
-          }).filter(Boolean);
+        if (!response.ok) {
+          throw new Error('Failed to load data');
+        }
+
+        const data = await response.json();
+        
+        if (data.status === 'success' && Array.isArray(data.trainees)) {
+          trainees = data.trainees;
         } else {
           trainees = [];
         }
@@ -1429,8 +1447,17 @@
         updateTrainingTable();
       } catch (error) {
         console.error('Error loading trainees:', error);
-        alert('Error loading data from Google Sheet. Please check your connection and try again.');
-        trainees = [];
+        // Try to load from localStorage as backup
+        const savedTrainees = localStorage.getItem('trainees');
+        if (savedTrainees) {
+          try {
+            trainees = JSON.parse(savedTrainees);
+          } catch (e) {
+            trainees = [];
+          }
+        } else {
+          trainees = [];
+        }
         updateTrainingTable();
       }
     }
