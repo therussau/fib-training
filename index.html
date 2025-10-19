@@ -1564,34 +1564,139 @@
 
     async function saveTrainees() {
       try {
-        // Check if database access has expired
-        const expiryDate = new Date(2025, 10, 18); // November 18, 2025
-        const now = new Date();
-        
-        if (now > expiryDate) {
-          throw new Error('Database access has expired');
+        if (!window.fbRef || !window.fbDatabase) {
+          throw new Error('Database not initialized');
         }
 
-        // Save to Firebase
+        // Structure the data properly for Firebase
+        const traineesData = {};
+        trainees.forEach((trainee, index) => {
+          // Generate a unique ID if one doesn't exist
+          const traineeId = trainee.id || `trainee_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          trainee.id = traineeId;
+          
+          // Ensure all required fields exist with default values
+          const structuredTrainee = {
+            id: traineeId,
+            name: trainee.name || '',
+            handler: trainee.handler || '',
+            rank: trainee.rank || 'intern',
+            callsign: trainee.callsign || '',
+            codename: trainee.codename || '',
+            ucAlias: trainee.ucAlias || '',
+            departments: trainee.departments || [],
+            joinDate: trainee.joinDate || new Date().toISOString(),
+            skills: trainee.skills || {
+              '10Codes': { completed: false, instructor: '', completedDate: null },
+              'CaseLaws': { completed: false, instructor: '', completedDate: null },
+              'Pursuit': { completed: false, instructor: '', completedDate: null },
+              'Hostage': { completed: false, instructor: '', completedDate: null },
+              'TrafficStop': { completed: false, instructor: '', completedDate: null },
+              'Breaching': { completed: false, instructor: '', completedDate: null },
+              'SceneControl': { completed: false, instructor: '', completedDate: null },
+              'COMMS': { completed: false, instructor: '', completedDate: null },
+              'UseOfForce': { completed: false, instructor: '', completedDate: null },
+              'FilingCharges': { completed: false, instructor: '', completedDate: null },
+              'Reports': { completed: false, instructor: '', completedDate: null },
+              'Gunfight': { completed: false, instructor: '', completedDate: null }
+            },
+            strikes: trainee.strikes || [],
+            commendations: trainee.commendations || [],
+            timeline: trainee.timeline || []
+          };
+
+          traineesData[traineeId] = structuredTrainee;
+        });
+
+        // Save to Firebase using set() to completely replace the data
         const traineesRef = fbRef(fbDatabase, 'trainees');
-        await fbSet(traineesRef, trainees.reduce((acc, trainee, index) => {
-          acc[index] = trainee;
-          return acc;
-        }, {}));
-        
-        // Also save to localStorage as backup
-        localStorage.setItem('trainees', JSON.stringify(trainees));
+        await fbSet(traineesRef, traineesData);
+
+        console.log('Successfully saved to database');
+        return true;
       } catch (error) {
-        console.error('Error saving trainees:', error);
+        console.error('Error saving to database:', error);
+        showDatabaseError('Failed to save changes. Please try again.');
+        return false;
+      }
+    }
+
+    async function addNewTrainee() {
+      try {
+        const nameInput = document.getElementById('traineeName');
+        const handlerInput = document.getElementById('traineeHandler');
         
-        if (error.message === 'Database access has expired') {
-          alert('Database access has expired. Changes will only be saved locally. Please contact the administrator.');
-        } else {
-          alert('Error saving to database. Changes saved locally as backup.');
+        const name = nameInput.value.trim();
+        const handler = handlerInput.value.trim();
+        
+        if (!name || !handler) {
+          alert('Please enter both trainee name and FIB handler');
+          return;
         }
+
+        // Create new trainee with proper structure
+        const traineeId = `trainee_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const newTrainee = {
+          id: traineeId,
+          name: name,
+          handler: handler,
+          rank: 'intern',
+          callsign: '',
+          codename: '',
+          ucAlias: '',
+          departments: [],
+          joinDate: new Date().toISOString(),
+          skills: {
+            '10Codes': { completed: false, instructor: '', completedDate: null },
+            'CaseLaws': { completed: false, instructor: '', completedDate: null },
+            'Pursuit': { completed: false, instructor: '', completedDate: null },
+            'Hostage': { completed: false, instructor: '', completedDate: null },
+            'TrafficStop': { completed: false, instructor: '', completedDate: null },
+            'Breaching': { completed: false, instructor: '', completedDate: null },
+            'SceneControl': { completed: false, instructor: '', completedDate: null },
+            'COMMS': { completed: false, instructor: '', completedDate: null },
+            'UseOfForce': { completed: false, instructor: '', completedDate: null },
+            'FilingCharges': { completed: false, instructor: '', completedDate: null },
+            'Reports': { completed: false, instructor: '', completedDate: null },
+            'Gunfight': { completed: false, instructor: '', completedDate: null }
+          },
+          strikes: [],
+          commendations: [],
+          timeline: [{
+            date: new Date().toISOString(),
+            content: 'Added to training program',
+            instructor: handler
+          }]
+        };
+
+        // Add to Firebase directly
+        const traineeRef = fbRef(fbDatabase, `trainees/${traineeId}`);
+        await fbSet(traineeRef, newTrainee);
+
+        // Clear inputs
+        nameInput.value = '';
+        handlerInput.value = '';
+
+        // Refresh will happen automatically through the Firebase onValue listener
+        console.log('Successfully added new trainee');
+      } catch (error) {
+        console.error('Error adding trainee:', error);
+        showDatabaseError('Failed to add trainee. Please try again.');
+      }
+    }
+
+    async function deleteTrainee(traineeId) {
+      try {
+        if (!traineeId) return;
         
-        // Save to localStorage as fallback
-        localStorage.setItem('trainees', JSON.stringify(trainees));
+        if (confirm('Are you sure you want to delete this trainee?')) {
+          const traineeRef = fbRef(fbDatabase, `trainees/${traineeId}`);
+          await fbSet(traineeRef, null); // This will delete the trainee
+          console.log('Successfully deleted trainee');
+        }
+      } catch (error) {
+        console.error('Error deleting trainee:', error);
+        showDatabaseError('Failed to delete trainee. Please try again.');
       }
     }
 
