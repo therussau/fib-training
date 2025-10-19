@@ -1384,35 +1384,50 @@
     });
 
     // Initialize the page on load
-    window.onload = () => {
-      // Hide main content initially
+    window.addEventListener('load', () => {
+      console.log('Page loaded, starting animation sequence...');
+      
+      // Get elements
       const mainContent = document.getElementById('mainContent');
+      const classifiedEntry = document.getElementById('classifiedEntry');
+      const passwordDisplay = document.getElementById('passwordDisplay');
+      const verificationStatus = document.getElementById('verificationStatus');
+      const accessStatus = document.getElementById('accessStatus');
+      const welcomeMessage = document.getElementById('welcomeMessage');
+
+      // Initial state
       mainContent.style.display = 'none';
       mainContent.style.opacity = '0';
-
-      // Show classified entry screen
-      const classifiedEntry = document.getElementById('classifiedEntry');
       classifiedEntry.style.display = 'flex';
       classifiedEntry.style.opacity = '1';
 
-      // Auto-proceed after animation
+      // Animation sequence
       setTimeout(() => {
-        document.getElementById('passwordDisplay').textContent = '****';
-        document.getElementById('verificationStatus').textContent = 'SUCCESS';
-        document.getElementById('accessStatus').textContent = 'ACCESS GRANTED';
-        document.getElementById('welcomeMessage').textContent = 'ADMINISTRATOR';
-        
+        console.log('Step 1: Showing verification...');
+        passwordDisplay.textContent = '****';
+        verificationStatus.textContent = 'SUCCESS';
+        accessStatus.textContent = 'ACCESS GRANTED';
+        welcomeMessage.textContent = 'ADMINISTRATOR';
+
         setTimeout(() => {
+          console.log('Step 2: Transitioning screens...');
+          classifiedEntry.style.transition = 'opacity 0.5s ease';
           classifiedEntry.style.opacity = '0';
-          mainContent.style.display = 'block';
           
           setTimeout(() => {
+            console.log('Step 3: Showing main content...');
             classifiedEntry.style.display = 'none';
+            mainContent.style.display = 'block';
+            
+            // Force a reflow
+            mainContent.offsetHeight;
+            
+            mainContent.style.transition = 'opacity 0.5s ease';
             mainContent.style.opacity = '1';
           }, 500);
-        }, 1500);
-      }, 2000);
-    };
+        }, 2000);
+      }, 4000);
+    });
 
     document.addEventListener('DOMContentLoaded', async () => {
       // Initialize toolbar
