@@ -820,7 +820,11 @@
 
     async function fetchRosterData() {
       try {
+        // Test Google Sheets access first
+        console.log('Testing Google Sheets access...');
+        
         const SHEET_URL = 'https://docs.google.com/spreadsheets/d/18YPIHPxr5ki5JUFpvEEAxx0sCOKKdgrsGaeO_1rOOMU/export?format=csv&gid=1266358180';
+        console.log('URL:', SHEET_URL);
         
         const response = await fetch(SHEET_URL, {
           method: 'GET',
@@ -830,18 +834,26 @@
           }
         });
         
+        console.log('Response status:', response.status);
+        console.log('Response headers:', [...response.headers.entries()]);
+        
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
         }
         
         const csvText = await response.text();
+        console.log('CSV response length:', csvText.length);
+        console.log('CSV response preview:', csvText.substring(0, 500) + '...');
+        
+        // Parse CSV data
         const lines = csvText.split('\n').filter(line => line.trim() !== '');
+        console.log('CSV lines found:', lines.length);
         
         if (lines.length === 0) {
           throw new Error('No data found in CSV');
         }
         
-        // Find the header row
+        // Find the actual header row (skip title rows)
         let headerRowIndex = 0;
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i].toLowerCase();
@@ -852,8 +864,11 @@
         }
         
         const headers = lines[headerRowIndex].split(',').map(h => h.trim().replace(/"/g, ''));
+        console.log('Headers found at row', headerRowIndex, ':', headers);
+        
+        // Use data starting from the row after headers
         const dataLines = lines.slice(headerRowIndex + 1);
-          
+        
         rosterData = dataLines.map(line => {
           const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
           const row = {};
@@ -862,21 +877,54 @@
           });
           return row;
         }).filter(row => {
+          // Check if any field has content (not just empty strings)
           return Object.values(row).some(value => value && value.trim() !== '');
         });
-          
+        
+        console.log('Parsed roster data count:', rosterData.length);
+        console.log('Sample parsed data:', rosterData.slice(0, 3));
+        console.log('First agent keys:', Object.keys(rosterData[0] || {}));
+        console.log('First agent data:', rosterData[0]);
+        
         updateRosterDisplay();
-          
+        
       } catch (error) {
         console.error('Error fetching roster:', error);
+        console.log('Error details:', error.message);
+        console.log('Using fallback data...');
         
-        // Fallback data
+        // Fallback to static data if fetch fails
         rosterData = [
           { name: 'John Doe', rank: 'Special Agent', status: 'Active', badge: '001', discord: 'johndoe#1234' },
           { name: 'Jane Smith', rank: 'Senior Agent', status: 'Active', badge: '002', discord: 'janesmith#5678' },
           { name: 'Mike Johnson', rank: 'Agent', status: 'Active', badge: '003', discord: 'mikejohnson#9012' }
         ];
         updateRosterDisplay();
+      }
+    }
+
+    // Function to test Google Sheets access
+    async function testGoogleSheetsAccess() {
+      const SHEET_URL = 'https://docs.google.com/spreadsheets/d/18YPIHPxr5ki5JUFpvEEAxx0sCOKKdgrsGaeO_1rOOMU/export?format=csv&gid=1266358180';
+      
+      console.log('Testing Google Sheets access...');
+      console.log('URL:', SHEET_URL);
+      
+      try {
+        const response = await fetch(SHEET_URL);
+        console.log('Test response status:', response.status);
+        console.log('Test response headers:', [...response.headers.entries()]);
+        
+        if (response.ok) {
+          const text = await response.text();
+          console.log('Test CSV preview:', text.substring(0, 200));
+          console.log('✅ Google Sheets is accessible');
+        } else {
+          console.log('❌ Google Sheets returned error:', response.status, response.statusText);
+        }
+      } catch (error) {
+        console.log('❌ Google Sheets access failed:', error.message);
+        console.log('This might be due to CORS restrictions or network issues');
       }
     }
 
@@ -1032,6 +1080,25 @@
     function startRosterUpdates() {
       fetchRosterData();
       rosterUpdateInterval = setInterval(fetchRosterData, 5 * 60 * 1000);
+    }
+
+    // Function to start live updates
+    function startRosterUpdates() {
+      // Test access first
+      testGoogleSheetsAccess();
+      
+      // Then start normal updates
+      fetchRosterData();
+      
+      // Update every 5 minutes
+      rosterUpdateInterval = setInterval(fetchRosterData, 5 * 60 * 1000);
+    }
+
+    // Function to stop live updates
+    function stopRosterUpdates() {
+      if (rosterUpdateInterval) {
+        clearInterval(rosterUpdateInterval);
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
