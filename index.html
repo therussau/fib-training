@@ -1437,10 +1437,6 @@
       document.getElementById('welcomeMessage').textContent = 'UNAUTHORIZED';
     }
 
-    function runClassifiedSequence() {
-      setTimeout(showPasswordDialog, 2000);
-    }
-
     // Handle toolbar collapse/expand
 
     // Close dropdowns and edit fields when clicking outside
@@ -1463,6 +1459,17 @@
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
+      // Hide main content initially
+      const mainContent = document.getElementById('mainContent');
+      mainContent.style.display = 'none';
+      mainContent.style.opacity = '0';
+
+      // Show classified entry screen
+      const classifiedEntry = document.getElementById('classifiedEntry');
+      classifiedEntry.style.display = 'flex';
+      classifiedEntry.style.opacity = '1';
+
+      // Initialize toolbar
       const toolbar = document.getElementById('top');
       const collapseBtn = document.getElementById('collapseBtn');
       const collapseText = collapseBtn.querySelector('.collapse-text');
@@ -1473,7 +1480,7 @@
       });
 
       // Start the classified sequence
-      runClassifiedSequence();
+      setTimeout(showPasswordDialog, 2000);
 
       // Load saved trainees
       try {
