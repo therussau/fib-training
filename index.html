@@ -1406,40 +1406,56 @@
     // Training data management
     let trainees = [];
 
-    function loadTrainees() {
+    const SHEET_ID = '1FRyCpGBCh5xQJV-w2XkqIlpLlwFHqP18NjUDodu-4ko';
+    const SHEET_NAME = 'Sheet1';
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+    const UPDATE_URL = `https://script.google.com/macros/s/AKfycbwPpHP-mSAGpDZ0u08EPWngA3yCNlFBVVUUpOpCEftkLpMoM3FUognHi2MA5nMqQTDK/exec`;
+
+    async function loadTrainees() {
       try {
-        // Get the embedded data from the HTML
-        const dataScript = document.getElementById('traineeData');
-        if (dataScript && dataScript.textContent) {
-          trainees = JSON.parse(dataScript.textContent);
+        const response = await fetch(SHEET_URL);
+        const text = await response.text();
+        const data = JSON.parse(text.substring(47).slice(0, -2));
+        
+        if (data && data.table && data.table.rows) {
+          trainees = data.table.rows.map(row => {
+            if (!row.c[0]) return null; // Skip empty rows
+            return JSON.parse(row.c[0].v);
+          }).filter(Boolean);
         } else {
           trainees = [];
         }
+        
         updateTrainingTable();
       } catch (error) {
         console.error('Error loading trainees:', error);
+        alert('Error loading data from Google Sheet. Please check your connection and try again.');
         trainees = [];
         updateTrainingTable();
       }
     }
 
-    function saveTrainees() {
+    async function saveTrainees() {
       try {
-        // Create or update the script tag with the latest data
-        let dataScript = document.getElementById('traineeData');
-        if (!dataScript) {
-          dataScript = document.createElement('script');
-          dataScript.id = 'traineeData';
-          dataScript.type = 'application/json';
-          document.body.appendChild(dataScript);
-        }
-        dataScript.textContent = JSON.stringify(trainees);
+        const response = await fetch(UPDATE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ trainees: trainees })
+        });
 
-        // Also save to localStorage as backup
+        if (!response.ok) {
+          throw new Error('Failed to save data');
+        }
+
+        // Save to localStorage as backup
         localStorage.setItem('trainees', JSON.stringify(trainees));
       } catch (error) {
         console.error('Error saving trainees:', error);
-        alert('There was an error saving the data. Please try again.');
+        alert('Error saving to Google Sheet. Changes will only be saved locally.');
+        // Save to localStorage as fallback
+        localStorage.setItem('trainees', JSON.stringify(trainees));
       }
     }
 
