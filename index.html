@@ -1263,10 +1263,14 @@
         <table class="training-table" id="trainingTable">
           <thead>
             <tr>
+              <th>#</th>
+              <th>Rank</th>
               <th>Name</th>
               <th>Department</th>
+              <th>Code Name</th>
+              <th>Alias</th>
               <th>FIB Handler</th>
-              <th colspan="12">Training Progress</th>
+              <th>Training Progress</th>
             </tr>
           </thead>
           <tbody id="trainingTableBody">
@@ -1404,9 +1408,10 @@
 
     function loadTrainees() {
       try {
-        const savedTrainees = localStorage.getItem('trainees');
-        if (savedTrainees) {
-          trainees = JSON.parse(savedTrainees);
+        // Get the embedded data from the HTML
+        const dataScript = document.getElementById('traineeData');
+        if (dataScript && dataScript.textContent) {
+          trainees = JSON.parse(dataScript.textContent);
         } else {
           trainees = [];
         }
@@ -1419,7 +1424,23 @@
     }
 
     function saveTrainees() {
-      localStorage.setItem('trainees', JSON.stringify(trainees));
+      try {
+        // Create or update the script tag with the latest data
+        let dataScript = document.getElementById('traineeData');
+        if (!dataScript) {
+          dataScript = document.createElement('script');
+          dataScript.id = 'traineeData';
+          dataScript.type = 'application/json';
+          document.body.appendChild(dataScript);
+        }
+        dataScript.textContent = JSON.stringify(trainees);
+
+        // Also save to localStorage as backup
+        localStorage.setItem('trainees', JSON.stringify(trainees));
+      } catch (error) {
+        console.error('Error saving trainees:', error);
+        alert('There was an error saving the data. Please try again.');
+      }
     }
 
     function addNewTrainee() {
@@ -2348,5 +2369,8 @@
       }
     }
     </script>
+
+    <!-- Embedded trainee data -->
+    <script id="traineeData" type="application/json">[]</script>
     </body>
     </html>
