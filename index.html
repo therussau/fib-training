@@ -1383,9 +1383,9 @@
       }
     });
 
-    // Initialize the page on load
-    window.addEventListener('load', () => {
-      console.log('Page loaded, starting animation sequence...');
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM ready, starting animation sequence...');
       
       // Get elements
       const mainContent = document.getElementById('mainContent');
@@ -1401,32 +1401,64 @@
       classifiedEntry.style.display = 'flex';
       classifiedEntry.style.opacity = '1';
 
-      // Animation sequence
-      setTimeout(() => {
-        console.log('Step 1: Showing verification...');
-        passwordDisplay.textContent = '****';
-        verificationStatus.textContent = 'SUCCESS';
-        accessStatus.textContent = 'ACCESS GRANTED';
-        welcomeMessage.textContent = 'ADMINISTRATOR';
-
+      // Fallback timer in case images don't load
+      let animationStarted = false;
+      const startAnimation = () => {
+        if (animationStarted) return;
+        animationStarted = true;
+        
+        console.log('Starting animation sequence...');
         setTimeout(() => {
-          console.log('Step 2: Transitioning screens...');
-          classifiedEntry.style.transition = 'opacity 0.5s ease';
-          classifiedEntry.style.opacity = '0';
-          
+          console.log('Step 1: Showing verification...');
+          passwordDisplay.textContent = '****';
+          verificationStatus.textContent = 'SUCCESS';
+          accessStatus.textContent = 'ACCESS GRANTED';
+          welcomeMessage.textContent = 'ADMINISTRATOR';
+
           setTimeout(() => {
-            console.log('Step 3: Showing main content...');
-            classifiedEntry.style.display = 'none';
-            mainContent.style.display = 'block';
+            console.log('Step 2: Transitioning screens...');
+            classifiedEntry.style.transition = 'opacity 0.5s ease';
+            classifiedEntry.style.opacity = '0';
             
-            // Force a reflow
-            mainContent.offsetHeight;
-            
-            mainContent.style.transition = 'opacity 0.5s ease';
-            mainContent.style.opacity = '1';
-          }, 500);
+            setTimeout(() => {
+              console.log('Step 3: Showing main content...');
+              classifiedEntry.style.display = 'none';
+              mainContent.style.display = 'block';
+              
+              requestAnimationFrame(() => {
+                mainContent.style.transition = 'opacity 0.5s ease';
+                mainContent.style.opacity = '1';
+              });
+            }, 500);
+          }, 2000);
         }, 2000);
-      }, 4000);
+      };
+
+      // Start animation when images load or after timeout
+      const images = document.querySelectorAll('img');
+      let loadedImages = 0;
+      
+      images.forEach(img => {
+        if (img.complete) {
+          loadedImages++;
+        } else {
+          img.addEventListener('load', () => {
+            loadedImages++;
+            if (loadedImages === images.length) {
+              startAnimation();
+            }
+          });
+          img.addEventListener('error', () => {
+            loadedImages++;
+            if (loadedImages === images.length) {
+              startAnimation();
+            }
+          });
+        }
+      });
+
+      // Fallback timer - start animation after 5 seconds regardless
+      setTimeout(startAnimation, 5000);
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
