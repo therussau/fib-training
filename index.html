@@ -1224,9 +1224,17 @@
     let trainees = [];
 
     function loadTrainees() {
-      const savedTrainees = localStorage.getItem('trainees');
-      if (savedTrainees) {
-        trainees = JSON.parse(savedTrainees);
+      try {
+        const savedTrainees = localStorage.getItem('trainees');
+        if (savedTrainees) {
+          trainees = JSON.parse(savedTrainees);
+        } else {
+          trainees = [];
+        }
+        updateTrainingTable();
+      } catch (error) {
+        console.error('Error loading trainees:', error);
+        trainees = [];
         updateTrainingTable();
       }
     }
@@ -1236,23 +1244,39 @@
     }
 
     function addNewTrainee() {
-      console.log('Adding new trainee...');
-      const nameInput = document.getElementById('traineeName');
-      const name = nameInput.value.trim();
-      console.log('Name:', name);
-      
-      if (!name) {
-        alert('Please enter a trainee name');
-        return;
-      }
+      try {
+        console.log('Adding new trainee...');
+        const nameInput = document.getElementById('traineeName');
+        if (!nameInput) {
+          console.error('Name input not found!');
+          return;
+        }
+        const name = nameInput.value.trim();
+        console.log('Name:', name);
+        
+        if (!name) {
+          alert('Please enter a trainee name');
+          return;
+        }
 
-      const handler = document.getElementById('traineeHandler').value.trim();
-      if (!handler) {
-        alert('Please enter an FIB handler');
-        return;
-      }
+        const handlerInput = document.getElementById('traineeHandler');
+        if (!handlerInput) {
+          console.error('Handler input not found!');
+          return;
+        }
+        const handler = handlerInput.value.trim();
+        if (!handler) {
+          alert('Please enter an FIB handler');
+          return;
+        }
 
-      const trainee = {
+        // Ensure trainees array exists
+        if (!Array.isArray(trainees)) {
+          console.log('Initializing trainees array...');
+          trainees = [];
+        }
+
+        const trainee = {
         name: name,
         handler: handler,
         joinDate: new Date().toISOString(),
@@ -1276,11 +1300,17 @@
         }
       };
 
-      trainees.push(trainee);
-      saveTrainees();
-      updateTrainingTable();
-      nameInput.value = '';
-      document.getElementById('traineeHandler').value = '';
+        console.log('Created trainee:', trainee);
+        trainees.push(trainee);
+        console.log('Updated trainees array:', trainees);
+        saveTrainees();
+        updateTrainingTable();
+        nameInput.value = '';
+        handlerInput.value = '';
+      } catch (error) {
+        console.error('Error adding trainee:', error);
+        alert('There was an error adding the trainee. Please try again.');
+      }
     }
 
     function deleteTrainee(index) {
@@ -1295,6 +1325,13 @@
     function updateTrainingTable() {
       console.log('Updating training table...');
       console.log('Current trainees:', trainees);
+      
+      // Ensure trainees is an array
+      if (!Array.isArray(trainees)) {
+        console.error('Trainees is not an array, resetting...');
+        trainees = [];
+      }
+      
       const tbody = document.getElementById('trainingTableBody');
       if (!tbody) {
         console.error('Training table body not found!');
