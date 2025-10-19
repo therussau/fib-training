@@ -72,10 +72,31 @@
 
       // Initialize Firebase immediately and then start the app
       document.addEventListener('DOMContentLoaded', async () => {
+        // Disable interface until we confirm connection
+        disableInterface();
+        
         const initialized = await initializeFirebase();
         if (!initialized) {
           showDatabaseError('Database initialization failed. Please refresh the page.');
+          return;
         }
+
+        // Set up connection monitoring
+        const connectedRef = fbRef(fbDatabase, '.info/connected');
+        fbOnValue(connectedRef, (snap) => {
+          const connected = snap.val() === true;
+          console.log('Connection state:', connected ? 'connected' : 'disconnected');
+          
+          if (connected) {
+            enableInterface();
+            loadTrainees(); // Load data when connected
+          } else {
+            showDatabaseError('Lost connection to database. Please check your internet connection.');
+          }
+        }, (error) => {
+          console.error('Connection monitoring error:', error);
+          showDatabaseError('Unable to monitor database connection. Please refresh the page.');
+        });
       });
     </script>
     <style>
@@ -1518,6 +1539,7 @@
     }
 
     function showDatabaseError(message) {
+      // Create error notice
       const notice = document.createElement('div');
       notice.style.background = 'rgba(239, 68, 68, 0.1)';
       notice.style.border = '1px solid #ef4444';
@@ -1551,8 +1573,50 @@
         addTraineeForm.parentNode.insertBefore(notice, addTraineeForm);
       }
 
-      // Disable the form
-      const inputs = document.querySelectorAll('input, button');
+      // Disable form inputs
+      disableInterface();
+      
+      // Update connection status
+      const statusDot = document.querySelector('.status-dot');
+      const statusText = document.querySelector('.status-text');
+      if (statusDot) statusDot.classList.remove('connected');
+      if (statusText) {
+        statusText.textContent = 'Disconnected';
+        statusText.style.color = '#ef4444';
+      }
+    }
+
+    function enableInterface() {
+      // Enable all inputs except collapse button
+      const inputs = document.querySelectorAll('input, button, select');
+      inputs.forEach(input => {
+        if (input.id !== 'collapseBtn') {
+          input.disabled = false;
+        }
+      });
+
+      // Update connection status
+      const statusDot = document.querySelector('.status-dot');
+      const statusText = document.querySelector('.status-text');
+      if (statusDot) statusDot.classList.add('connected');
+      if (statusText) {
+        statusText.textContent = 'Connected';
+        statusText.style.color = '#22c55e';
+      }
+
+      // Remove any error messages
+      const addTraineeForm = document.querySelector('.add-trainee-form');
+      if (addTraineeForm) {
+        const existingNotice = addTraineeForm.previousElementSibling;
+        if (existingNotice && existingNotice.style.background.includes('rgba')) {
+          existingNotice.remove();
+        }
+      }
+    }
+
+    function disableInterface() {
+      // Disable all inputs except collapse button
+      const inputs = document.querySelectorAll('input, button, select');
       inputs.forEach(input => {
         if (input.id !== 'collapseBtn') {
           input.disabled = true;
