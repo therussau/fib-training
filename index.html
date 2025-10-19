@@ -1193,11 +1193,11 @@
   
   <!-- Password Dialog -->
   <div id="passwordDialog" class="password-dialog">
-    <div class="password-dialog-title">Enter Access Password</div>
-    <input type="password" id="passwordInput" class="password-input" placeholder="Password">
+    <div class="password-dialog-title">ENTER ACCESS CODE</div>
+    <input type="password" id="passwordInput" class="password-input" placeholder="ACCESS CODE" autocomplete="off">
     <div class="password-dialog-buttons">
-      <button class="password-dialog-btn" onclick="submitPassword()">Submit</button>
-      <button class="password-dialog-btn" onclick="cancelPassword()">Cancel</button>
+      <button class="password-dialog-btn" onclick="submitPassword()">SUBMIT</button>
+      <button class="password-dialog-btn" onclick="cancelPassword()">CANCEL</button>
     </div>
   </div>
 
@@ -1477,21 +1477,26 @@
     });
 
     // Initialize the page on load
-    window.onload = () => {
-      // Hide main content
+    document.addEventListener('DOMContentLoaded', () => {
+      // Hide main content initially
       const mainContent = document.getElementById('mainContent');
-      mainContent.style.display = 'none';
-      mainContent.style.opacity = '0';
+      if (mainContent) {
+        mainContent.style.display = 'none';
+        mainContent.style.opacity = '0';
+      }
 
       // Show classified entry screen
       const classifiedEntry = document.getElementById('classifiedEntry');
-      classifiedEntry.style.display = 'flex';
-      classifiedEntry.style.opacity = '1';
+      if (classifiedEntry) {
+        classifiedEntry.style.display = 'flex';
+        classifiedEntry.style.opacity = '1';
+      }
 
-      // Show password dialog after animation sequence
+      // Show password dialog after a short delay
       setTimeout(() => {
         const dialog = document.getElementById('passwordDialog');
         if (dialog) {
+          console.log('Found password dialog, showing it...');
           dialog.style.display = 'block';
           dialog.style.opacity = '1';
           dialog.style.zIndex = '100001';
@@ -1500,12 +1505,21 @@
           if (input) {
             input.value = '';
             input.focus();
+            
+            // Add enter key listener
+            input.addEventListener('keypress', function(e) {
+              if (e.key === 'Enter') {
+                submitPassword();
+              }
+            });
+          } else {
+            console.error('Password input not found!');
           }
         } else {
           console.error('Password dialog not found!');
         }
-      }, 2000);
-    };
+      }, 4000); // Increased delay to ensure animations complete
+    });
 
     document.addEventListener('DOMContentLoaded', async () => {
       // Initialize toolbar
