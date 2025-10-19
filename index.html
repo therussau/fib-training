@@ -1211,14 +1211,6 @@
       // Load saved trainees
       loadTrainees();
 
-      // Test Google Sheets access first
-      testGoogleSheetsAccess();
-      
-      // Then start normal updates
-      fetchRosterData();
-      
-      // Update every 5 minutes
-      rosterUpdateInterval = setInterval(fetchRosterData, 5 * 60 * 1000);
     });
 
     // Training data management
@@ -1229,7 +1221,6 @@
       if (savedTrainees) {
         trainees = JSON.parse(savedTrainees);
         updateTrainingTable();
-        updateDepartmentalTable();
       }
     }
 
@@ -1280,6 +1271,7 @@
       saveTrainees();
       updateTrainingTable();
       nameInput.value = '';
+      document.getElementById('traineeHandler').value = '';
     }
 
     function deleteTrainee(index) {
@@ -1536,9 +1528,8 @@
           trainee.timeline = trainee.timeline.filter(event => 
             !event.content.includes(`Completed ${skill.replace(/([A-Z])/g, ' $1').trim()} Training`)
           );
-          saveTrainees();
-          updateTrainingTable();
-          updateDepartmentalTable();
+              saveTrainees();
+              updateTrainingTable();
         }
       } else {
         const instructor = prompt(`Enter instructor name for ${skill.replace(/([A-Z])/g, ' $1').trim()}:`);
@@ -1552,9 +1543,8 @@
             content: `Completed ${skill.replace(/([A-Z])/g, ' $1').trim()} Training`,
             instructor: instructor
           });
-          saveTrainees();
-          updateTrainingTable();
-          updateDepartmentalTable();
+              saveTrainees();
+              updateTrainingTable();
         }
       }
     }
@@ -1684,18 +1674,16 @@
         if (confirm(`Remove ${skill} Division assignment?`)) {
           trainee.skills[skill].completed = false;
           trainee.skills[skill].instructor = '';
-          saveTrainees();
-          updateTrainingTable();
-          updateDepartmentalTable();
+              saveTrainees();
+              updateTrainingTable();
         }
       } else {
         const instructor = prompt(`Enter instructor name for ${skill} Division assignment:`);
         if (instructor) {
           trainee.skills[skill].completed = true;
           trainee.skills[skill].instructor = instructor;
-          saveTrainees();
-          updateTrainingTable();
-          updateDepartmentalTable();
+              saveTrainees();
+              updateTrainingTable();
         }
       }
     }
