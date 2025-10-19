@@ -1,14 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>FIB Training Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0b0b0f; color:#fff; }
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body { margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0b0b0f; color:#fff; }
 
   .wrap { max-width: 1400px; margin: 0 auto; padding: 24px; }
 
@@ -220,21 +220,21 @@
 
 
   /* Classified Entry Screen */
-  .classified-entry {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: linear-gradient(135deg, #000000 0%, #0a0a0a 25%, #000000 50%, #0a0a0a 75%, #000000 100%);
-    background-size: 400% 400%;
-    animation: classifiedBg 8s ease-in-out infinite;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
+      .classified-entry {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #000000 0%, #0a0a0a 25%, #000000 50%, #0a0a0a 75%, #000000 100%);
+        background-size: 400% 400%;
+        animation: classifiedBg 8s ease-in-out infinite;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
 
   .classified-watermark {
     position: absolute;
@@ -321,118 +321,118 @@
     background: rgba(0, 255, 0, 0.2);
   }
 
-  @keyframes classifiedBg {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+      @keyframes classifiedBg {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+      }
+
+    .classified-content {
+      text-align: center;
+      max-width: 800px;
+      padding: 40px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #00ff00;
+      border-radius: 10px;
+      box-shadow: 
+        0 0 30px rgba(0, 255, 0, 0.3),
+        inset 0 0 30px rgba(0, 255, 0, 0.1);
+      animation: classifiedGlow 2s ease-in-out infinite alternate;
+      position: relative;
+      z-index: 2;
+    }
+
+      @keyframes classifiedGlow {
+        0% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.3), inset 0 0 30px rgba(0, 255, 0, 0.1); }
+        100% { box-shadow: 0 0 50px rgba(0, 255, 0, 0.5), inset 0 0 50px rgba(0, 255, 0, 0.2); }
   }
 
-  .classified-content {
-    text-align: center;
-    max-width: 800px;
-    padding: 40px;
-    background: rgba(0, 0, 0, 0.8);
-    border: 2px solid #00ff00;
-    border-radius: 10px;
-    box-shadow: 
-      0 0 30px rgba(0, 255, 0, 0.3),
-      inset 0 0 30px rgba(0, 255, 0, 0.1);
-    animation: classifiedGlow 2s ease-in-out infinite alternate;
-    position: relative;
-    z-index: 2;
+    .classified-logo {
+      font-size: 72px;
+      font-weight: 900;
+      color: #00ff00;
+      text-shadow: 0 0 20px #00ff00;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      letter-spacing: 8px;
+      margin-bottom: 20px;
+      animation: logoPulse 1.5s ease-in-out infinite;
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes logoPulse {
+      0%, 100% { transform: scale(1); text-shadow: 0 0 20px #00ff00; }
+      50% { transform: scale(1.05); text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00; }
   }
 
-  @keyframes classifiedGlow {
-    0% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.3), inset 0 0 30px rgba(0, 255, 0, 0.1); }
-    100% { box-shadow: 0 0 50px rgba(0, 255, 0, 0.5), inset 0 0 50px rgba(0, 255, 0, 0.2); }
-  }
+      .classified-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 3px;
+        margin-bottom: 10px;
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      }
 
-  .classified-logo {
-    font-size: 72px;
-    font-weight: 900;
-    color: #00ff00;
-    text-shadow: 0 0 20px #00ff00;
-    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
-    letter-spacing: 8px;
-    margin-bottom: 20px;
-    animation: logoPulse 1.5s ease-in-out infinite;
-    position: relative;
-    z-index: 2;
-  }
+      .classified-subtitle {
+        font-size: 16px;
+        color: #00ff00;
+        letter-spacing: 2px;
+        margin-bottom: 40px;
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      }
 
-  @keyframes logoPulse {
-    0%, 100% { transform: scale(1); text-shadow: 0 0 20px #00ff00; }
-    50% { transform: scale(1.05); text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00; }
-  }
+      .access-sequence {
+        text-align: left;
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+        font-size: 14px;
+        line-height: 1.8;
+      }
 
-  .classified-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: 3px;
-    margin-bottom: 10px;
-    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
-  }
+      .access-line {
+        margin-bottom: 8px;
+        opacity: 0;
+        animation: fadeInLine 0.5s ease-in forwards;
+      }
 
-  .classified-subtitle {
-    font-size: 16px;
-    color: #00ff00;
-    letter-spacing: 2px;
-    margin-bottom: 40px;
-    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
-  }
+      .access-line:nth-child(1) { animation-delay: 0.5s; }
+      .access-line:nth-child(2) { animation-delay: 1s; }
+      .access-line:nth-child(3) { animation-delay: 1.5s; }
+      .access-line:nth-child(4) { animation-delay: 2s; }
+      .access-line:nth-child(5) { animation-delay: 3.5s; }
+      .access-line:nth-child(6) { animation-delay: 4s; }
+      .access-line:nth-child(7) { animation-delay: 4.5s; }
 
-  .access-sequence {
-    text-align: left;
-    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
-    font-size: 14px;
-    line-height: 1.8;
-  }
+      @keyframes fadeInLine {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
 
-  .access-line {
-    margin-bottom: 8px;
-    opacity: 0;
-    animation: fadeInLine 0.5s ease-in forwards;
-  }
+      .prompt {
+        color: #00ff00;
+        font-weight: 600;
+      }
 
-  .access-line:nth-child(1) { animation-delay: 0.5s; }
-  .access-line:nth-child(2) { animation-delay: 1s; }
-  .access-line:nth-child(3) { animation-delay: 1.5s; }
-  .access-line:nth-child(4) { animation-delay: 2s; }
-  .access-line:nth-child(5) { animation-delay: 3.5s; }
-  .access-line:nth-child(6) { animation-delay: 4s; }
-  .access-line:nth-child(7) { animation-delay: 4.5s; }
+      .password-display {
+        color: #ff0000;
+        font-weight: 700;
+        letter-spacing: 2px;
+      }
 
-  @keyframes fadeInLine {
-    from { opacity: 0; transform: translateX(-20px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
+      .verification-status {
+        color: #00ff00;
+        font-weight: 700;
+      }
 
-  .prompt {
-    color: #00ff00;
-    font-weight: 600;
-  }
+      .access-status {
+        color: #00ff00;
+        font-weight: 700;
+      }
 
-  .password-display {
-    color: #ff0000;
-    font-weight: 700;
-    letter-spacing: 2px;
-  }
-
-  .verification-status {
-    color: #00ff00;
-    font-weight: 700;
-  }
-
-  .access-status {
-    color: #00ff00;
-    font-weight: 700;
-  }
-
-  .welcome-message {
-    color: #00ff00;
-    font-weight: 700;
-    font-size: 16px;
-  }
+      .welcome-message {
+        color: #00ff00;
+        font-weight: 700;
+        font-size: 16px;
+      }
 
   .delete-btn {
     background: rgba(239, 68, 68, 0.2);
@@ -493,7 +493,7 @@
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+      border-radius: 8px;
     padding: 12px;
     min-width: 200px;
     z-index: 100;
@@ -556,21 +556,21 @@
 
   /* Clearance Tags */
   .clearance-tag {
-    display: inline-block;
+      display: inline-block;
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
+      font-weight: 600;
+      text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-left: 8px;
   }
 
   .clearance-tag.classified {
-    background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.4);
-  }
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
 
   .clearance-tag.restricted {
     background: rgba(234, 179, 8, 0.2);
@@ -604,7 +604,7 @@
 
   /* Profile Modal */
   .profile-modal {
-    display: none;
+      display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -616,7 +616,7 @@
   }
 
   .profile-content {
-    position: absolute;
+      position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -632,7 +632,7 @@
 
   .profile-header {
     display: flex;
-    align-items: center;
+      align-items: center;
     gap: 16px;
     margin-bottom: 24px;
     padding-bottom: 16px;
@@ -643,7 +643,7 @@
     flex: 1;
     font-size: 24px;
     font-weight: 700;
-    color: #fde047;
+      color: #fde047;
   }
 
   .profile-close {
@@ -677,7 +677,7 @@
   .profile-section-title {
     font-size: 14px;
     font-weight: 600;
-    color: #fde047;
+        color: #fde047; 
     margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -753,7 +753,7 @@
 
   .timeline-instructor {
     font-size: 12px;
-    color: #fde047;
+        color: #fde047;
     margin-top: 4px;
   }
 
@@ -766,12 +766,12 @@
   .certificate-badge {
     background: rgba(253, 224, 71, 0.1);
     border: 1px solid rgba(253, 224, 71, 0.2);
-    border-radius: 8px;
+        border-radius: 8px;
     padding: 8px 12px;
     font-size: 12px;
-    color: #fde047;
-    display: flex;
-    align-items: center;
+        color: #fde047;
+        display: flex;
+        align-items: center;
     gap: 8px;
   }
 
@@ -781,7 +781,7 @@
   }
 
   .profile-strikes {
-    color: #ef4444;
+        color: #ef4444;
   }
 
   .profile-commendations {
@@ -799,9 +799,9 @@
     color: #22c55e;
     border: 1px solid rgba(34, 197, 94, 0.4);
     border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 11px;
-    cursor: pointer;
+        padding: 4px 8px;
+        font-size: 11px;
+        cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
@@ -954,9 +954,9 @@
     opacity: 0;
     transition: opacity 0.5s ease;
   }
-</style>
-</head>
-<body>
+    </style>
+    </head>
+    <body>
   <img src="https://kappa.lol/3qib3z" alt="FIB Seal" class="fib-seal">
   
   <!-- Password Dialog -->
@@ -969,43 +969,43 @@
     </div>
   </div>
 
-  <!-- CLASSIFIED ENTRY SCREEN -->
-  <div id="classifiedEntry" class="classified-entry">
+    <!-- CLASSIFIED ENTRY SCREEN -->
+    <div id="classifiedEntry" class="classified-entry">
     <img src="https://kappa.lol/3qib3z" alt="FIB Logo" class="classified-watermark">
-    <div class="classified-content">
-      <div class="classified-logo">FIB</div>
-      <div class="classified-title">FEDERAL INVESTIGATION BUREAU</div>
+      <div class="classified-content">
+          <div class="classified-logo">FIB</div>
+          <div class="classified-title">FEDERAL INVESTIGATION BUREAU</div>
       <div class="classified-subtitle">TRAINING DATABASE ACCESS</div>
-      
-      <div class="access-sequence">
-        <div class="access-line">
-          <span class="prompt">> ACCESSING SECURE SERVER...</span>
-        </div>
-        <div class="access-line">
-          <span class="prompt">> ENCRYPTION: AES-256</span>
-        </div>
-        <div class="access-line">
-          <span class="prompt">> AUTHENTICATING USER...</span>
-        </div>
-        <div class="access-line">
-          <span class="prompt">> PASSWORD: </span>
-          <span id="passwordDisplay" class="password-display"></span>
-        </div>
-        <div class="access-line">
-          <span class="prompt">> VERIFICATION: </span>
-          <span id="verificationStatus" class="verification-status"></span>
-        </div>
-        <div class="access-line">
-          <span class="prompt">> STATUS: </span>
-          <span id="accessStatus" class="access-status"></span>
-        </div>
-        <div class="access-line">
-          <span class="prompt">> WELCOME: </span>
-          <span id="welcomeMessage" class="welcome-message"></span>
+          
+          <div class="access-sequence">
+            <div class="access-line">
+              <span class="prompt">> ACCESSING SECURE SERVER...</span>
+            </div>
+            <div class="access-line">
+              <span class="prompt">> ENCRYPTION: AES-256</span>
+            </div>
+            <div class="access-line">
+              <span class="prompt">> AUTHENTICATING USER...</span>
+            </div>
+            <div class="access-line">
+              <span class="prompt">> PASSWORD: </span>
+              <span id="passwordDisplay" class="password-display"></span>
+            </div>
+            <div class="access-line">
+              <span class="prompt">> VERIFICATION: </span>
+              <span id="verificationStatus" class="verification-status"></span>
+            </div>
+            <div class="access-line">
+              <span class="prompt">> STATUS: </span>
+              <span id="accessStatus" class="access-status"></span>
+            </div>
+            <div class="access-line">
+              <span class="prompt">> WELCOME: </span>
+              <span id="welcomeMessage" class="welcome-message"></span>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
   <!-- Profile Modal -->
   <div id="profileModal" class="profile-modal">
@@ -1013,7 +1013,7 @@
       <div class="profile-header">
         <div class="profile-name" id="profileName"></div>
         <button class="profile-close" onclick="closeProfile()">&times;</button>
-      </div>
+          </div>
       <div class="profile-grid">
         <div class="profile-section">
           <div class="profile-section-title">Basic Information</div>
@@ -1031,7 +1031,7 @@
               <span class="profile-info-value" id="profileStatus"></span>
             </li>
           </ul>
-        </div>
+          </div>
         <div class="profile-section">
           <div class="profile-section-title">Certificates</div>
           <div class="profile-certificates" id="profileCertificates"></div>
@@ -1048,15 +1048,15 @@
               <span class="profile-info-value profile-commendations" id="profileCommendations">None</span>
             </li>
           </ul>
+          </div>
         </div>
-      </div>
       <div class="profile-section">
         <div class="profile-section-title">Training Timeline</div>
         <ul class="profile-timeline" id="profileTimeline"></ul>
-      </div>
-    </div>
-  </div>
-
+        </div>
+        </div>
+        </div>
+        
   <div class="wrap" id="mainContent">
     <div id="top" class="toolbar">
       <button id="collapseBtn" class="collapse-btn" type="button">
@@ -1065,8 +1065,8 @@
       <div class="brand">
         <img src="https://kappa.lol/3qib3z" alt="FIB Logo" />
         <h1>FIB TRAINING TRACKER</h1>
-      </div>
     </div>
+  </div>
 
     <div class="add-trainee-form">
       <div class="form-title">Add New Trainee</div>
@@ -1080,7 +1080,7 @@
           <input type="text" id="traineeHandler" placeholder="Enter FIB handler">
         </div>
       </div>
-      <button type="button" class="save-btn" onclick="addNewTrainee()">Add Trainee</button>
+      <button type="button" class="save-btn" id="addTraineeBtn">Add Trainee</button>
     </div>
 
     <div class="training-section">
@@ -1098,12 +1098,12 @@
           <tbody id="trainingTableBody">
           </tbody>
         </table>
+          </div>
+          </div>
+
       </div>
-    </div>
 
-  </div>
-
-  <script>
+    <script>
     // Password protection
     const CORRECT_PASSWORD = 'FIB2024'; // Change this to your desired password
     
@@ -1153,7 +1153,7 @@
             mainContent.style.opacity = '1';
           }, 500);
         }, 1500);
-      } else {
+    } else {
         passwordAttempts++;
         document.getElementById('verificationStatus').textContent = 'FAILED';
         document.getElementById('accessStatus').textContent = 'ACCESS DENIED';
@@ -1211,6 +1211,13 @@
       // Load saved trainees
       loadTrainees();
 
+      // Set up add trainee button
+      const addTraineeBtn = document.getElementById('addTraineeBtn');
+      if (addTraineeBtn) {
+        addTraineeBtn.addEventListener('click', addNewTrainee);
+      } else {
+        console.error('Add trainee button not found!');
+      }
     });
 
     // Training data management
@@ -1229,8 +1236,10 @@
     }
 
     function addNewTrainee() {
+      console.log('Adding new trainee...');
       const nameInput = document.getElementById('traineeName');
       const name = nameInput.value.trim();
+      console.log('Name:', name);
       
       if (!name) {
         alert('Please enter a trainee name');
@@ -1284,7 +1293,13 @@
 
 
     function updateTrainingTable() {
+      console.log('Updating training table...');
+      console.log('Current trainees:', trainees);
       const tbody = document.getElementById('trainingTableBody');
+      if (!tbody) {
+        console.error('Training table body not found!');
+        return;
+      }
       tbody.innerHTML = '';
 
       trainees.forEach((trainee, index) => {
@@ -1360,7 +1375,7 @@
                 content: `Added to ${dept.name} Department`,
                 instructor: 'System'
               });
-            } else {
+          } else {
               trainee.departments = trainee.departments.filter(d => d !== dept.id);
               trainee.timeline.push({
                 date: new Date().toISOString(),
@@ -1531,7 +1546,7 @@
               saveTrainees();
               updateTrainingTable();
         }
-      } else {
+          } else {
         const instructor = prompt(`Enter instructor name for ${skill.replace(/([A-Z])/g, ' $1').trim()}:`);
         if (instructor) {
           const now = new Date();
@@ -1687,6 +1702,6 @@
         }
       }
     }
-  </script>
-</body>
-</html>
+    </script>
+    </body>
+    </html>
