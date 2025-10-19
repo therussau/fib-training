@@ -198,181 +198,11 @@
     text-align: center;
   }
 
+
   .instructor-row:hover {
     background: none !important;
   }
 
-  /* Roster Styles */
-  .roster-section {
-    background: rgba(255,255,255,.03);
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 24px;
-  }
-
-  .roster-section h2 {
-    margin: 0 0 16px;
-    font-size: 18px;
-    font-weight: 700;
-    color: #fde047;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
-    text-shadow: 0 0 8px rgba(253,224,71,.2);
-    border-bottom: 2px solid #fde047;
-    padding-bottom: 8px;
-  }
-
-  .roster-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: rgba(0,0,0,.3);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .roster-table th {
-    background: #fde047;
-    color: #000;
-    padding: 12px 8px;
-    font-weight: 700;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
-  }
-
-  .roster-table td {
-    padding: 10px 8px;
-    border-bottom: 1px solid rgba(255,255,255,.1);
-    font-size: 13px;
-    color: #fff;
-  }
-
-  .roster-table tr:hover {
-    background: rgba(253,224,71,.1);
-  }
-
-  .badge-cell {
-    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
-    font-weight: 700;
-    color: #fde047;
-    text-align: center;
-    min-width: 80px;
-  }
-
-  .name-cell {
-    font-weight: 600;
-    color: #fff;
-  }
-
-  .rank-cell {
-    font-weight: 500;
-    color: #d1d5db;
-    text-transform: uppercase;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-  }
-
-  .discord-cell {
-    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
-    font-size: 11px;
-    color: #9ca3af;
-  }
-
-  .add-trainee-btn {
-    background: rgba(34, 197, 94, 0.2);
-    color: #22c55e;
-    border: 1px solid rgba(34, 197, 94, 0.4);
-    border-radius: 4px;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: all 0.2s ease;
-    margin-left: 8px;
-  }
-
-  .add-trainee-btn:hover {
-    background: rgba(34, 197, 94, 0.3);
-  }
-
-  .name-cell-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .name-cell {
-    font-weight: 600;
-    color: #fff;
-  }
-
-  .name-cell .add-trainee-btn {
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
-
-  .roster-table tr:hover .add-trainee-btn {
-    opacity: 1;
-  }
-
-  .division-cell {
-    font-weight: 500;
-    color: #d1d5db;
-    text-transform: uppercase;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-  }
-
-  .status-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .status-badge.active {
-    background: rgba(34, 197, 94, 0.2);
-    color: #22c55e;
-    border: 1px solid rgba(34, 197, 94, 0.4);
-  }
-
-  .status-badge.inactive {
-    background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.4);
-  }
-
-  .roster-empty {
-    text-align: center;
-    color: rgba(255,255,255,.6);
-    font-style: italic;
-    padding: 20px;
-  }
-
-  .roster-loading {
-    text-align: center;
-    color: #fde047;
-    padding: 20px;
-    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
-    font-size: 14px;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-  }
 
   /* Classified Entry Screen */
   .classified-entry {
@@ -604,6 +434,359 @@
     background: rgba(239, 68, 68, 0.3);
   }
 
+  .dept-btn {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .dept-btn:hover {
+    background: rgba(34, 197, 94, 0.3);
+  }
+
+  /* Progress Bar Styles */
+  .progress-cell {
+    padding: 8px !important;
+    position: relative;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e 0%, #4ade80 100%);
+    transition: width 0.3s ease;
+    border-radius: 10px;
+  }
+
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+  }
+
+  .progress-details {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    min-width: 200px;
+    z-index: 100;
+    font-size: 12px;
+    color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .progress-cell:hover .progress-details {
+    display: block;
+  }
+
+  .progress-details ul {
+    margin: 0;
+    padding: 0 0 0 16px;
+    list-style-type: none;
+  }
+
+  .progress-details li {
+    margin: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .progress-details li::before {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: -16px;
+  }
+
+  .progress-details li.completed::before {
+    background: #22c55e;
+  }
+
+  .progress-details li.pending::before {
+    background: #ef4444;
+  }
+
+  /* Division Icons */
+  .division-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    opacity: 0.8;
+  }
+
+  /* Animated Header */
+  @keyframes headerPulse {
+    0%, 100% { text-shadow: 0 0 10px rgba(253,224,71,.3); }
+    50% { text-shadow: 0 0 20px rgba(253,224,71,.5); }
+  }
+
+  h1 {
+    animation: headerPulse 2s ease-in-out infinite !important;
+  }
+
+  /* Clearance Tags */
+  .clearance-tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-left: 8px;
+  }
+
+  .clearance-tag.classified {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+  }
+
+  .clearance-tag.restricted {
+    background: rgba(234, 179, 8, 0.2);
+    color: #eab308;
+    border: 1px solid rgba(234, 179, 8, 0.4);
+  }
+
+  .clearance-tag.public {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+  }
+
+  /* Rotating Seal */
+  .fib-seal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 400px;
+    opacity: 0.03;
+    pointer-events: none;
+    animation: rotateSeal 60s linear infinite;
+  }
+
+  @keyframes rotateSeal {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  /* Profile Modal */
+  .profile-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+  }
+
+  .profile-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    background: #0b0b0f;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 24px;
+    overflow-y: auto;
+  }
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .profile-name {
+    flex: 1;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fde047;
+  }
+
+  .profile-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+
+  .profile-close:hover {
+    opacity: 1;
+  }
+
+  .profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .profile-section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .profile-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fde047;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .profile-info-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .profile-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .profile-info-item:last-child {
+    border-bottom: none;
+  }
+
+  .profile-info-label {
+    font-size: 12px;
+    color: #9ca3af;
+    min-width: 120px;
+  }
+
+  .profile-info-value {
+    font-size: 13px;
+    color: #fff;
+  }
+
+  .profile-timeline {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-left: 24px;
+    padding-bottom: 16px;
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .timeline-item:last-child {
+    border-left: none;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fde047;
+  }
+
+  .timeline-date {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-bottom: 4px;
+  }
+
+  .timeline-content {
+    font-size: 13px;
+    color: #fff;
+  }
+
+  .timeline-instructor {
+    font-size: 12px;
+    color: #fde047;
+    margin-top: 4px;
+  }
+
+  .profile-certificates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .certificate-badge {
+    background: rgba(253, 224, 71, 0.1);
+    border: 1px solid rgba(253, 224, 71, 0.2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #fde047;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .certificate-badge::before {
+    content: '✓';
+    font-weight: bold;
+  }
+
+  .profile-strikes {
+    color: #ef4444;
+  }
+
+  .profile-commendations {
+    color: #22c55e;
+  }
+
   #mainContent {
     display: none;
     opacity: 0;
@@ -612,6 +795,8 @@
 </style>
 </head>
 <body>
+  <img src="https://kappa.lol/3qib3z" alt="FIB Seal" class="fib-seal">
+  
   <!-- Password Dialog -->
   <div id="passwordDialog" class="password-dialog">
     <div class="password-dialog-title">Enter Access Password</div>
@@ -660,6 +845,56 @@
     </div>
   </div>
 
+  <!-- Profile Modal -->
+  <div id="profileModal" class="profile-modal">
+    <div class="profile-content">
+      <div class="profile-header">
+        <div class="profile-name" id="profileName"></div>
+        <button class="profile-close" onclick="closeProfile()">&times;</button>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-section">
+          <div class="profile-section-title">Basic Information</div>
+          <ul class="profile-info-list">
+            <li class="profile-info-item">
+              <span class="profile-info-label">Date Joined:</span>
+              <span class="profile-info-value" id="profileJoinDate"></span>
+            </li>
+            <li class="profile-info-item">
+              <span class="profile-info-label">Division:</span>
+              <span class="profile-info-value" id="profileDivision"></span>
+            </li>
+            <li class="profile-info-item">
+              <span class="profile-info-label">Training Status:</span>
+              <span class="profile-info-value" id="profileStatus"></span>
+            </li>
+          </ul>
+        </div>
+        <div class="profile-section">
+          <div class="profile-section-title">Certificates</div>
+          <div class="profile-certificates" id="profileCertificates"></div>
+        </div>
+        <div class="profile-section">
+          <div class="profile-section-title">Record</div>
+          <ul class="profile-info-list">
+            <li class="profile-info-item">
+              <span class="profile-info-label">Strikes:</span>
+              <span class="profile-info-value profile-strikes" id="profileStrikes">None</span>
+            </li>
+            <li class="profile-info-item">
+              <span class="profile-info-label">Commendations:</span>
+              <span class="profile-info-value profile-commendations" id="profileCommendations">None</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-title">Training Timeline</div>
+        <ul class="profile-timeline" id="profileTimeline"></ul>
+      </div>
+    </div>
+  </div>
+
   <div class="wrap" id="mainContent">
     <div id="top" class="toolbar">
       <button id="collapseBtn" class="collapse-btn" type="button">
@@ -689,18 +924,7 @@
           <thead>
             <tr>
               <th>Name</th>
-              <th>10 Codes</th>
-              <th>Case Laws</th>
-              <th>Pursuit</th>
-              <th>Hostage</th>
-              <th>Traffic Stop</th>
-              <th>Breaching</th>
-              <th>Scene Control</th>
-              <th>COMMS</th>
-              <th>Use of Force</th>
-              <th>Filing Charges</th>
-              <th>Reports</th>
-              <th>Gunfight</th>
+              <th colspan="12">Training Progress</th>
             </tr>
           </thead>
           <tbody id="trainingTableBody">
@@ -716,10 +940,7 @@
           <thead>
             <tr>
               <th>Name</th>
-              <th>Supernatural Division</th>
-              <th>Analyst Division</th>
-              <th>Investigator Division</th>
-              <th>Field Agent Division</th>
+              <th colspan="4">Department Progress</th>
             </tr>
           </thead>
           <tbody id="departmentalTableBody">
@@ -728,13 +949,6 @@
       </div>
     </div>
 
-    <!-- AGENT ROSTER -->
-    <div id="sec-roster" class="roster-section">
-      <h2>AGENT ROSTER</h2>
-      <div id="rosterContainer">
-        <div class="roster-loading">Loading roster data...</div>
-      </div>
-    </div>
   </div>
 
   <script>
@@ -814,292 +1028,6 @@
     }
 
     // Handle toolbar collapse/expand
-    // Roster Integration
-    let rosterData = [];
-    let rosterUpdateInterval;
-
-    async function fetchRosterData() {
-      try {
-        // Test Google Sheets access first
-        console.log('Testing Google Sheets access...');
-        
-        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/18YPIHPxr5ki5JUFpvEEAxx0sCOKKdgrsGaeO_1rOOMU/export?format=csv&gid=1266358180';
-        console.log('URL:', SHEET_URL);
-        
-        const response = await fetch(SHEET_URL, {
-          method: 'GET',
-          mode: 'cors',
-          headers: {
-            'Accept': 'text/csv',
-          }
-        });
-        
-        console.log('Response status:', response.status);
-        console.log('Response headers:', [...response.headers.entries()]);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-        }
-        
-        const csvText = await response.text();
-        console.log('CSV response length:', csvText.length);
-        console.log('CSV response preview:', csvText.substring(0, 500) + '...');
-        
-        // Parse CSV data
-        const lines = csvText.split('\n').filter(line => line.trim() !== '');
-        console.log('CSV lines found:', lines.length);
-        
-        if (lines.length === 0) {
-          throw new Error('No data found in CSV');
-        }
-        
-        // Find the actual header row (skip title rows)
-        let headerRowIndex = 0;
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i].toLowerCase();
-          if (line.includes('badge') && line.includes('name') && line.includes('rank')) {
-            headerRowIndex = i;
-            break;
-          }
-        }
-        
-        const headers = lines[headerRowIndex].split(',').map(h => h.trim().replace(/"/g, ''));
-        console.log('Headers found at row', headerRowIndex, ':', headers);
-        
-        // Use data starting from the row after headers
-        const dataLines = lines.slice(headerRowIndex + 1);
-        
-        rosterData = dataLines.map(line => {
-          const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-          const row = {};
-          headers.forEach((header, index) => {
-            row[header.toLowerCase()] = values[index] || '';
-          });
-          return row;
-        }).filter(row => {
-          // Check if any field has content (not just empty strings)
-          return Object.values(row).some(value => value && value.trim() !== '');
-        });
-        
-        console.log('Parsed roster data count:', rosterData.length);
-        console.log('Sample parsed data:', rosterData.slice(0, 3));
-        console.log('First agent keys:', Object.keys(rosterData[0] || {}));
-        console.log('First agent data:', rosterData[0]);
-        
-        updateRosterDisplay();
-        
-      } catch (error) {
-        console.error('Error fetching roster:', error);
-        console.log('Error details:', error.message);
-        console.log('Using fallback data...');
-        
-        // Fallback to static data if fetch fails
-        rosterData = [
-          { name: 'John Doe', rank: 'Special Agent', status: 'Active', badge: '001', discord: 'johndoe#1234' },
-          { name: 'Jane Smith', rank: 'Senior Agent', status: 'Active', badge: '002', discord: 'janesmith#5678' },
-          { name: 'Mike Johnson', rank: 'Agent', status: 'Active', badge: '003', discord: 'mikejohnson#9012' }
-        ];
-        updateRosterDisplay();
-      }
-    }
-
-    // Function to test Google Sheets access
-    async function testGoogleSheetsAccess() {
-      const SHEET_URL = 'https://docs.google.com/spreadsheets/d/18YPIHPxr5ki5JUFpvEEAxx0sCOKKdgrsGaeO_1rOOMU/export?format=csv&gid=1266358180';
-      
-      console.log('Testing Google Sheets access...');
-      console.log('URL:', SHEET_URL);
-      
-      try {
-        const response = await fetch(SHEET_URL);
-        console.log('Test response status:', response.status);
-        console.log('Test response headers:', [...response.headers.entries()]);
-        
-        if (response.ok) {
-          const text = await response.text();
-          console.log('Test CSV preview:', text.substring(0, 200));
-          console.log('✅ Google Sheets is accessible');
-        } else {
-          console.log('❌ Google Sheets returned error:', response.status, response.statusText);
-        }
-      } catch (error) {
-        console.log('❌ Google Sheets access failed:', error.message);
-        console.log('This might be due to CORS restrictions or network issues');
-      }
-    }
-
-    function updateRosterDisplay() {
-      const rosterContainer = document.getElementById('rosterContainer');
-      if (!rosterContainer) return;
-      
-      rosterContainer.innerHTML = '';
-      
-      if (rosterData.length === 0) {
-        rosterContainer.innerHTML = '<div class="roster-empty">No roster data available</div>';
-        return;
-      }
-      
-      const cleanData = rosterData
-        .filter(agent => {
-          const name = agent.name || '';
-          const rank = agent.rank || '';
-          return name.trim() !== '' && name.trim() !== 'N/A' && rank.trim() !== '';
-        })
-        .map(agent => ({
-          badge: agent['badge#'] || 'N/A',
-          name: agent.name || 'Unknown Agent',
-          rank: agent.rank || 'Agent',
-          status: agent.status || 'Active',
-          discord: agent['discord id'] || 'N/A',
-          division: agent.division || '',
-        }))
-        .sort((a, b) => {
-          const rankOrder = {
-            'Director': 1,
-            'Deputy Director': 2,
-            'Special Agent': 3,
-            'Agent': 4,
-            'Recruit': 5,
-            'Trainee': 6
-          };
-          const aOrder = rankOrder[a.rank] || 99;
-          const bOrder = rankOrder[b.rank] || 99;
-          if (aOrder !== bOrder) return aOrder - bOrder;
-          return a.name.localeCompare(b.name);
-        });
-      
-      const table = document.createElement('table');
-      table.className = 'roster-table';
-      
-      const thead = document.createElement('thead');
-      thead.innerHTML = `
-        <tr>
-          <th>Badge #</th>
-          <th>Agent Name</th>
-          <th>Division</th>
-          <th>Rank</th>
-          <th>Status</th>
-          <th>Discord</th>
-        </tr>
-      `;
-      table.appendChild(thead);
-      
-      const tbody = document.createElement('tbody');
-      cleanData.forEach(agent => {
-        const row = document.createElement('tr');
-        
-        const badgeTd = document.createElement('td');
-        badgeTd.textContent = agent.badge;
-        badgeTd.className = 'badge-cell';
-        row.appendChild(badgeTd);
-        
-        const nameTd = document.createElement('td');
-        nameTd.className = 'name-cell';
-        
-        const nameWrapper = document.createElement('div');
-        nameWrapper.className = 'name-cell-wrapper';
-        
-        const nameText = document.createElement('span');
-        nameText.textContent = agent.name;
-        nameWrapper.appendChild(nameText);
-        
-        const addButton = document.createElement('button');
-        addButton.className = 'add-trainee-btn';
-        addButton.textContent = '+';
-        addButton.title = 'Add as trainee';
-        addButton.onclick = () => {
-          const existingTrainee = trainees.find(t => t.name === agent.name);
-          if (existingTrainee) {
-            alert('This agent is already in the trainee list.');
-            return;
-          }
-          
-          const trainee = {
-            name: agent.name,
-            skills: {
-              // Basic Skills
-              '10Codes': { completed: false, instructor: '' },
-              'CaseLaws': { completed: false, instructor: '' },
-              'Pursuit': { completed: false, instructor: '' },
-              'Hostage': { completed: false, instructor: '' },
-              'TrafficStop': { completed: false, instructor: '' },
-              'Breaching': { completed: false, instructor: '' },
-              'SceneControl': { completed: false, instructor: '' },
-              'COMMS': { completed: false, instructor: '' },
-              'UseOfForce': { completed: false, instructor: '' },
-              'FilingCharges': { completed: false, instructor: '' },
-              'Reports': { completed: false, instructor: '' },
-              'Gunfight': { completed: false, instructor: '' },
-              
-              // Departmental Training
-              'Supernatural': { completed: false, instructor: '' },
-              'Analyst': { completed: false, instructor: '' },
-              'Investigator': { completed: false, instructor: '' },
-              'FieldAgent': { completed: false, instructor: '' }
-            }
-          };
-          
-          trainees.push(trainee);
-          saveTrainees();
-          updateTrainingTable();
-          updateDepartmentalTable();
-          alert(`Added ${agent.name} to trainees list.`);
-        };
-        nameWrapper.appendChild(addButton);
-        
-        nameTd.appendChild(nameWrapper);
-        row.appendChild(nameTd);
-        
-        const divisionTd = document.createElement('td');
-        divisionTd.textContent = agent.division;
-        divisionTd.className = 'division-cell';
-        row.appendChild(divisionTd);
-        
-        const rankTd = document.createElement('td');
-        rankTd.textContent = agent.rank;
-        rankTd.className = 'rank-cell';
-        row.appendChild(rankTd);
-        
-        const statusTd = document.createElement('td');
-        const statusClass = agent.status.toLowerCase().includes('active') ? 'active' : 'inactive';
-        statusTd.innerHTML = `<span class="status-badge ${statusClass}">${agent.status}</span>`;
-        row.appendChild(statusTd);
-        
-        const discordTd = document.createElement('td');
-        discordTd.textContent = agent.discord;
-        discordTd.className = 'discord-cell';
-        row.appendChild(discordTd);
-        
-        tbody.appendChild(row);
-      });
-      
-      table.appendChild(tbody);
-      rosterContainer.appendChild(table);
-    }
-
-    function startRosterUpdates() {
-      fetchRosterData();
-      rosterUpdateInterval = setInterval(fetchRosterData, 5 * 60 * 1000);
-    }
-
-    // Function to start live updates
-    function startRosterUpdates() {
-      // Test access first
-      testGoogleSheetsAccess();
-      
-      // Then start normal updates
-      fetchRosterData();
-      
-      // Update every 5 minutes
-      rosterUpdateInterval = setInterval(fetchRosterData, 5 * 60 * 1000);
-    }
-
-    // Function to stop live updates
-    function stopRosterUpdates() {
-      if (rosterUpdateInterval) {
-        clearInterval(rosterUpdateInterval);
-      }
-    }
 
     document.addEventListener('DOMContentLoaded', () => {
       const toolbar = document.getElementById('top');
@@ -1117,8 +1045,14 @@
       // Load saved trainees
       loadTrainees();
 
-      // Start roster updates
-      startRosterUpdates();
+      // Test Google Sheets access first
+      testGoogleSheetsAccess();
+      
+      // Then start normal updates
+      fetchRosterData();
+      
+      // Update every 5 minutes
+      rosterUpdateInterval = setInterval(fetchRosterData, 5 * 60 * 1000);
     });
 
     // Training data management
@@ -1148,26 +1082,31 @@
 
       const trainee = {
         name: name,
+        joinDate: new Date().toISOString(),
+        division: '',
+        strikes: [],
+        commendations: [],
+        timeline: [],
         skills: {
           // Basic Skills
-          '10Codes': { completed: false, instructor: '' },
-          'CaseLaws': { completed: false, instructor: '' },
-          'Pursuit': { completed: false, instructor: '' },
-          'Hostage': { completed: false, instructor: '' },
-          'TrafficStop': { completed: false, instructor: '' },
-          'Breaching': { completed: false, instructor: '' },
-          'SceneControl': { completed: false, instructor: '' },
-          'COMMS': { completed: false, instructor: '' },
-          'UseOfForce': { completed: false, instructor: '' },
-          'FilingCharges': { completed: false, instructor: '' },
-          'Reports': { completed: false, instructor: '' },
-          'Gunfight': { completed: false, instructor: '' },
+          '10Codes': { completed: false, instructor: '', completedDate: null },
+          'CaseLaws': { completed: false, instructor: '', completedDate: null },
+          'Pursuit': { completed: false, instructor: '', completedDate: null },
+          'Hostage': { completed: false, instructor: '', completedDate: null },
+          'TrafficStop': { completed: false, instructor: '', completedDate: null },
+          'Breaching': { completed: false, instructor: '', completedDate: null },
+          'SceneControl': { completed: false, instructor: '', completedDate: null },
+          'COMMS': { completed: false, instructor: '', completedDate: null },
+          'UseOfForce': { completed: false, instructor: '', completedDate: null },
+          'FilingCharges': { completed: false, instructor: '', completedDate: null },
+          'Reports': { completed: false, instructor: '', completedDate: null },
+          'Gunfight': { completed: false, instructor: '', completedDate: null },
           
           // Departmental Training
-          'Supernatural': { completed: false, instructor: '' },
-          'Analyst': { completed: false, instructor: '' },
-          'Investigator': { completed: false, instructor: '' },
-          'FieldAgent': { completed: false, instructor: '' }
+          'Supernatural': { completed: false, instructor: '', completedDate: null },
+          'Analyst': { completed: false, instructor: '', completedDate: null },
+          'Investigator': { completed: false, instructor: '', completedDate: null },
+          'FieldAgent': { completed: false, instructor: '', completedDate: null }
         }
       };
 
@@ -1182,6 +1121,59 @@
         trainees.splice(index, 1);
         saveTrainees();
         updateTrainingTable();
+      }
+    }
+
+    function assignDepartment(index) {
+      const trainee = trainees[index];
+      const departments = ['Supernatural', 'Analyst', 'Investigator', 'FieldAgent'];
+      
+      // Create a list of departments to select from
+      const deptList = departments.map(dept => {
+        const isAssigned = trainee.skills[dept].completed;
+        return `${dept}${isAssigned ? ' (Assigned)' : ''}`;
+      }).join('\n');
+      
+      const selectedDept = prompt(`Select a department to assign to ${trainee.name}:\n\n${deptList}\n\nType the department name exactly as shown:`);
+      
+      if (!selectedDept) return;
+      
+      const dept = departments.find(d => d.toLowerCase() === selectedDept.toLowerCase());
+      if (!dept) {
+        alert('Invalid department name. Please try again.');
+        return;
+      }
+      
+      if (trainee.skills[dept].completed) {
+        if (confirm(`${trainee.name} is already assigned to ${dept}. Do you want to remove this assignment?`)) {
+          trainee.skills[dept].completed = false;
+          trainee.skills[dept].instructor = '';
+          trainee.skills[dept].completedDate = null;
+          trainee.division = trainee.division === dept ? '' : trainee.division;
+          trainee.timeline = trainee.timeline.filter(event => 
+            !event.content.includes(`Assigned to ${dept} Division`)
+          );
+          saveTrainees();
+          updateTrainingTable();
+          updateDepartmentalTable();
+        }
+      } else {
+        const instructor = prompt(`Enter instructor name for ${dept} assignment:`);
+        if (instructor) {
+          const now = new Date();
+          trainee.skills[dept].completed = true;
+          trainee.skills[dept].instructor = instructor;
+          trainee.skills[dept].completedDate = now.toISOString();
+          trainee.division = dept;
+          trainee.timeline.push({
+            date: now.toISOString(),
+            content: `Assigned to ${dept} Division`,
+            instructor: instructor
+          });
+          saveTrainees();
+          updateTrainingTable();
+          updateDepartmentalTable();
+        }
       }
     }
 
@@ -1204,13 +1196,27 @@
         
         const nameText = document.createElement('span');
         nameText.textContent = trainee.name;
+        nameText.style.cursor = 'pointer';
+        nameText.onclick = () => showProfile(trainee);
         nameWrapper.appendChild(nameText);
+        
+        const buttonWrapper = document.createElement('div');
+        buttonWrapper.style.display = 'flex';
+        buttonWrapper.style.gap = '8px';
+        
+        const deptButton = document.createElement('button');
+        deptButton.className = 'dept-btn';
+        deptButton.textContent = 'Assign Dept';
+        deptButton.onclick = () => assignDepartment(index);
+        buttonWrapper.appendChild(deptButton);
         
         const deleteButton = document.createElement('button');
         deleteButton.className = 'delete-btn';
         deleteButton.textContent = 'Delete';
         deleteButton.onclick = () => deleteTrainee(index);
-        nameWrapper.appendChild(deleteButton);
+        buttonWrapper.appendChild(deleteButton);
+        
+        nameWrapper.appendChild(buttonWrapper);
         
         nameCell.appendChild(nameWrapper);
         nameCell.rowSpan = 2;
@@ -1223,53 +1229,96 @@
           'FilingCharges', 'Reports', 'Gunfight'
         ];
 
-        // Add basic skills checkboxes
+        // Calculate total progress
+        const totalSkills = basicSkills.length;
+        const completedSkills = basicSkills.filter(skill => trainee.skills[skill].completed).length;
+        const progress = Math.round((completedSkills / totalSkills) * 100);
+
+        // Add progress bar cell
+        const progressCell = document.createElement('td');
+        progressCell.className = 'progress-cell';
+        progressCell.colSpan = basicSkills.length;
+
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        progressBar.onclick = () => showSkillsDialog(trainee, basicSkills);
+
+        const progressFill = document.createElement('div');
+        progressFill.className = 'progress-fill';
+        progressFill.style.width = `${progress}%`;
+
+        const progressText = document.createElement('div');
+        progressText.className = 'progress-text';
+        progressText.textContent = `${progress}% Complete`;
+
+        const progressDetails = document.createElement('div');
+        progressDetails.className = 'progress-details';
+
+        const detailsList = document.createElement('ul');
         basicSkills.forEach(skill => {
           const data = trainee.skills[skill];
-          const cell = document.createElement('td');
-          cell.className = 'checkbox-cell';
-          
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.checked = data.completed;
-          checkbox.addEventListener('change', (e) => {
-            if (e.target.checked) {
-              const instructor = prompt('Enter instructor name:');
-              if (instructor) {
-                trainee.skills[skill].completed = true;
-                trainee.skills[skill].instructor = instructor;
-                saveTrainees();
-                updateTrainingTable();
-                updateDepartmentalTable();
-              } else {
-                e.target.checked = false;
-              }
-            } else {
-              trainee.skills[skill].completed = false;
-              trainee.skills[skill].instructor = '';
-              saveTrainees();
-              updateTrainingTable();
-              updateDepartmentalTable();
-            }
-          });
-          
-          cell.appendChild(checkbox);
-          mainRow.appendChild(cell);
-
-          // Add instructor name to instructor row
-          const instructorCell = document.createElement('td');
-          instructorCell.className = 'instructor-name';
-          if (data.completed && data.instructor) {
-            instructorCell.textContent = data.instructor;
-          } else {
-            instructorCell.innerHTML = '&nbsp;';
-          }
-          instructorRow.appendChild(instructorCell);
+          const li = document.createElement('li');
+          li.className = data.completed ? 'completed' : 'pending';
+          li.innerHTML = `${skill.replace(/([A-Z])/g, ' $1').trim()}${data.completed ? ` (${data.instructor})` : ''}`;
+          detailsList.appendChild(li);
         });
 
+        progressDetails.appendChild(detailsList);
+        progressBar.appendChild(progressFill);
+        progressBar.appendChild(progressText);
+        progressCell.appendChild(progressBar);
+        progressCell.appendChild(progressDetails);
+        mainRow.appendChild(progressCell);
+
         tbody.appendChild(mainRow);
-        tbody.appendChild(instructorRow);
       });
+    }
+
+    function showSkillsDialog(trainee, skills) {
+      const skillsList = skills.map(skill => {
+        const data = trainee.skills[skill];
+        return `${skill.replace(/([A-Z])/g, ' $1').trim()}: ${data.completed ? '✓' : '✗'}${data.completed ? ` (${data.instructor})` : ''}`;
+      }).join('\n');
+
+      const selectedSkill = prompt(`Select a skill to toggle for ${trainee.name}:\n\n${skillsList}\n\nType the skill name exactly as shown:`);
+      
+      if (!selectedSkill) return;
+      
+      const skill = skills.find(s => s.replace(/([A-Z])/g, ' $1').trim().toLowerCase() === selectedSkill.toLowerCase());
+      if (!skill) {
+        alert('Invalid skill name. Please try again.');
+        return;
+      }
+      
+      if (trainee.skills[skill].completed) {
+        if (confirm(`Remove completion status for ${skill.replace(/([A-Z])/g, ' $1').trim()}?`)) {
+          trainee.skills[skill].completed = false;
+          trainee.skills[skill].instructor = '';
+          trainee.skills[skill].completedDate = null;
+          trainee.timeline = trainee.timeline.filter(event => 
+            !event.content.includes(`Completed ${skill.replace(/([A-Z])/g, ' $1').trim()} Training`)
+          );
+          saveTrainees();
+          updateTrainingTable();
+          updateDepartmentalTable();
+        }
+      } else {
+        const instructor = prompt(`Enter instructor name for ${skill.replace(/([A-Z])/g, ' $1').trim()}:`);
+        if (instructor) {
+          const now = new Date();
+          trainee.skills[skill].completed = true;
+          trainee.skills[skill].instructor = instructor;
+          trainee.skills[skill].completedDate = now.toISOString();
+          trainee.timeline.push({
+            date: now.toISOString(),
+            content: `Completed ${skill.replace(/([A-Z])/g, ' $1').trim()} Training`,
+            instructor: instructor
+          });
+          saveTrainees();
+          updateTrainingTable();
+          updateDepartmentalTable();
+        }
+      }
     }
 
     function updateDepartmentalTable() {
@@ -1277,66 +1326,205 @@
       tbody.innerHTML = '';
 
       trainees.forEach((trainee, index) => {
-        // Create two rows for each trainee
         const mainRow = document.createElement('tr');
-        const instructorRow = document.createElement('tr');
-        instructorRow.className = 'instructor-row';
         
-        // Name cell spanning two rows
+        // Name cell
         const nameCell = document.createElement('td');
         nameCell.textContent = trainee.name;
-        nameCell.rowSpan = 2;
         mainRow.appendChild(nameCell);
 
         // Departmental Skills
         const deptSkills = ['Supernatural', 'Analyst', 'Investigator', 'FieldAgent'];
         
+        // Calculate total progress
+        const totalSkills = deptSkills.length;
+        const completedSkills = deptSkills.filter(skill => trainee.skills[skill].completed).length;
+        const progress = Math.round((completedSkills / totalSkills) * 100);
+
+        // Add progress bar cell
+        const progressCell = document.createElement('td');
+        progressCell.className = 'progress-cell';
+        progressCell.colSpan = deptSkills.length;
+
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        progressBar.onclick = () => showDeptSkillsDialog(trainee, deptSkills);
+
+        const progressFill = document.createElement('div');
+        progressFill.className = 'progress-fill';
+        progressFill.style.width = `${progress}%`;
+
+        const progressText = document.createElement('div');
+        progressText.className = 'progress-text';
+        progressText.textContent = `${progress}% Complete`;
+
+        const progressDetails = document.createElement('div');
+        progressDetails.className = 'progress-details';
+
+        const detailsList = document.createElement('ul');
         deptSkills.forEach(skill => {
           const data = trainee.skills[skill];
-          const cell = document.createElement('td');
-          cell.className = 'checkbox-cell';
-          
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.checked = data.completed;
-          checkbox.addEventListener('change', (e) => {
-            if (e.target.checked) {
-              const instructor = prompt('Enter instructor name:');
-              if (instructor) {
-                trainee.skills[skill].completed = true;
-                trainee.skills[skill].instructor = instructor;
-                saveTrainees();
-                updateTrainingTable();
-                updateDepartmentalTable();
-              } else {
-                e.target.checked = false;
-              }
-            } else {
-              trainee.skills[skill].completed = false;
-              trainee.skills[skill].instructor = '';
-              saveTrainees();
-              updateTrainingTable();
-              updateDepartmentalTable();
-            }
-          });
-          
-          cell.appendChild(checkbox);
-          mainRow.appendChild(cell);
-
-          // Add instructor name to instructor row
-          const instructorCell = document.createElement('td');
-          instructorCell.className = 'instructor-name';
-          if (data.completed && data.instructor) {
-            instructorCell.textContent = data.instructor;
-          } else {
-            instructorCell.innerHTML = '&nbsp;';
-          }
-          instructorRow.appendChild(instructorCell);
+          const li = document.createElement('li');
+          li.className = data.completed ? 'completed' : 'pending';
+          li.innerHTML = `${skill} Division${data.completed ? ` (${data.instructor})` : ''}`;
+          detailsList.appendChild(li);
         });
 
+        progressDetails.appendChild(detailsList);
+        progressBar.appendChild(progressFill);
+        progressBar.appendChild(progressText);
+        progressCell.appendChild(progressBar);
+        progressCell.appendChild(progressDetails);
+        mainRow.appendChild(progressCell);
+
         tbody.appendChild(mainRow);
-        tbody.appendChild(instructorRow);
       });
+    }
+
+    function showProfile(trainee) {
+      const modal = document.getElementById('profileModal');
+      
+      // Set basic info
+      document.getElementById('profileName').textContent = trainee.name;
+      document.getElementById('profileJoinDate').textContent = new Date(trainee.joinDate).toLocaleDateString();
+      document.getElementById('profileDivision').textContent = trainee.division || 'Not Assigned';
+      
+      // Calculate training status
+      const basicSkills = [
+        '10Codes', 'CaseLaws', 'Pursuit', 'Hostage', 'TrafficStop', 
+        'Breaching', 'SceneControl', 'COMMS', 'UseOfForce', 
+        'FilingCharges', 'Reports', 'Gunfight'
+      ];
+      
+      const completedBasic = basicSkills.filter(skill => trainee.skills[skill].completed).length;
+      const totalBasic = basicSkills.length;
+      const basicProgress = Math.round((completedBasic / totalBasic) * 100);
+      
+      const deptSkills = ['Supernatural', 'Analyst', 'Investigator', 'FieldAgent'];
+      const completedDept = deptSkills.filter(skill => trainee.skills[skill].completed).length;
+      
+      let status = '';
+      if (basicProgress === 100 && completedDept > 0) {
+        status = '<span style="color: #22c55e">Field Ready ✓</span>';
+      } else if (basicProgress === 100) {
+        status = '<span style="color: #eab308">Basic Training Complete</span>';
+      } else {
+        status = `<span style="color: #9ca3af">In Training (${basicProgress}%)</span>`;
+      }
+      document.getElementById('profileStatus').innerHTML = status;
+      
+      // Set certificates
+      const certificates = document.getElementById('profileCertificates');
+      certificates.innerHTML = '';
+      
+      [...basicSkills, ...deptSkills].forEach(skill => {
+        if (trainee.skills[skill].completed) {
+          const badge = document.createElement('div');
+          badge.className = 'certificate-badge';
+          badge.textContent = skill.replace(/([A-Z])/g, ' $1').trim();
+          certificates.appendChild(badge);
+        }
+      });
+      
+      // Set record
+      document.getElementById('profileStrikes').textContent = 
+        trainee.strikes.length > 0 ? trainee.strikes.join(', ') : 'None';
+      document.getElementById('profileCommendations').textContent = 
+        trainee.commendations.length > 0 ? trainee.commendations.join(', ') : 'None';
+      
+      // Set timeline
+      const timeline = document.getElementById('profileTimeline');
+      timeline.innerHTML = '';
+      
+      // Add skill completions to timeline
+      const events = [];
+      
+      [...basicSkills, ...deptSkills].forEach(skill => {
+        const data = trainee.skills[skill];
+        if (data.completed && data.completedDate) {
+          events.push({
+            date: new Date(data.completedDate),
+            content: `Completed ${skill.replace(/([A-Z])/g, ' $1').trim()} Training`,
+            instructor: data.instructor
+          });
+        }
+      });
+      
+      // Add custom timeline events
+      trainee.timeline.forEach(event => {
+        events.push({
+          date: new Date(event.date),
+          content: event.content,
+          instructor: event.instructor
+        });
+      });
+      
+      // Sort events by date (newest first)
+      events.sort((a, b) => b.date - a.date);
+      
+      events.forEach(event => {
+        const item = document.createElement('li');
+        item.className = 'timeline-item';
+        
+        const date = document.createElement('div');
+        date.className = 'timeline-date';
+        date.textContent = event.date.toLocaleDateString();
+        
+        const content = document.createElement('div');
+        content.className = 'timeline-content';
+        content.textContent = event.content;
+        
+        const instructor = document.createElement('div');
+        instructor.className = 'timeline-instructor';
+        instructor.textContent = `Signed by ${event.instructor}`;
+        
+        item.appendChild(date);
+        item.appendChild(content);
+        item.appendChild(instructor);
+        timeline.appendChild(item);
+      });
+      
+      modal.style.display = 'block';
+    }
+    
+    function closeProfile() {
+      document.getElementById('profileModal').style.display = 'none';
+    }
+    
+    function showDeptSkillsDialog(trainee, skills) {
+      const skillsList = skills.map(skill => {
+        const data = trainee.skills[skill];
+        return `${skill} Division: ${data.completed ? '✓' : '✗'}${data.completed ? ` (${data.instructor})` : ''}`;
+      }).join('\n');
+
+      const selectedSkill = prompt(`Select a department to toggle for ${trainee.name}:\n\n${skillsList}\n\nType the department name exactly as shown (e.g. "Supernatural"):`);
+      
+      if (!selectedSkill) return;
+      
+      const skill = skills.find(s => s.toLowerCase() === selectedSkill.toLowerCase());
+      if (!skill) {
+        alert('Invalid department name. Please try again.');
+        return;
+      }
+      
+      if (trainee.skills[skill].completed) {
+        if (confirm(`Remove ${skill} Division assignment?`)) {
+          trainee.skills[skill].completed = false;
+          trainee.skills[skill].instructor = '';
+          saveTrainees();
+          updateTrainingTable();
+          updateDepartmentalTable();
+        }
+      } else {
+        const instructor = prompt(`Enter instructor name for ${skill} Division assignment:`);
+        if (instructor) {
+          trainee.skills[skill].completed = true;
+          trainee.skills[skill].instructor = instructor;
+          saveTrainees();
+          updateTrainingTable();
+          updateDepartmentalTable();
+        }
+      }
     }
   </script>
 </body>
