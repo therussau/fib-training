@@ -1399,31 +1399,23 @@
       classifiedEntry.style.display = 'flex';
       classifiedEntry.style.opacity = '1';
 
-      // Start the animation sequence
+      // Simple animation sequence
       setTimeout(() => {
-        // Show password display
-        document.getElementById('passwordDisplay').textContent = '****';
-        document.getElementById('verificationStatus').textContent = 'SUCCESS';
-        document.getElementById('accessStatus').textContent = 'ACCESS GRANTED';
-        document.getElementById('welcomeMessage').textContent = 'ADMINISTRATOR';
+        // Fade out entry screen
+        classifiedEntry.style.transition = 'opacity 1.5s ease-out';
+        classifiedEntry.style.opacity = '0';
         
-        // After showing password and verification, transition to main content
+        // Show main content
         setTimeout(() => {
-          classifiedEntry.style.opacity = '0';
-          classifiedEntry.style.transition = 'opacity 1.5s ease-out';
-          
-          setTimeout(() => {
-            classifiedEntry.style.display = 'none';
-            mainContent.style.display = 'block';
-            mainContent.style.opacity = '0';
-            mainContent.style.transition = 'opacity 1s ease-in';
-            
-            setTimeout(() => {
-              mainContent.style.opacity = '1';
-            }, 100);
-          }, 1500);
+          classifiedEntry.style.display = 'none';
+          mainContent.style.display = 'block';
+          mainContent.style.opacity = '0';
+          mainContent.style.transition = 'opacity 1s ease-in';
+          requestAnimationFrame(() => {
+            mainContent.style.opacity = '1';
+          });
         }, 1500);
-      }, 2000);
+      }, 4000);
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -1787,189 +1779,6 @@
 
           // Add row to table
           tbody.appendChild(row);
-
-        // Department cell
-        const deptCell = document.createElement('td');
-        const deptContainer = document.createElement('div');
-        deptContainer.className = 'dept-select-container';
-
-        const deptButton = document.createElement('button');
-        deptButton.className = 'dept-select-btn';
-        deptButton.textContent = trainee.departments.length > 0 ? 'Edit Depts' : 'Add Depts';
-        deptButton.onclick = (e) => {
-          e.stopPropagation();
-          const container = e.target.closest('.dept-select-container');
-          container.classList.toggle('open');
-        };
-        deptContainer.appendChild(deptButton);
-
-        const deptDropdown = document.createElement('div');
-        deptDropdown.className = 'dept-select-dropdown';
-
-        const departments = [
-          { id: 'fa', name: 'Field Agents', abbr: 'FA' },
-          { id: 'inv', name: 'Investigators', abbr: 'INV' },
-          { id: 'ana', name: 'Analysts', abbr: 'ANA' },
-          { id: 'sup', name: 'Supernatural', abbr: 'SUP' }
-        ];
-
-        departments.forEach(dept => {
-          const option = document.createElement('label');
-          option.className = 'dept-option';
-
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.checked = trainee.departments.includes(dept.id);
-          checkbox.onchange = (e) => {
-            e.stopPropagation();
-            if (e.target.checked) {
-              trainee.departments.push(dept.id);
-              trainee.timeline.push({
-                date: new Date().toISOString(),
-                content: `Added to ${dept.name} Department`,
-                instructor: 'System'
-              });
-    } else {
-              trainee.departments = trainee.departments.filter(d => d !== dept.id);
-              trainee.timeline.push({
-                date: new Date().toISOString(),
-                content: `Removed from ${dept.name} Department`,
-                instructor: 'System'
-              });
-            }
-            saveTrainees();
-            updateTrainingTable();
-          };
-
-          option.appendChild(checkbox);
-          option.appendChild(document.createTextNode(dept.name));
-          deptDropdown.appendChild(option);
-        });
-
-        deptContainer.appendChild(deptDropdown);
-        deptCell.appendChild(deptContainer);
-
-        // Add department badges
-        if (trainee.departments.length > 0) {
-          const badgesContainer = document.createElement('div');
-          badgesContainer.className = 'dept-badges';
-
-          trainee.departments.forEach(deptId => {
-            const dept = departments.find(d => d.id === deptId);
-            const badge = document.createElement('div');
-            badge.className = `dept-badge ${deptId}`;
-            badge.textContent = dept.abbr;
-            badgesContainer.appendChild(badge);
-          });
-
-          deptCell.appendChild(badgesContainer);
-        }
-
-        mainRow.appendChild(deptCell);
-
-        // Handler cell
-        const handlerCell = document.createElement('td');
-        handlerCell.className = 'handler-cell';
-
-        const handlerText = document.createElement('div');
-        handlerText.className = 'handler-text';
-        handlerText.textContent = trainee.handler;
-        handlerText.onclick = () => {
-          const editContainer = handlerCell.querySelector('.handler-edit');
-          editContainer.classList.add('active');
-          const input = editContainer.querySelector('input');
-          input.value = trainee.handler;
-          input.focus();
-        };
-        handlerCell.appendChild(handlerText);
-
-        const handlerEdit = document.createElement('div');
-        handlerEdit.className = 'handler-edit';
-
-        const handlerInput = document.createElement('input');
-        handlerInput.type = 'text';
-        handlerInput.placeholder = 'Enter FIB handler';
-        handlerInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            const newHandler = e.target.value.trim();
-            if (newHandler) {
-              const oldHandler = trainee.handler;
-              trainee.handler = newHandler;
-              trainee.timeline.push({
-                date: new Date().toISOString(),
-                content: `Handler changed from ${oldHandler} to ${newHandler}`,
-                instructor: 'System'
-              });
-              saveTrainees();
-              updateTrainingTable();
-            }
-            handlerEdit.classList.remove('active');
-          }
-        });
-        handlerEdit.appendChild(handlerInput);
-
-        const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = '✕';
-        cancelBtn.onclick = () => handlerEdit.classList.remove('active');
-        handlerEdit.appendChild(cancelBtn);
-
-        handlerCell.appendChild(handlerEdit);
-        mainRow.appendChild(handlerCell);
-
-        // Basic Skills
-        const basicSkills = [
-          '10Codes', 'CaseLaws', 'Pursuit', 'Hostage', 'TrafficStop', 
-          'Breaching', 'SceneControl', 'COMMS', 'UseOfForce', 
-          'FilingCharges', 'Reports', 'Gunfight'
-        ];
-
-        // Calculate total progress
-        const totalSkills = basicSkills.length;
-        const completedSkills = basicSkills.filter(skill => trainee.skills[skill].completed).length;
-        const progress = Math.round((completedSkills / totalSkills) * 100);
-
-        // Add progress bar cell
-        const progressCell = document.createElement('td');
-        progressCell.className = 'progress-cell';
-        progressCell.colSpan = basicSkills.length;
-
-        const progressBar = document.createElement('div');
-        progressBar.className = 'progress-bar';
-        progressBar.onclick = () => showSkillsDialog(trainee, basicSkills);
-
-        const progressFill = document.createElement('div');
-        progressFill.className = 'progress-fill';
-        progressFill.style.width = `${progress}%`;
-
-        const progressText = document.createElement('div');
-        progressText.className = 'progress-text';
-        progressText.textContent = `${progress}% Complete`;
-
-        const progressDetails = document.createElement('div');
-        progressDetails.className = 'progress-details';
-
-        const detailsList = document.createElement('ul');
-        basicSkills.forEach(skill => {
-          const data = trainee.skills[skill];
-          const li = document.createElement('li');
-          li.className = data.completed ? 'completed' : 'pending';
-          const skillName = skill.replace(/([A-Z])/g, ' $1').trim();
-          if (data.completed) {
-            li.innerHTML = `${skillName} (Signed by ${data.instructor})`;
-      } else {
-            li.innerHTML = `${skillName} (Not Completed)`;
-          }
-          detailsList.appendChild(li);
-        });
-
-        progressDetails.appendChild(detailsList);
-        progressBar.appendChild(progressFill);
-        progressBar.appendChild(progressText);
-        progressCell.appendChild(progressBar);
-        progressCell.appendChild(progressDetails);
-        mainRow.appendChild(progressCell);
-
-          tbody.appendChild(mainRow);
         } catch (error) {
           console.error('Error creating row for trainee:', trainee, error);
         }
