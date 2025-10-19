@@ -1530,7 +1530,7 @@
         if (trainees.length === 0) {
           const row = document.createElement('tr');
           const cell = document.createElement('td');
-          cell.colSpan = 4; // Span all columns
+          cell.colSpan = 18; // Span all columns (6 info columns + 12 training columns)
           cell.style.textAlign = 'center';
           cell.style.padding = '20px';
           cell.textContent = 'No trainees added yet';
@@ -1542,9 +1542,11 @@
       // Add each trainee to the table
       trainees.forEach((trainee, index) => {
         try {
-          // Create a single row for each trainee
-          const mainRow = document.createElement('tr');
-          
+          // Create two rows for each trainee
+        const mainRow = document.createElement('tr');
+        const instructorRow = document.createElement('tr');
+        instructorRow.className = 'instructor-row';
+
         // Callsign cell
         const callsignCell = document.createElement('td');
         callsignCell.textContent = trainee.callsign || '#';
@@ -1585,8 +1587,9 @@
         rankCell.appendChild(rankSelect);
         mainRow.appendChild(rankCell);
 
-        // Name cell
+        // Name cell with buttons
         const nameCell = document.createElement('td');
+        nameCell.rowSpan = 2; // Span both rows
         const nameWrapper = document.createElement('div');
         nameWrapper.style.display = 'flex';
         nameWrapper.style.alignItems = 'center';
@@ -1598,17 +1601,6 @@
         nameText.onclick = () => showProfile(trainee);
         nameWrapper.appendChild(nameText);
 
-        // UC and Codename cells
-        const ucCell = document.createElement('td');
-        ucCell.textContent = trainee.ucAlias || '-';
-        ucCell.className = 'uc-name';
-        mainRow.appendChild(ucCell);
-
-        const codenameCell = document.createElement('td');
-        codenameCell.textContent = trainee.codename || '-';
-        codenameCell.className = 'codename';
-        mainRow.appendChild(codenameCell);
-        
         const buttonWrapper = document.createElement('div');
         buttonWrapper.style.display = 'flex';
         buttonWrapper.style.gap = '8px';
@@ -1620,9 +1612,40 @@
         buttonWrapper.appendChild(deleteButton);
         
         nameWrapper.appendChild(buttonWrapper);
-        
         nameCell.appendChild(nameWrapper);
         mainRow.appendChild(nameCell);
+
+        // UC cell
+        const ucCell = document.createElement('td');
+        ucCell.textContent = trainee.ucAlias || '-';
+        ucCell.className = 'uc-name';
+        mainRow.appendChild(ucCell);
+        const ucInstructorCell = document.createElement('td');
+        ucInstructorCell.innerHTML = '&nbsp;';
+        instructorRow.appendChild(ucInstructorCell);
+
+        // Codename cell
+        const codenameCell = document.createElement('td');
+        codenameCell.textContent = trainee.codename || '-';
+        codenameCell.className = 'codename';
+        mainRow.appendChild(codenameCell);
+        const codenameInstructorCell = document.createElement('td');
+        codenameInstructorCell.innerHTML = '&nbsp;';
+        instructorRow.appendChild(codenameInstructorCell);
+
+        // Add empty cells for callsign and rank in instructor row
+        const callsignInstructorCell = document.createElement('td');
+        callsignInstructorCell.innerHTML = '&nbsp;';
+        const rankInstructorCell = document.createElement('td');
+        rankInstructorCell.innerHTML = '&nbsp;';
+
+        // Add cells to instructor row in correct order
+        instructorRow.appendChild(callsignInstructorCell);
+        instructorRow.appendChild(rankInstructorCell);
+
+        // Add both rows to table
+        tbody.appendChild(mainRow);
+        tbody.appendChild(instructorRow);
 
         // Department cell
         const deptCell = document.createElement('td');
