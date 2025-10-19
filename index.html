@@ -264,33 +264,36 @@
     left: 50%;
     transform: translate(-50%, -50%);
     background: rgba(0, 0, 0, 0.95);
-    border: 1px solid rgba(253, 224, 71, 0.2);
+    border: 2px solid #00ff00;
     border-radius: 8px;
     padding: 24px;
     min-width: 300px;
-    z-index: 100000;
+    z-index: 100001;
     display: none;
-    box-shadow: 0 0 20px rgba(253, 224, 71, 0.1);
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
   }
 
   .password-dialog-title {
-    color: #fde047;
+    color: #00ff00;
     font-size: 18px;
     font-weight: 700;
     margin-bottom: 16px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
   }
 
   .password-input {
     width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(253, 224, 71, 0.2);
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid #00ff00;
     border-radius: 4px;
     padding: 8px 12px;
-    color: #fff;
+    color: #00ff00;
     font-size: 14px;
     margin-bottom: 16px;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    outline: none;
   }
 
   .password-dialog-buttons {
@@ -300,18 +303,19 @@
   }
 
   .password-dialog-btn {
-    background: rgba(253, 224, 71, 0.1);
-    color: #fde047;
-    border: 1px solid rgba(253, 224, 71, 0.2);
+    background: rgba(0, 255, 0, 0.1);
+    color: #00ff00;
+    border: 1px solid #00ff00;
     border-radius: 4px;
     padding: 6px 12px;
     font-size: 13px;
     cursor: pointer;
     transition: all 0.2s ease;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
   }
 
   .password-dialog-btn:hover {
-    background: rgba(253, 224, 71, 0.2);
+    background: rgba(0, 255, 0, 0.2);
   }
 
   .checkbox-cell {
@@ -1386,6 +1390,7 @@
       input.value = '';
       dialog.style.display = 'block';
       dialog.style.opacity = '1';
+      dialog.style.zIndex = '100001'; // Ensure it's above the classified entry screen
       
       // Focus the input after a short delay to ensure it's visible
       setTimeout(() => {
@@ -1484,7 +1489,22 @@
       classifiedEntry.style.opacity = '1';
 
       // Show password dialog after animation sequence
-      setTimeout(showPasswordDialog, 2000);
+      setTimeout(() => {
+        const dialog = document.getElementById('passwordDialog');
+        if (dialog) {
+          dialog.style.display = 'block';
+          dialog.style.opacity = '1';
+          dialog.style.zIndex = '100001';
+          
+          const input = document.getElementById('passwordInput');
+          if (input) {
+            input.value = '';
+            input.focus();
+          }
+        } else {
+          console.error('Password dialog not found!');
+        }
+      }, 2000);
     };
 
     document.addEventListener('DOMContentLoaded', async () => {
