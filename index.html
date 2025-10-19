@@ -1027,6 +1027,10 @@
               <span class="profile-info-value" id="profileDivision"></span>
             </li>
             <li class="profile-info-item">
+              <span class="profile-info-label">FIB Handler:</span>
+              <span class="profile-info-value" id="profileHandler"></span>
+            </li>
+            <li class="profile-info-item">
               <span class="profile-info-label">Training Status:</span>
               <span class="profile-info-value" id="profileStatus"></span>
             </li>
@@ -1582,20 +1586,74 @@
     }
 
     function showSkillsDialog(trainee, skills) {
-      const skillsList = skills.map(skill => {
-        const data = trainee.skills[skill];
-        return `${skill.replace(/([A-Z])/g, ' $1').trim()}: ${data.completed ? '✓' : '✗'}${data.completed ? ` (${data.instructor})` : ''}`;
-      }).join('\n');
+      const dialog = document.createElement('div');
+      dialog.className = 'password-dialog';
+      dialog.style.display = 'block';
 
-      const selectedSkill = prompt(`Select a skill to toggle for ${trainee.name}:\n\n${skillsList}\n\nType the skill name exactly as shown:`);
+      const title = document.createElement('div');
+      title.className = 'password-dialog-title';
+      title.textContent = `Select Training for ${trainee.name}`;
+      dialog.appendChild(title);
+
+      const list = document.createElement('div');
+      list.style.marginBottom = '20px';
+      list.style.maxHeight = '300px';
+      list.style.overflowY = 'auto';
+
+      skills.forEach((skill, index) => {
+        const data = trainee.skills[skill];
+        const item = document.createElement('div');
+        item.style.padding = '8px';
+        item.style.cursor = 'pointer';
+        item.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        item.style.gap = '8px';
+
+        const number = document.createElement('span');
+        number.style.color = '#fde047';
+        number.style.fontWeight = 'bold';
+        number.textContent = `${index + 1}.`;
+        item.appendChild(number);
+
+        const text = document.createElement('span');
+        text.textContent = `${skill.replace(/([A-Z])/g, ' $1').trim()}`;
+        if (data.completed) {
+          text.style.color = '#22c55e';
+          text.textContent += ` (✓ ${data.instructor})`;
+        }
+        item.appendChild(text);
+
+        item.onclick = () => {
+          dialog.remove();
+          toggleSkill(trainee, skill);
+        };
+
+        item.onmouseover = () => {
+          item.style.backgroundColor = 'rgba(255,255,255,0.05)';
+        };
+        item.onmouseout = () => {
+          item.style.backgroundColor = '';
+        };
+
+        list.appendChild(item);
+      });
+      dialog.appendChild(list);
+
+      const buttonContainer = document.createElement('div');
+      buttonContainer.className = 'password-dialog-buttons';
       
-      if (!selectedSkill) return;
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'password-dialog-btn';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.onclick = () => dialog.remove();
+      buttonContainer.appendChild(cancelBtn);
       
-      const skill = skills.find(s => s.replace(/([A-Z])/g, ' $1').trim().toLowerCase() === selectedSkill.toLowerCase());
-      if (!skill) {
-        alert('Invalid skill name. Please try again.');
-        return;
-      }
+      dialog.appendChild(buttonContainer);
+      document.body.appendChild(dialog);
+    }
+
+    function toggleSkill(trainee, skill) {
       
       if (trainee.skills[skill].completed) {
         if (confirm(`Remove completion status for ${skill.replace(/([A-Z])/g, ' $1').trim()}?`)) {
@@ -1626,13 +1684,118 @@
       }
     }
 
+    function showStrikeForm(trainee, type) {
+      const dialog = document.createElement('div');
+      dialog.className = 'password-dialog';
+      dialog.style.display = 'block';
+
+      const title = document.createElement('div');
+      title.className = 'password-dialog-title';
+      title.textContent = type === 'strike' ? 'Add Strike' : 'Add Commendation';
+      dialog.appendChild(title);
+
+      const form = document.createElement('div');
+      form.style.marginBottom = '20px';
+
+      // Submitting Agent field
+      const agentLabel = document.createElement('div');
+      agentLabel.style.marginBottom = '8px';
+      agentLabel.textContent = 'Submitting Agent:';
+      form.appendChild(agentLabel);
+
+      const agentInput = document.createElement('input');
+      agentInput.className = 'password-input';
+      agentInput.style.marginBottom = '16px';
+      agentInput.placeholder = 'Enter agent name';
+      form.appendChild(agentInput);
+
+      // Reason field
+      const reasonLabel = document.createElement('div');
+      reasonLabel.style.marginBottom = '8px';
+      reasonLabel.textContent = type === 'strike' ? 'Strike Reason:' : 'Commendation:';
+      form.appendChild(reasonLabel);
+
+      const reasonInput = document.createElement('input');
+      reasonInput.className = 'password-input';
+      reasonInput.placeholder = type === 'strike' ? 'Enter strike reason' : 'Enter commendation';
+      form.appendChild(reasonInput);
+
+      dialog.appendChild(form);
+
+      const buttonContainer = document.createElement('div');
+      buttonContainer.className = 'password-dialog-buttons';
+      
+      const submitBtn = document.createElement('button');
+      submitBtn.className = 'password-dialog-btn';
+      submitBtn.textContent = 'Submit';
+      submitBtn.onclick = () => {
+        const agent = agentInput.value.trim();
+        const reason = reasonInput.value.trim();
+        
+        if (!agent || !reason) {
+          alert('Please fill in all fields');
+          return;
+        }
+
+        const entry = `${reason} (by ${agent})`;
+        if (type === 'strike') {
+          trainee.strikes.push(entry);
+        } else {
+          trainee.commendations.push(entry);
+        }
+
+        trainee.timeline.push({
+          date: new Date().toISOString(),
+          content: type === 'strike' ? `Received Strike: ${reason}` : `Received Commendation: ${reason}`,
+          instructor: agent
+        });
+
+        saveTrainees();
+        showProfile(trainee);
+        dialog.remove();
+      };
+      buttonContainer.appendChild(submitBtn);
+      
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'password-dialog-btn';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.onclick = () => dialog.remove();
+      buttonContainer.appendChild(cancelBtn);
+      
+      dialog.appendChild(buttonContainer);
+      document.body.appendChild(dialog);
+    }
+
     function showProfile(trainee) {
       const modal = document.getElementById('profileModal');
       
       // Set basic info
       document.getElementById('profileName').textContent = trainee.name;
       document.getElementById('profileJoinDate').textContent = new Date(trainee.joinDate).toLocaleDateString();
-      document.getElementById('profileDivision').textContent = trainee.division || 'Not Assigned';
+      // Show departments as badges
+      const deptDiv = document.getElementById('profileDivision');
+      deptDiv.innerHTML = '';
+      if (trainee.departments && trainee.departments.length > 0) {
+        const deptBadges = document.createElement('div');
+        deptBadges.className = 'dept-badges';
+        trainee.departments.forEach(deptId => {
+          const badge = document.createElement('div');
+          badge.className = `dept-badge ${deptId}`;
+          badge.textContent = {
+            'fa': 'FA',
+            'inv': 'INV',
+            'ana': 'ANA',
+            'sup': 'SUP'
+          }[deptId] || deptId.toUpperCase();
+          deptBadges.appendChild(badge);
+        });
+        deptDiv.appendChild(deptBadges);
+      } else {
+        deptDiv.textContent = 'Not Assigned';
+      }
+
+      // Show handler
+      document.getElementById('profileHandler').textContent = trainee.handler || 'Not Assigned';
       
       // Calculate training status
       const skills = [
@@ -1667,10 +1830,45 @@
       });
       
       // Set record
-      document.getElementById('profileStrikes').textContent = 
-        trainee.strikes.length > 0 ? trainee.strikes.join(', ') : 'None';
-      document.getElementById('profileCommendations').textContent = 
-        trainee.commendations.length > 0 ? trainee.commendations.join(', ') : 'None';
+      // Update strikes with add button
+      const strikesDiv = document.getElementById('profileStrikes');
+      strikesDiv.innerHTML = '';
+      const strikesWrapper = document.createElement('div');
+      strikesWrapper.style.display = 'flex';
+      strikesWrapper.style.alignItems = 'center';
+      strikesWrapper.style.gap = '8px';
+      
+      const strikesText = document.createElement('span');
+      strikesText.className = 'profile-strikes';
+      strikesText.textContent = trainee.strikes.length > 0 ? trainee.strikes.join(', ') : 'None';
+      strikesWrapper.appendChild(strikesText);
+      
+      const addStrikeBtn = document.createElement('button');
+      addStrikeBtn.className = 'dept-btn';
+      addStrikeBtn.textContent = '+';
+      addStrikeBtn.onclick = () => showStrikeForm(trainee, 'strike');
+      strikesWrapper.appendChild(addStrikeBtn);
+      strikesDiv.appendChild(strikesWrapper);
+
+      // Update commendations with add button
+      const commsDiv = document.getElementById('profileCommendations');
+      commsDiv.innerHTML = '';
+      const commsWrapper = document.createElement('div');
+      commsWrapper.style.display = 'flex';
+      commsWrapper.style.alignItems = 'center';
+      commsWrapper.style.gap = '8px';
+      
+      const commsText = document.createElement('span');
+      commsText.className = 'profile-commendations';
+      commsText.textContent = trainee.commendations.length > 0 ? trainee.commendations.join(', ') : 'None';
+      commsWrapper.appendChild(commsText);
+      
+      const addCommBtn = document.createElement('button');
+      addCommBtn.className = 'dept-btn';
+      addCommBtn.textContent = '+';
+      addCommBtn.onclick = () => showStrikeForm(trainee, 'commendation');
+      commsWrapper.appendChild(addCommBtn);
+      commsDiv.appendChild(commsWrapper);
       
       // Set timeline
       const timeline = document.getElementById('profileTimeline');
