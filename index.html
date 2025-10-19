@@ -2005,6 +2005,21 @@
           progressText.className = 'progress-text';
           progressText.textContent = `${progress}% Complete`;
 
+          // Add hover details
+          const progressDetails = document.createElement('div');
+          progressDetails.className = 'progress-details';
+          const skillsList = document.createElement('ul');
+          
+          Object.entries(trainee.skills).forEach(([skill, data]) => {
+            const item = document.createElement('li');
+            item.className = data.completed ? 'completed' : 'pending';
+            item.innerHTML = `${skill.replace(/([A-Z])/g, ' $1').trim()}${data.completed ? ` (${data.instructor})` : ''}`;
+            skillsList.appendChild(item);
+          });
+          
+          progressDetails.appendChild(skillsList);
+          progressCell.appendChild(progressDetails);
+
           progressBar.appendChild(progressFill);
           progressBar.appendChild(progressText);
           progressCell.appendChild(progressBar);
@@ -2120,7 +2135,7 @@
       }
     }
 
-    function showStrikeForm(trainee, type) {
+    async function showStrikeForm(trainee, type) {
       const dialog = document.createElement('div');
       dialog.className = 'password-dialog';
       dialog.style.display = 'block';
@@ -2148,14 +2163,14 @@
       // Reason field
       const reasonLabel = document.createElement('div');
       reasonLabel.style.marginBottom = '8px';
-      reasonLabel.textContent = type === 'strike' ? 'Strike Reason:' : 'Commendation:';
+      reasonLabel.textContent = type === 'strike' ? 'Strike Details:' : 'Commendation Details:';
       form.appendChild(reasonLabel);
 
       const reasonInput = document.createElement('textarea');
       reasonInput.className = 'password-input';
       reasonInput.style.height = '100px';
       reasonInput.style.resize = 'vertical';
-      reasonInput.placeholder = type === 'strike' ? 'Enter detailed strike reason' : 'Enter detailed commendation';
+      reasonInput.placeholder = type === 'strike' ? 'Enter detailed strike information' : 'Enter detailed commendation';
       form.appendChild(reasonInput);
 
       dialog.appendChild(form);
@@ -2166,31 +2181,48 @@
       const submitBtn = document.createElement('button');
       submitBtn.className = 'password-dialog-btn';
       submitBtn.textContent = 'Submit';
-      submitBtn.onclick = () => {
-        const agent = agentInput.value.trim();
-        const reason = reasonInput.value.trim();
-        
-        if (!agent || !reason) {
-          alert('Please fill in all fields');
-          return;
+      submitBtn.onclick = async () => {
+        try {
+          const agent = agentInput.value.trim();
+          const reason = reasonInput.value.trim();
+          
+          if (!agent || !reason) {
+            alert('Please fill in all fields');
+            return;
+          }
+
+          const entry = `${reason} (by ${agent})`;
+          const updates = {};
+          
+          // Initialize arrays if they don't exist
+          if (!trainee[type + 's']) {
+            trainee[type + 's'] = [];
+          }
+          if (!trainee.timeline) {
+            trainee.timeline = [];
+          }
+
+          // Add the new entry
+          trainee[type + 's'].push(entry);
+          trainee.timeline.push({
+            date: new Date().toISOString(),
+            content: type === 'strike' ? `Received Strike: ${reason}` : `Received Commendation: ${reason}`,
+            instructor: agent
+          });
+
+          // Update specific fields in Firebase
+          updates[`/trainees/${trainee.id}/${type}s`] = trainee[type + 's'];
+          updates[`/trainees/${trainee.id}/timeline`] = trainee.timeline;
+
+          await fbUpdate(fbRef(fbDatabase), updates);
+          console.log(`Successfully added ${type} to trainee:`, trainee.id);
+          
+          dialog.remove();
+          showProfile(trainee);
+        } catch (error) {
+          console.error(`Error adding ${type}:`, error);
+          alert(`Failed to add ${type}. Please try again.`);
         }
-
-        const entry = `${reason} (by ${agent})`;
-        if (type === 'strike') {
-          trainee.strikes.push(entry);
-        } else {
-          trainee.commendations.push(entry);
-        }
-
-        trainee.timeline.push({
-          date: new Date().toISOString(),
-          content: type === 'strike' ? `Received Strike: ${reason}` : `Received Commendation: ${reason}`,
-          instructor: agent
-        });
-
-        saveTrainees();
-        showProfile(trainee);
-        dialog.remove();
       };
       buttonContainer.appendChild(submitBtn);
       
