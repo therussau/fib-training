@@ -1624,34 +1624,35 @@
           trainees = [];
         }
 
-        // Create new trainee object
-      const trainee = {
-        name: name,
-        handler: handler,
-        joinDate: new Date().toISOString(),
-        rank: 'intern',
-        callsign: '',
-        codename: '',
-        ucAlias: '',
-        departments: [],
-        strikes: [],
-        commendations: [],
-        timeline: [],
-        skills: {
-          '10Codes': { completed: false, instructor: '', completedDate: null },
-          'CaseLaws': { completed: false, instructor: '', completedDate: null },
-          'Pursuit': { completed: false, instructor: '', completedDate: null },
-          'Hostage': { completed: false, instructor: '', completedDate: null },
-          'TrafficStop': { completed: false, instructor: '', completedDate: null },
-          'Breaching': { completed: false, instructor: '', completedDate: null },
-          'SceneControl': { completed: false, instructor: '', completedDate: null },
-          'COMMS': { completed: false, instructor: '', completedDate: null },
-          'UseOfForce': { completed: false, instructor: '', completedDate: null },
-          'FilingCharges': { completed: false, instructor: '', completedDate: null },
-          'Reports': { completed: false, instructor: '', completedDate: null },
-          'Gunfight': { completed: false, instructor: '', completedDate: null }
-        }
-      };
+        // Create new trainee object with default values
+        const trainee = {
+          name: name,
+          handler: handler,
+          joinDate: new Date().toISOString(),
+          rank: 'intern',
+          callsign: '-',
+          department: '-',
+          codename: '-',
+          alias: '-',
+          departments: [],
+          strikes: [],
+          commendations: [],
+          timeline: [],
+          skills: {
+            '10Codes': { completed: false, instructor: '', completedDate: null },
+            'CaseLaws': { completed: false, instructor: '', completedDate: null },
+            'Pursuit': { completed: false, instructor: '', completedDate: null },
+            'Hostage': { completed: false, instructor: '', completedDate: null },
+            'TrafficStop': { completed: false, instructor: '', completedDate: null },
+            'Breaching': { completed: false, instructor: '', completedDate: null },
+            'SceneControl': { completed: false, instructor: '', completedDate: null },
+            'COMMS': { completed: false, instructor: '', completedDate: null },
+            'UseOfForce': { completed: false, instructor: '', completedDate: null },
+            'FilingCharges': { completed: false, instructor: '', completedDate: null },
+            'Reports': { completed: false, instructor: '', completedDate: null },
+            'Gunfight': { completed: false, instructor: '', completedDate: null }
+          }
+        };
 
         console.log('Created trainee:', trainee);
         trainees.push(trainee);
@@ -1699,7 +1700,7 @@
         if (trainees.length === 0) {
           const row = document.createElement('tr');
           const cell = document.createElement('td');
-          cell.colSpan = 18; // Span all columns (6 info columns + 12 training columns)
+          cell.colSpan = 8; // Updated colspan for our columns
           cell.style.textAlign = 'center';
           cell.style.padding = '20px';
           cell.textContent = 'No trainees added yet';
@@ -1711,110 +1712,120 @@
       // Add each trainee to the table
       trainees.forEach((trainee, index) => {
         try {
-          // Create two rows for each trainee
-        const mainRow = document.createElement('tr');
-        const instructorRow = document.createElement('tr');
-        instructorRow.className = 'instructor-row';
+          const row = document.createElement('tr');
 
-        // Callsign cell
-        const callsignCell = document.createElement('td');
-        callsignCell.textContent = trainee.callsign || '#';
-        callsignCell.className = 'callsign';
-        mainRow.appendChild(callsignCell);
+          // # (Callsign) cell
+          const callsignCell = document.createElement('td');
+          callsignCell.textContent = trainee.callsign || '-';
+          callsignCell.className = 'callsign';
+          row.appendChild(callsignCell);
 
-        // Rank cell
-        const rankCell = document.createElement('td');
-        const rankSelect = document.createElement('div');
-        rankSelect.className = 'rank-select';
-        
-        const rankBtn = document.createElement('button');
-        rankBtn.className = 'rank-select-btn';
-        const currentRank = RANKS.find(r => r.id === trainee.rank) || RANKS[0];
-        rankBtn.innerHTML = `<span class="rank-badge ${currentRank.id}">${currentRank.abbr}</span>`;
-        rankBtn.onclick = (e) => {
-          e.stopPropagation();
-          rankSelect.classList.toggle('open');
-        };
-        rankSelect.appendChild(rankBtn);
-
-        const rankDropdown = document.createElement('div');
-        rankDropdown.className = 'rank-select-dropdown';
-        RANKS.forEach(rank => {
-          const option = document.createElement('div');
-          option.className = `rank-option${rank.id === trainee.rank ? ' selected' : ''}`;
-          option.innerHTML = `<span class="rank-badge ${rank.id}">${rank.abbr}</span> ${rank.name}`;
-          option.onclick = (e) => {
+          // Rank cell
+          const rankCell = document.createElement('td');
+          const rankSelect = document.createElement('div');
+          rankSelect.className = 'rank-select';
+          
+          const rankBtn = document.createElement('button');
+          rankBtn.className = 'rank-select-btn';
+          const currentRank = RANKS.find(r => r.id === trainee.rank) || RANKS[0];
+          rankBtn.innerHTML = `<span class="rank-badge ${currentRank.id}">${currentRank.abbr}</span>`;
+          rankBtn.onclick = (e) => {
             e.stopPropagation();
-            trainee.rank = rank.id;
-            saveTrainees();
-            updateTrainingTable();
-            rankSelect.classList.remove('open');
+            rankSelect.classList.toggle('open');
           };
-          rankDropdown.appendChild(option);
-        });
-        rankSelect.appendChild(rankDropdown);
-        rankCell.appendChild(rankSelect);
-        mainRow.appendChild(rankCell);
+          rankSelect.appendChild(rankBtn);
 
-        // Name cell with buttons
-        const nameCell = document.createElement('td');
-        nameCell.rowSpan = 2; // Span both rows
-        const nameWrapper = document.createElement('div');
-        nameWrapper.style.display = 'flex';
-        nameWrapper.style.alignItems = 'center';
-        nameWrapper.style.gap = '8px';
-        
-        const nameText = document.createElement('span');
-        nameText.textContent = trainee.name || 'Unknown';
-        nameText.style.cursor = 'pointer';
-        nameText.onclick = () => showProfile(trainee);
-        nameWrapper.appendChild(nameText);
+          const rankDropdown = document.createElement('div');
+          rankDropdown.className = 'rank-select-dropdown';
+          RANKS.forEach(rank => {
+            const option = document.createElement('div');
+            option.className = `rank-option${rank.id === trainee.rank ? ' selected' : ''}`;
+            option.innerHTML = `<span class="rank-badge ${rank.id}">${rank.abbr}</span> ${rank.name}`;
+            option.onclick = (e) => {
+              e.stopPropagation();
+              trainee.rank = rank.id;
+              saveTrainees();
+              updateTrainingTable();
+              rankSelect.classList.remove('open');
+            };
+            rankDropdown.appendChild(option);
+          });
+          rankSelect.appendChild(rankDropdown);
+          rankCell.appendChild(rankSelect);
+          row.appendChild(rankCell);
 
-        const buttonWrapper = document.createElement('div');
-        buttonWrapper.style.display = 'flex';
-        buttonWrapper.style.gap = '8px';
-        
-        const deleteButton = document.createElement('button');
-        deleteButton.className = 'delete-btn';
-        deleteButton.textContent = 'Delete';
-        deleteButton.onclick = () => deleteTrainee(index);
-        buttonWrapper.appendChild(deleteButton);
-        
-        nameWrapper.appendChild(buttonWrapper);
-        nameCell.appendChild(nameWrapper);
-        mainRow.appendChild(nameCell);
+          // Name cell
+          const nameCell = document.createElement('td');
+          const nameWrapper = document.createElement('div');
+          nameWrapper.style.display = 'flex';
+          nameWrapper.style.alignItems = 'center';
+          nameWrapper.style.gap = '8px';
+          
+          const nameText = document.createElement('span');
+          nameText.textContent = trainee.name || 'Unknown';
+          nameText.style.cursor = 'pointer';
+          nameText.onclick = () => showProfile(trainee);
+          nameWrapper.appendChild(nameText);
 
-        // UC cell
-        const ucCell = document.createElement('td');
-        ucCell.textContent = trainee.ucAlias || '-';
-        ucCell.className = 'uc-name';
-        mainRow.appendChild(ucCell);
-        const ucInstructorCell = document.createElement('td');
-        ucInstructorCell.innerHTML = '&nbsp;';
-        instructorRow.appendChild(ucInstructorCell);
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'delete-btn';
+          deleteButton.textContent = 'Delete';
+          deleteButton.onclick = () => deleteTrainee(index);
+          nameWrapper.appendChild(deleteButton);
+          
+          nameCell.appendChild(nameWrapper);
+          row.appendChild(nameCell);
 
-        // Codename cell
-        const codenameCell = document.createElement('td');
-        codenameCell.textContent = trainee.codename || '-';
-        codenameCell.className = 'codename';
-        mainRow.appendChild(codenameCell);
-        const codenameInstructorCell = document.createElement('td');
-        codenameInstructorCell.innerHTML = '&nbsp;';
-        instructorRow.appendChild(codenameInstructorCell);
+          // Department cell
+          const deptCell = document.createElement('td');
+          deptCell.textContent = trainee.department || '-';
+          row.appendChild(deptCell);
 
-        // Add empty cells for callsign and rank in instructor row
-        const callsignInstructorCell = document.createElement('td');
-        callsignInstructorCell.innerHTML = '&nbsp;';
-        const rankInstructorCell = document.createElement('td');
-        rankInstructorCell.innerHTML = '&nbsp;';
+          // Code Name cell
+          const codenameCell = document.createElement('td');
+          codenameCell.textContent = trainee.codename || '-';
+          codenameCell.className = 'codename';
+          row.appendChild(codenameCell);
 
-        // Add cells to instructor row in correct order
-        instructorRow.appendChild(callsignInstructorCell);
-        instructorRow.appendChild(rankInstructorCell);
+          // Alias cell
+          const aliasCell = document.createElement('td');
+          aliasCell.textContent = trainee.alias || '-';
+          aliasCell.className = 'uc-name';
+          row.appendChild(aliasCell);
 
-        // Add both rows to table
-        tbody.appendChild(mainRow);
-        tbody.appendChild(instructorRow);
+          // FIB Handler cell
+          const handlerCell = document.createElement('td');
+          handlerCell.textContent = trainee.handler || '-';
+          row.appendChild(handlerCell);
+
+          // Training Progress cell
+          const progressCell = document.createElement('td');
+          progressCell.className = 'progress-cell';
+
+          const progressBar = document.createElement('div');
+          progressBar.className = 'progress-bar';
+          progressBar.onclick = () => showSkillsDialog(trainee, Object.keys(trainee.skills));
+
+          // Calculate progress
+          const totalSkills = Object.keys(trainee.skills).length;
+          const completedSkills = Object.values(trainee.skills).filter(skill => skill.completed).length;
+          const progress = Math.round((completedSkills / totalSkills) * 100);
+
+          const progressFill = document.createElement('div');
+          progressFill.className = 'progress-fill';
+          progressFill.style.width = `${progress}%`;
+
+          const progressText = document.createElement('div');
+          progressText.className = 'progress-text';
+          progressText.textContent = `${progress}% Complete`;
+
+          progressBar.appendChild(progressFill);
+          progressBar.appendChild(progressText);
+          progressCell.appendChild(progressBar);
+          row.appendChild(progressCell);
+
+          // Add row to table
+          tbody.appendChild(row);
 
         // Department cell
         const deptCell = document.createElement('td');
