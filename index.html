@@ -876,6 +876,79 @@
   .dept-badge.ana { background: rgba(147, 51, 234, 0.1); color: #9333ea; border-color: rgba(147, 51, 234, 0.2); }
   .dept-badge.sup { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-color: rgba(59, 130, 246, 0.2); }
 
+  /* Handler Styles */
+  .handler-cell {
+    position: relative;
+  }
+
+  .handler-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .handler-text:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .handler-text::after {
+    content: '✎';
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .handler-text:hover::after {
+    opacity: 0.6;
+  }
+
+  .handler-edit {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 4px;
+    border-radius: 4px;
+    z-index: 10;
+  }
+
+  .handler-edit.active {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .handler-edit input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: #fff;
+    font-size: 13px;
+  }
+
+  .handler-edit button {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    padding: 4px;
+  }
+
+  .handler-edit button:hover {
+    opacity: 1;
+  }
+
   #mainContent {
     display: none;
     opacity: 0;
@@ -1002,6 +1075,10 @@
           <label for="traineeName">Trainee Name</label>
           <input type="text" id="traineeName" placeholder="Enter trainee name">
         </div>
+        <div class="form-group">
+          <label for="traineeHandler">FIB Handler</label>
+          <input type="text" id="traineeHandler" placeholder="Enter FIB handler">
+        </div>
       </div>
       <button type="button" class="save-btn" onclick="addNewTrainee()">Add Trainee</button>
     </div>
@@ -1014,6 +1091,7 @@
             <tr>
               <th>Name</th>
               <th>Department</th>
+              <th>FIB Handler</th>
               <th colspan="12">Training Progress</th>
             </tr>
           </thead>
@@ -1103,11 +1181,16 @@
 
     // Handle toolbar collapse/expand
 
-    // Close department dropdowns when clicking outside
+    // Close department dropdowns and handler edit fields when clicking outside
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.dept-select-container')) {
         document.querySelectorAll('.dept-select-container').forEach(container => {
           container.classList.remove('open');
+        });
+      }
+      if (!e.target.closest('.handler-edit') && !e.target.closest('.handler-text')) {
+        document.querySelectorAll('.handler-edit').forEach(edit => {
+          edit.classList.remove('active');
         });
       }
     });
@@ -1163,8 +1246,15 @@
         return;
       }
 
+      const handler = document.getElementById('traineeHandler').value.trim();
+      if (!handler) {
+        alert('Please enter an FIB handler');
+        return;
+      }
+
       const trainee = {
         name: name,
+        handler: handler,
         joinDate: new Date().toISOString(),
         departments: [],
         strikes: [],
@@ -1315,6 +1405,55 @@
         }
 
         mainRow.appendChild(deptCell);
+
+        // Handler cell
+        const handlerCell = document.createElement('td');
+        handlerCell.className = 'handler-cell';
+
+        const handlerText = document.createElement('div');
+        handlerText.className = 'handler-text';
+        handlerText.textContent = trainee.handler;
+        handlerText.onclick = () => {
+          const editContainer = handlerCell.querySelector('.handler-edit');
+          editContainer.classList.add('active');
+          const input = editContainer.querySelector('input');
+          input.value = trainee.handler;
+          input.focus();
+        };
+        handlerCell.appendChild(handlerText);
+
+        const handlerEdit = document.createElement('div');
+        handlerEdit.className = 'handler-edit';
+
+        const handlerInput = document.createElement('input');
+        handlerInput.type = 'text';
+        handlerInput.placeholder = 'Enter FIB handler';
+        handlerInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            const newHandler = e.target.value.trim();
+            if (newHandler) {
+              const oldHandler = trainee.handler;
+              trainee.handler = newHandler;
+              trainee.timeline.push({
+                date: new Date().toISOString(),
+                content: `Handler changed from ${oldHandler} to ${newHandler}`,
+                instructor: 'System'
+              });
+              saveTrainees();
+              updateTrainingTable();
+            }
+            handlerEdit.classList.remove('active');
+          }
+        });
+        handlerEdit.appendChild(handlerInput);
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = '✕';
+        cancelBtn.onclick = () => handlerEdit.classList.remove('active');
+        handlerEdit.appendChild(cancelBtn);
+
+        handlerCell.appendChild(handlerEdit);
+        mainRow.appendChild(handlerCell);
 
         // Basic Skills
         const basicSkills = [
