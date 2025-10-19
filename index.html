@@ -2293,204 +2293,217 @@
     let currentTrainee = null;
 
     function showProfile(trainee) {
-      currentTrainee = trainee;
-      const modal = document.getElementById('profileModal');
-      
-      // Set basic info
-      const currentRank = RANKS.find(r => r.id === trainee.rank) || RANKS[0];
-      document.getElementById('profileName').innerHTML = `<span class="rank-badge ${currentRank.id}">${currentRank.abbr}</span> ${trainee.name}`;
-      document.getElementById('profileRank').textContent = currentRank.name;
-      document.getElementById('profileCallsign').textContent = trainee.callsign || 'Not Set';
-      document.getElementById('profileCodename').textContent = trainee.codename || 'Not Set';
-      document.getElementById('profileUC').textContent = trainee.ucAlias || 'Not Set';
-      document.getElementById('profileJoinDate').textContent = new Date(trainee.joinDate).toLocaleDateString();
-      // Show departments as badges
-      const deptDiv = document.getElementById('profileDivision');
-      deptDiv.innerHTML = '';
-      if (trainee.departments && trainee.departments.length > 0) {
-        const deptBadges = document.createElement('div');
-        deptBadges.className = 'dept-badges';
-        trainee.departments.forEach(deptId => {
-          const badge = document.createElement('div');
-          badge.className = `dept-badge ${deptId}`;
-          badge.textContent = {
-            'fa': 'FA',
-            'inv': 'INV',
-            'ana': 'ANA',
-            'sup': 'SUP'
-          }[deptId] || deptId.toUpperCase();
-          deptBadges.appendChild(badge);
-        });
-        deptDiv.appendChild(deptBadges);
-      } else {
-        deptDiv.textContent = 'Not Assigned';
+      if (!trainee) {
+        console.error('No trainee data provided to showProfile');
+        return;
       }
 
-      // Show handler
-      document.getElementById('profileHandler').textContent = trainee.handler || 'Not Assigned';
-      
-      // Calculate training status
-      const skills = [
-        '10Codes', 'CaseLaws', 'Pursuit', 'Hostage', 'TrafficStop', 
-        'Breaching', 'SceneControl', 'COMMS', 'UseOfForce', 
-        'FilingCharges', 'Reports', 'Gunfight'
-      ];
-      
-      const completedSkills = skills.filter(skill => trainee.skills[skill].completed).length;
-      const totalSkills = skills.length;
-      const progress = Math.round((completedSkills / totalSkills) * 100);
-      
-      let status = '';
-      if (progress === 100) {
-        status = '<span style="color: #22c55e">Training Complete ✓</span>';
-          } else {
-        status = `<span style="color: #9ca3af">In Training (${progress}%)</span>`;
-      }
-      document.getElementById('profileStatus').innerHTML = status;
-      
-      // Set certificates
-      const certificates = document.getElementById('profileCertificates');
-      certificates.innerHTML = '';
-      
-      skills.forEach(skill => {
-        if (trainee.skills[skill].completed) {
-          const badge = document.createElement('div');
-          badge.className = 'certificate-badge';
-          badge.textContent = skill.replace(/([A-Z])/g, ' $1').trim();
-          certificates.appendChild(badge);
+      try {
+        console.log('Showing profile for trainee:', trainee);
+        currentTrainee = trainee;
+        const modal = document.getElementById('profileModal');
+        if (!modal) {
+          console.error('Profile modal element not found');
+          return;
         }
-      });
-      
-      // Set record
-      // Update strikes with add button
-      const strikesDiv = document.getElementById('profileStrikes');
-      strikesDiv.innerHTML = '';
-      const strikesWrapper = document.createElement('div');
-      strikesWrapper.style.display = 'flex';
-      strikesWrapper.style.alignItems = 'center';
-      strikesWrapper.style.gap = '8px';
-      
-      const strikesText = document.createElement('span');
-      strikesText.className = 'profile-strikes';
-      if (trainee.strikes.length > 0) {
-        const strikesList = document.createElement('div');
-        strikesList.style.display = 'flex';
-        strikesList.style.flexDirection = 'column';
-        strikesList.style.gap = '4px';
         
-        trainee.strikes.forEach(strike => {
-          const agent = strike.match(/by (.*?)\)$/)[1];
-          const strikeLink = document.createElement('span');
-          strikeLink.style.cursor = 'pointer';
-          strikeLink.style.textDecoration = 'underline';
-          strikeLink.textContent = agent;
-          strikeLink.onclick = () => showRecordDetails(strike, 'Strike');
-          strikesList.appendChild(strikeLink);
-        });
-        strikesText.appendChild(strikesList);
-      } else {
-        strikesText.textContent = 'None';
-      }
-      strikesWrapper.appendChild(strikesText);
-      
-      const addStrikeBtn = document.createElement('button');
-      addStrikeBtn.className = 'dept-btn';
-      addStrikeBtn.textContent = '+';
-      addStrikeBtn.onclick = () => showStrikeForm(trainee, 'strike');
-      strikesWrapper.appendChild(addStrikeBtn);
-      strikesDiv.appendChild(strikesWrapper);
+        // Set basic info
+        const currentRank = RANKS.find(r => r.id === trainee.rank) || RANKS[0];
+        
+        // Safely set each element, checking for existence first
+        const elements = {
+          'profileName': `<span class="rank-badge ${currentRank.id}">${currentRank.abbr}</span> ${trainee.name}`,
+          'profileRank': currentRank.name,
+          'profileCallsign': trainee.callsign || 'Not Set',
+          'profileCodename': trainee.codename || 'Not Set',
+          'profileUC': trainee.ucAlias || 'Not Set',
+          'profileJoinDate': trainee.joinDate ? new Date(trainee.joinDate).toLocaleDateString() : 'Not Set',
+          'profileHandler': trainee.handler || 'Not Assigned'
+        };
 
-      // Update commendations with add button
-      const commsDiv = document.getElementById('profileCommendations');
-      commsDiv.innerHTML = '';
-      const commsWrapper = document.createElement('div');
-      commsWrapper.style.display = 'flex';
-      commsWrapper.style.alignItems = 'center';
-      commsWrapper.style.gap = '8px';
-      
-      const commsText = document.createElement('span');
-      commsText.className = 'profile-commendations';
-      if (trainee.commendations.length > 0) {
-        const commsList = document.createElement('div');
-        commsList.style.display = 'flex';
-        commsList.style.flexDirection = 'column';
-        commsList.style.gap = '4px';
-        
-        trainee.commendations.forEach(comm => {
-          const agent = comm.match(/by (.*?)\)$/)[1];
-          const commLink = document.createElement('span');
-          commLink.style.cursor = 'pointer';
-          commLink.style.textDecoration = 'underline';
-          commLink.textContent = agent;
-          commLink.onclick = () => showRecordDetails(comm, 'Commendation');
-          commsList.appendChild(commLink);
+        Object.entries(elements).forEach(([id, value]) => {
+          const element = document.getElementById(id);
+          if (element) {
+            element.innerHTML = value;
+          } else {
+            console.warn(`Element ${id} not found`);
+          }
         });
-        commsText.appendChild(commsList);
-      } else {
-        commsText.textContent = 'None';
-      }
-      commsWrapper.appendChild(commsText);
-      
-      const addCommBtn = document.createElement('button');
-      addCommBtn.className = 'dept-btn';
-      addCommBtn.textContent = '+';
-      addCommBtn.onclick = () => showStrikeForm(trainee, 'commendation');
-      commsWrapper.appendChild(addCommBtn);
-      commsDiv.appendChild(commsWrapper);
-      
-      // Set timeline
-      const timeline = document.getElementById('profileTimeline');
-      timeline.innerHTML = '';
-      
-      // Add skill completions to timeline
-      const events = [];
-      
-      skills.forEach(skill => {
-        const data = trainee.skills[skill];
-        if (data.completed && data.completedDate) {
-          events.push({
-            date: new Date(data.completedDate),
-            content: `Completed ${skill.replace(/([A-Z])/g, ' $1').trim()} Training`,
-            instructor: data.instructor
+
+        // Show departments as badges
+        const deptDiv = document.getElementById('profileDivision');
+        if (deptDiv) {
+          deptDiv.innerHTML = '';
+          if (trainee.departments && trainee.departments.length > 0) {
+            const deptBadges = document.createElement('div');
+            deptBadges.className = 'dept-badges';
+            trainee.departments.forEach(deptId => {
+              const badge = document.createElement('div');
+              badge.className = `dept-badge ${deptId}`;
+              badge.textContent = {
+                'fa': 'FA',
+                'inv': 'INV',
+                'ana': 'ANA',
+                'sup': 'SUP'
+              }[deptId] || deptId.toUpperCase();
+              deptBadges.appendChild(badge);
+            });
+            deptDiv.appendChild(deptBadges);
+          } else {
+            deptDiv.textContent = 'Not Assigned';
+          }
+        }
+
+        // Calculate and show training status
+        const skills = [
+          '10Codes', 'CaseLaws', 'Pursuit', 'Hostage', 'TrafficStop', 
+          'Breaching', 'SceneControl', 'COMMS', 'UseOfForce', 
+          'FilingCharges', 'Reports', 'Gunfight'
+        ];
+
+        if (trainee.skills) {
+          const completedSkills = skills.filter(skill => 
+            trainee.skills[skill] && trainee.skills[skill].completed
+          ).length;
+          const totalSkills = skills.length;
+          const progress = Math.round((completedSkills / totalSkills) * 100);
+          
+          const status = progress === 100 
+            ? '<span style="color: #22c55e">Training Complete ✓</span>'
+            : `<span style="color: #9ca3af">In Training (${progress}%)</span>`;
+          
+          const statusElement = document.getElementById('profileStatus');
+          if (statusElement) {
+            statusElement.innerHTML = status;
+          }
+
+          // Set certificates
+          const certificates = document.getElementById('profileCertificates');
+          if (certificates) {
+            certificates.innerHTML = '';
+            skills.forEach(skill => {
+              if (trainee.skills[skill] && trainee.skills[skill].completed) {
+                const badge = document.createElement('div');
+                badge.className = 'certificate-badge';
+                badge.textContent = skill.replace(/([A-Z])/g, ' $1').trim();
+                certificates.appendChild(badge);
+              }
+            });
+          }
+        }
+
+        // Set record (strikes and commendations)
+        const setupRecordSection = (type) => {
+          const records = trainee[type] || [];
+          const div = document.getElementById(`profile${type.charAt(0).toUpperCase() + type.slice(1)}`);
+          if (!div) return;
+
+          div.innerHTML = '';
+          const wrapper = document.createElement('div');
+          wrapper.style.display = 'flex';
+          wrapper.style.alignItems = 'center';
+          wrapper.style.gap = '8px';
+          
+          const text = document.createElement('span');
+          text.className = `profile-${type}`;
+          
+          if (records.length > 0) {
+            const list = document.createElement('div');
+            list.style.display = 'flex';
+            list.style.flexDirection = 'column';
+            list.style.gap = '4px';
+            
+            records.forEach(record => {
+              if (typeof record === 'string' && record.includes('by')) {
+                const agent = record.match(/by (.*?)\)$/)[1];
+                const link = document.createElement('span');
+                link.style.cursor = 'pointer';
+                link.style.textDecoration = 'underline';
+                link.textContent = agent;
+                link.onclick = () => showRecordDetails(record, type.charAt(0).toUpperCase() + type.slice(1));
+                list.appendChild(link);
+              }
+            });
+            text.appendChild(list);
+          } else {
+            text.textContent = 'None';
+          }
+          wrapper.appendChild(text);
+          
+          const addBtn = document.createElement('button');
+          addBtn.className = 'dept-btn';
+          addBtn.textContent = '+';
+          addBtn.onclick = () => showStrikeForm(trainee, type);
+          wrapper.appendChild(addBtn);
+          div.appendChild(wrapper);
+        };
+
+        setupRecordSection('strikes');
+        setupRecordSection('commendations');
+
+        // Set timeline
+        const timeline = document.getElementById('profileTimeline');
+        if (timeline) {
+          timeline.innerHTML = '';
+          const events = [];
+
+          // Add skill completions to timeline
+          if (trainee.skills) {
+            skills.forEach(skill => {
+              const data = trainee.skills[skill];
+              if (data && data.completed && data.completedDate) {
+                events.push({
+                  date: new Date(data.completedDate),
+                  content: `Completed ${skill.replace(/([A-Z])/g, ' $1').trim()} Training`,
+                  instructor: data.instructor
+                });
+              }
+            });
+          }
+
+          // Add custom timeline events
+          if (trainee.timeline) {
+            trainee.timeline.forEach(event => {
+              if (event.date) {
+                events.push({
+                  date: new Date(event.date),
+                  content: event.content,
+                  instructor: event.instructor
+                });
+              }
+            });
+          }
+
+          // Sort events by date (newest first)
+          events.sort((a, b) => b.date - a.date);
+
+          events.forEach(event => {
+            const item = document.createElement('li');
+            item.className = 'timeline-item';
+            
+            const date = document.createElement('div');
+            date.className = 'timeline-date';
+            date.textContent = event.date.toLocaleDateString();
+            
+            const content = document.createElement('div');
+            content.className = 'timeline-content';
+            content.textContent = event.content;
+            
+            const instructor = document.createElement('div');
+            instructor.className = 'timeline-instructor';
+            instructor.textContent = `Signed by ${event.instructor}`;
+            
+            item.appendChild(date);
+            item.appendChild(content);
+            item.appendChild(instructor);
+            timeline.appendChild(item);
           });
         }
-      });
-      
-      // Add custom timeline events
-      trainee.timeline.forEach(event => {
-        events.push({
-          date: new Date(event.date),
-          content: event.content,
-          instructor: event.instructor
-        });
-      });
-      
-      // Sort events by date (newest first)
-      events.sort((a, b) => b.date - a.date);
-      
-      events.forEach(event => {
-        const item = document.createElement('li');
-        item.className = 'timeline-item';
-        
-        const date = document.createElement('div');
-        date.className = 'timeline-date';
-        date.textContent = event.date.toLocaleDateString();
-        
-        const content = document.createElement('div');
-        content.className = 'timeline-content';
-        content.textContent = event.content;
-        
-        const instructor = document.createElement('div');
-        instructor.className = 'timeline-instructor';
-        instructor.textContent = `Signed by ${event.instructor}`;
-        
-        item.appendChild(date);
-        item.appendChild(content);
-        item.appendChild(instructor);
-        timeline.appendChild(item);
-      });
-      
-      modal.style.display = 'block';
+
+        modal.style.display = 'block';
+      } catch (error) {
+        console.error('Error showing profile:', error);
+      }
     }
     
     function closeProfile() {
