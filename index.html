@@ -306,6 +306,21 @@
   .name-cell-wrapper {
     display: flex;
     align-items: center;
+    gap: 8px;
+  }
+
+  .name-cell {
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .name-cell .add-trainee-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .roster-table tr:hover .add-trainee-btn {
+    opacity: 1;
   }
 
   .division-cell {
@@ -979,6 +994,7 @@
           trainees.push(trainee);
           saveTrainees();
           updateTrainingTable();
+          updateDepartmentalTable();
           alert(`Added ${agent.name} to trainees list.`);
         };
         nameWrapper.appendChild(addButton);
