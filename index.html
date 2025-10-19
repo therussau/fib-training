@@ -79,11 +79,26 @@
 
   .training-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    background: transparent;
+    margin-bottom: 20px;
+  }
+
+  .training-table tr {
     background: rgba(0,0,0,.3);
     border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
+  }
+
+  .training-table td:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+  }
+
+  .training-table td:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
   }
 
   .training-table th {
@@ -1093,12 +1108,10 @@
       tbody.innerHTML = '';
 
       trainees.forEach((trainee, index) => {
-        // Create two rows for each trainee
+        // Create a single row for each trainee
         const mainRow = document.createElement('tr');
-        const instructorRow = document.createElement('tr');
-        instructorRow.className = 'instructor-row';
         
-        // Name cell spanning two rows
+        // Name cell
         const nameCell = document.createElement('td');
         const nameWrapper = document.createElement('div');
         nameWrapper.style.display = 'flex';
@@ -1124,7 +1137,6 @@
         nameWrapper.appendChild(buttonWrapper);
         
         nameCell.appendChild(nameWrapper);
-        nameCell.rowSpan = 2;
         mainRow.appendChild(nameCell);
 
         // Basic Skills
@@ -1164,7 +1176,12 @@
           const data = trainee.skills[skill];
           const li = document.createElement('li');
           li.className = data.completed ? 'completed' : 'pending';
-          li.innerHTML = `${skill.replace(/([A-Z])/g, ' $1').trim()}${data.completed ? ` (${data.instructor})` : ''}`;
+          const skillName = skill.replace(/([A-Z])/g, ' $1').trim();
+          if (data.completed) {
+            li.innerHTML = `${skillName} (Signed by ${data.instructor})`;
+          } else {
+            li.innerHTML = `${skillName} (Not Completed)`;
+          }
           detailsList.appendChild(li);
         });
 
