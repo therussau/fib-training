@@ -1389,12 +1389,9 @@
 
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('DOM ready, starting animation sequence...');
-      
       // Get elements
       const mainContent = document.getElementById('mainContent');
       const classifiedEntry = document.getElementById('classifiedEntry');
-      const accessLines = document.querySelectorAll('.access-line');
 
       // Initial state
       mainContent.style.display = 'none';
@@ -1402,30 +1399,31 @@
       classifiedEntry.style.display = 'flex';
       classifiedEntry.style.opacity = '1';
 
-      // Show each line with a delay
-      accessLines.forEach((line, index) => {
-        setTimeout(() => {
-          line.style.opacity = '1';
-        }, index * 400); // 400ms delay between each line
-      });
-
-      // After all lines are shown, transition to main content
+      // Start the animation sequence
       setTimeout(() => {
-        // Fade out entry screen
-        classifiedEntry.style.transition = 'opacity 0.5s ease';
-        classifiedEntry.style.opacity = '0';
+        // Show password display
+        document.getElementById('passwordDisplay').textContent = '****';
+        document.getElementById('verificationStatus').textContent = 'SUCCESS';
+        document.getElementById('accessStatus').textContent = 'ACCESS GRANTED';
+        document.getElementById('welcomeMessage').textContent = 'ADMINISTRATOR';
         
+        // After showing password and verification, transition to main content
         setTimeout(() => {
-          // Show main content
-          classifiedEntry.style.display = 'none';
-          mainContent.style.display = 'block';
+          classifiedEntry.style.opacity = '0';
+          classifiedEntry.style.transition = 'opacity 1.5s ease-out';
           
-          requestAnimationFrame(() => {
-            mainContent.style.transition = 'opacity 0.5s ease';
-            mainContent.style.opacity = '1';
-          });
-        }, 500);
-      }, 4000); // Total animation time before transition
+          setTimeout(() => {
+            classifiedEntry.style.display = 'none';
+            mainContent.style.display = 'block';
+            mainContent.style.opacity = '0';
+            mainContent.style.transition = 'opacity 1s ease-in';
+            
+            setTimeout(() => {
+              mainContent.style.opacity = '1';
+            }, 100);
+          }, 1500);
+        }, 1500);
+      }, 2000);
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
