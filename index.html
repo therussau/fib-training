@@ -1731,7 +1731,85 @@
 
           // Department cell
           const deptCell = document.createElement('td');
-          deptCell.textContent = trainee.department || '-';
+          const deptContainer = document.createElement('div');
+          deptContainer.className = 'dept-select-container';
+
+          const deptButton = document.createElement('button');
+          deptButton.className = 'dept-select-btn';
+          deptButton.textContent = trainee.departments && trainee.departments.length > 0 ? 'Edit Depts' : 'Add Depts';
+          deptButton.onclick = (e) => {
+            e.stopPropagation();
+            const container = e.target.closest('.dept-select-container');
+            container.classList.toggle('open');
+          };
+          deptContainer.appendChild(deptButton);
+
+          const deptDropdown = document.createElement('div');
+          deptDropdown.className = 'dept-select-dropdown';
+
+          const departments = [
+            { id: 'fa', name: 'Field Agents', abbr: 'FA' },
+            { id: 'inv', name: 'Investigators', abbr: 'INV' },
+            { id: 'ana', name: 'Analysts', abbr: 'ANA' },
+            { id: 'sup', name: 'Supernatural', abbr: 'SUP' }
+          ];
+
+          departments.forEach(dept => {
+            const option = document.createElement('label');
+            option.className = 'dept-option';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = trainee.departments && trainee.departments.includes(dept.id);
+            checkbox.onchange = (e) => {
+              e.stopPropagation();
+              if (!trainee.departments) trainee.departments = [];
+              
+              if (e.target.checked) {
+                trainee.departments.push(dept.id);
+                trainee.timeline.push({
+                  date: new Date().toISOString(),
+                  content: `Added to ${dept.name} Department`,
+                  instructor: 'System'
+                });
+              } else {
+                trainee.departments = trainee.departments.filter(d => d !== dept.id);
+                trainee.timeline.push({
+                  date: new Date().toISOString(),
+                  content: `Removed from ${dept.name} Department`,
+                  instructor: 'System'
+                });
+              }
+              saveTrainees();
+              updateTrainingTable();
+            };
+
+            option.appendChild(checkbox);
+            option.appendChild(document.createTextNode(dept.name));
+            deptDropdown.appendChild(option);
+          });
+
+          deptContainer.appendChild(deptDropdown);
+          deptCell.appendChild(deptContainer);
+
+          // Add department badges if any departments are selected
+          if (trainee.departments && trainee.departments.length > 0) {
+            const badgesContainer = document.createElement('div');
+            badgesContainer.className = 'dept-badges';
+
+            trainee.departments.forEach(deptId => {
+              const dept = departments.find(d => d.id === deptId);
+              if (dept) {
+                const badge = document.createElement('div');
+                badge.className = `dept-badge ${deptId}`;
+                badge.textContent = dept.abbr;
+                badgesContainer.appendChild(badge);
+              }
+            });
+
+            deptCell.appendChild(badgesContainer);
+          }
+
           row.appendChild(deptCell);
 
           // Code Name cell
@@ -1742,8 +1820,22 @@
 
           // Alias cell
           const aliasCell = document.createElement('td');
-          aliasCell.textContent = trainee.alias || '-';
+          aliasCell.textContent = trainee.ucAlias || trainee.alias || '-';
           aliasCell.className = 'uc-name';
+          aliasCell.style.cursor = 'pointer';
+          aliasCell.onclick = () => {
+            const newAlias = prompt('Enter new alias:', trainee.ucAlias || trainee.alias || '');
+            if (newAlias !== null) {
+              trainee.ucAlias = newAlias;
+              trainee.timeline.push({
+                date: new Date().toISOString(),
+                content: `Alias updated to: ${newAlias}`,
+                instructor: 'System'
+              });
+              saveTrainees();
+              updateTrainingTable();
+            }
+          };
           row.appendChild(aliasCell);
 
           // FIB Handler cell
