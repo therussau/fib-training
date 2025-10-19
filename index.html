@@ -1210,6 +1210,9 @@
           
           <div class="access-sequence">
             <div class="access-line">
+              <span class="prompt">> INITIALIZING SYSTEM...</span>
+            </div>
+            <div class="access-line">
               <span class="prompt">> ACCESSING SECURE SERVER...</span>
             </div>
             <div class="access-line">
@@ -1219,20 +1222,13 @@
               <span class="prompt">> AUTHENTICATING USER...</span>
             </div>
             <div class="access-line">
-              <span class="prompt">> PASSWORD: </span>
-              <span id="passwordDisplay" class="password-display"></span>
+              <span class="prompt">> ACCESS GRANTED</span>
             </div>
             <div class="access-line">
-              <span class="prompt">> VERIFICATION: </span>
-              <span id="verificationStatus" class="verification-status"></span>
+              <span class="prompt">> LOADING DATABASE...</span>
             </div>
             <div class="access-line">
-              <span class="prompt">> STATUS: </span>
-              <span id="accessStatus" class="access-status"></span>
-            </div>
-            <div class="access-line">
-              <span class="prompt">> WELCOME: </span>
-              <span id="welcomeMessage" class="welcome-message"></span>
+              <span class="prompt">> WELCOME TO FIB TRAINING SYSTEM</span>
             </div>
           </div>
         </div>
@@ -1398,10 +1394,7 @@
       // Get elements
       const mainContent = document.getElementById('mainContent');
       const classifiedEntry = document.getElementById('classifiedEntry');
-      const passwordDisplay = document.getElementById('passwordDisplay');
-      const verificationStatus = document.getElementById('verificationStatus');
-      const accessStatus = document.getElementById('accessStatus');
-      const welcomeMessage = document.getElementById('welcomeMessage');
+      const accessLines = document.querySelectorAll('.access-line');
 
       // Initial state
       mainContent.style.display = 'none';
@@ -1409,64 +1402,30 @@
       classifiedEntry.style.display = 'flex';
       classifiedEntry.style.opacity = '1';
 
-      // Fallback timer in case images don't load
-      let animationStarted = false;
-      const startAnimation = () => {
-        if (animationStarted) return;
-        animationStarted = true;
-        
-        console.log('Starting animation sequence...');
+      // Show each line with a delay
+      accessLines.forEach((line, index) => {
         setTimeout(() => {
-          console.log('Step 1: Showing verification...');
-          passwordDisplay.textContent = '****';
-          verificationStatus.textContent = 'SUCCESS';
-          accessStatus.textContent = 'ACCESS GRANTED';
-          welcomeMessage.textContent = 'ADMINISTRATOR';
-
-          setTimeout(() => {
-            console.log('Step 2: Transitioning screens...');
-            classifiedEntry.style.transition = 'opacity 0.5s ease';
-            classifiedEntry.style.opacity = '0';
-            
-            setTimeout(() => {
-              console.log('Step 3: Showing main content...');
-              classifiedEntry.style.display = 'none';
-              mainContent.style.display = 'block';
-              
-              requestAnimationFrame(() => {
-                mainContent.style.transition = 'opacity 0.5s ease';
-                mainContent.style.opacity = '1';
-              });
-            }, 500);
-          }, 2000);
-        }, 2000);
-      };
-
-      // Start animation when images load or after timeout
-      const images = document.querySelectorAll('img');
-      let loadedImages = 0;
-      
-      images.forEach(img => {
-        if (img.complete) {
-          loadedImages++;
-        } else {
-          img.addEventListener('load', () => {
-            loadedImages++;
-            if (loadedImages === images.length) {
-              startAnimation();
-            }
-          });
-          img.addEventListener('error', () => {
-            loadedImages++;
-            if (loadedImages === images.length) {
-              startAnimation();
-            }
-          });
-        }
+          line.style.opacity = '1';
+        }, index * 400); // 400ms delay between each line
       });
 
-      // Fallback timer - start animation after 5 seconds regardless
-      setTimeout(startAnimation, 5000);
+      // After all lines are shown, transition to main content
+      setTimeout(() => {
+        // Fade out entry screen
+        classifiedEntry.style.transition = 'opacity 0.5s ease';
+        classifiedEntry.style.opacity = '0';
+        
+        setTimeout(() => {
+          // Show main content
+          classifiedEntry.style.display = 'none';
+          mainContent.style.display = 'block';
+          
+          requestAnimationFrame(() => {
+            mainContent.style.transition = 'opacity 0.5s ease';
+            mainContent.style.opacity = '1';
+          });
+        }, 500);
+      }, 4000); // Total animation time before transition
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
