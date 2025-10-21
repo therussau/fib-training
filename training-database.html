@@ -229,6 +229,9 @@
       function populateTrainingModules() {
         const container = document.getElementById('trainingProceduresContainer');
         if (!container) return;
+        
+        // Clear existing content to prevent duplication
+        container.innerHTML = '';
 
         trainingModules.forEach(module => {
           const moduleDiv = document.createElement('div');
@@ -5215,14 +5218,23 @@
       const container = document.getElementById('trainingProceduresContainer');
       if (!container) return;
       
-      container.innerHTML = ''; // Clear existing content
+      // Clear existing content
+      container.innerHTML = '';
       
       if (!window.trainingModules) {
         await window.initializeModules();
       }
       
-      // Create the module elements
+      // Create a map to store unique modules by ID
+      const uniqueModules = new Map();
       window.trainingModules.forEach(module => {
+        if (module && module.id && !uniqueModules.has(module.id)) {
+          uniqueModules.set(module.id, module);
+        }
+      });
+      
+      // Create the module elements from unique modules
+      Array.from(uniqueModules.values()).forEach(module => {
         const moduleDiv = document.createElement('div');
         moduleDiv.className = 'training-module';
         moduleDiv.id = `module-${module.id}`;
@@ -5326,7 +5338,8 @@
 
     function toggleTrainingModule(moduleId) {
       const content = document.getElementById(`module-content-${moduleId}`);
-      const icon = document.querySelector(`#module-${moduleId} .toggle-icon`);
+      const header = document.getElementById(`module-${moduleId}`);
+      const icon = header.querySelector('.toggle-icon');
       
       if (content.style.display === 'none') {
         content.style.display = 'block';
@@ -5340,22 +5353,31 @@
     // Load training modules from Firebase
     window.loadTrainingModules = async function() {
       try {
-        // Always start with default modules to ensure all required modules exist
-        window.trainingModules = [...window.defaultModules];
+        // Create a map to store unique modules by ID
+        const uniqueModules = new Map();
+        
+        // First, add default modules to the map
+        window.defaultModules.forEach(module => {
+          if (module && module.id && !uniqueModules.has(module.id)) {
+            uniqueModules.set(module.id, module);
+          }
+        });
 
+        // Try to load modules from Firebase
         const snapshot = await window.fbGet(window.fbRef(window.fbDatabase, 'trainingModules'));
         if (snapshot.exists()) {
-          // Merge existing modules with defaults to ensure all new modules are included
-          const existingModules = Object.values(snapshot.val());
-          existingModules.forEach(existingModule => {
-            const index = window.trainingModules.findIndex(m => m.id === existingModule.id);
-            if (index !== -1) {
-              window.trainingModules[index] = existingModule;
+          const firebaseModules = Object.values(snapshot.val());
+          firebaseModules.forEach(module => {
+            if (module && module.id && !uniqueModules.has(module.id)) {
+              uniqueModules.set(module.id, module);
             }
           });
         }
         
-        // Save the merged modules back to Firebase
+        // Convert map to array and store in window.trainingModules
+        window.trainingModules = Array.from(uniqueModules.values());
+        
+        // Save the unique modules back to Firebase
         await saveTrainingModules();
         
         // Initialize the procedures display
@@ -5363,7 +5385,13 @@
       } catch (error) {
         console.error('Error loading training modules:', error);
         // Fallback to default modules if there's an error
-        window.trainingModules = [...window.defaultModules];
+        const uniqueDefaults = new Map();
+        window.defaultModules.forEach(module => {
+          if (module && module.id && !uniqueDefaults.has(module.id)) {
+            uniqueDefaults.set(module.id, module);
+          }
+        });
+        window.trainingModules = Array.from(uniqueDefaults.values());
         await initializeTrainingProcedures();
       }
     }
@@ -5426,7 +5454,8 @@
     }
 
     // Define default modules globally
-    window.defaultModules = [
+    // Unique training modules without duplicates
+window.defaultModules = [
         {
           id: '10codes',
           title: '10 Codes',
@@ -5962,21 +5991,48 @@
       // Initialize modules from Firebase or defaults
       window.initializeModules = async function() {
         try {
+          // Create a map to store unique modules by ID
+          const uniqueModules = new Map();
+          
+          // First, add all default modules to the map
+          window.defaultModules.forEach(module => {
+            if (!uniqueModules.has(module.id)) {
+              uniqueModules.set(module.id, module);
+            }
+          });
+          
           const modulesSnapshot = await window.fbGet(window.fbRef(window.fbDatabase, 'trainingModules'));
           if (modulesSnapshot.exists()) {
-            window.trainingModules = Object.values(modulesSnapshot.val());
-          } else {
-            window.trainingModules = [...window.defaultModules];
-            // Save default modules to Firebase
-            const updates = {};
-            window.defaultModules.forEach(module => {
-              updates[`/trainingModules/${module.id}`] = module;
+            // Merge Firebase modules, overwriting defaults if they exist
+            Object.values(modulesSnapshot.val()).forEach(module => {
+              if (module && module.id) {
+                uniqueModules.set(module.id, module);
+              }
             });
-            await window.fbUpdate(window.fbRef(window.fbDatabase), updates);
           }
+          
+          // Convert map values back to array
+          window.trainingModules = Array.from(uniqueModules.values());
+          
+          // Save the unique modules back to Firebase
+          const updates = {};
+          window.trainingModules.forEach(module => {
+            if (module && module.id) {
+              updates[`/trainingModules/${module.id}`] = module;
+            }
+          });
+          
+          await window.fbUpdate(window.fbRef(window.fbDatabase), updates);
         } catch (error) {
           console.error('Error loading training modules:', error);
-          window.trainingModules = [...window.defaultModules];
+          // In case of error, use default modules but ensure they're unique
+          const uniqueDefaults = new Map();
+          window.defaultModules.forEach(module => {
+            if (!uniqueDefaults.has(module.id)) {
+              uniqueDefaults.set(module.id, module);
+            }
+          });
+          window.trainingModules = Array.from(uniqueDefaults.values());
         }
       };
 
