@@ -1,0 +1,3073 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FIB Law Database – Penal Code</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body { margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0b0b0f; color:#fff; }
+
+      /* CLASSIFIED ENTRY SCREEN */
+      .classified-entry {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #000000 0%, #0a0a0a 25%, #000000 50%, #0a0a0a 75%, #000000 100%);
+        background-size: 400% 400%;
+        animation: classifiedBg 8s ease-in-out infinite;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      @keyframes classifiedBg {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+      }
+
+    .classified-content {
+      text-align: center;
+      max-width: 800px;
+      padding: 40px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #00ff00;
+      border-radius: 10px;
+      box-shadow: 
+        0 0 30px rgba(0, 255, 0, 0.3),
+        inset 0 0 30px rgba(0, 255, 0, 0.1);
+      animation: classifiedGlow 2s ease-in-out infinite alternate;
+      position: relative;
+      z-index: 2;
+    }
+
+      @keyframes classifiedGlow {
+        0% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.3), inset 0 0 30px rgba(0, 255, 0, 0.1); }
+        100% { box-shadow: 0 0 50px rgba(0, 255, 0, 0.5), inset 0 0 50px rgba(0, 255, 0, 0.2); }
+      }
+
+  .classified-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: auto;
+    opacity: 0.6;
+    z-index: 1;
+    filter: drop-shadow(0 0 30px #00ff00);
+    animation: watermarkPulse 3s ease-in-out infinite;
+  }
+
+    .classified-logo {
+      font-size: 72px;
+      font-weight: 900;
+      color: #00ff00;
+      text-shadow: 0 0 20px #00ff00;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      letter-spacing: 8px;
+      margin-bottom: 20px;
+      animation: logoPulse 1.5s ease-in-out infinite;
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes logoPulse {
+      0%, 100% { transform: scale(1); text-shadow: 0 0 20px #00ff00; }
+      50% { transform: scale(1.05); text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00; }
+    }
+
+  @keyframes watermarkPulse {
+    0%, 100% { 
+      opacity: 0.5;
+      filter: drop-shadow(0 0 20px #00ff00);
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% { 
+      opacity: 0.7;
+      filter: drop-shadow(0 0 40px #00ff00) drop-shadow(0 0 60px #00ff00);
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+  }
+
+      .classified-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 3px;
+        margin-bottom: 10px;
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      }
+
+      .classified-subtitle {
+        font-size: 16px;
+        color: #00ff00;
+        letter-spacing: 2px;
+        margin-bottom: 40px;
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      }
+
+      .access-sequence {
+        text-align: left;
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+        font-size: 14px;
+        line-height: 1.8;
+      }
+
+      .access-line {
+        margin-bottom: 8px;
+        opacity: 0;
+        animation: fadeInLine 0.5s ease-in forwards;
+      }
+
+      .access-line:nth-child(1) { animation-delay: 0.5s; }
+      .access-line:nth-child(2) { animation-delay: 1s; }
+      .access-line:nth-child(3) { animation-delay: 1.5s; }
+      .access-line:nth-child(4) { animation-delay: 2s; }
+      .access-line:nth-child(5) { animation-delay: 3.5s; }
+      .access-line:nth-child(6) { animation-delay: 4s; }
+      .access-line:nth-child(7) { animation-delay: 4.5s; }
+
+      @keyframes fadeInLine {
+        from { opacity: 0; transform: translateX(-20px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+
+      .prompt {
+        color: #00ff00;
+        font-weight: 600;
+      }
+
+      .password-display {
+        color: #ff0000;
+        font-weight: 700;
+        letter-spacing: 2px;
+      }
+
+      .verification-status {
+        color: #00ff00;
+        font-weight: 700;
+      }
+
+      .access-status {
+        color: #00ff00;
+        font-weight: 700;
+      }
+
+      .welcome-message {
+        color: #00ff00;
+        font-weight: 700;
+        font-size: 16px;
+      }
+
+      .classified-footer {
+        margin-top: 40px;
+        border-top: 1px solid #00ff00;
+        padding-top: 20px;
+      }
+
+      .security-level {
+        color: #ff0000;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      }
+
+      .unauthorized-warning {
+        color: #ff0000;
+        font-size: 10px;
+        letter-spacing: 0.5px;
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      }
+
+      .typing-cursor {
+        display: inline-block;
+        width: 2px;
+        height: 16px;
+        background: #00ff00;
+        animation: blink 1s infinite;
+        margin-left: 2px;
+      }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* ROSTER STYLES */
+    .roster-section {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .roster-section h2 {
+      margin: 0 0 16px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fde047;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      text-shadow: 0 0 8px rgba(253,224,71,.2);
+      border-bottom: 2px solid #fde047;
+      padding-bottom: 8px;
+    }
+
+    .roster-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(0,0,0,.3);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .roster-table th {
+      background: #fde047;
+      color: #000;
+      padding: 12px 8px;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    }
+
+    .roster-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      font-size: 13px;
+      color: #fff;
+    }
+
+    .roster-table tr:hover {
+      background: rgba(253,224,71,.1);
+    }
+
+    .badge-cell {
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      font-weight: 700;
+      color: #fde047;
+      text-align: center;
+      min-width: 80px;
+    }
+
+    .name-cell {
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .rank-cell {
+      font-weight: 500;
+      color: #d1d5db;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+
+  .discord-cell {
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    font-size: 11px;
+    color: #9ca3af;
+  }
+
+  .division-cell {
+    font-weight: 500;
+    color: #d1d5db;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge.active {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    .status-badge.inactive {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .roster-empty {
+      text-align: center;
+      color: rgba(255,255,255,.6);
+      font-style: italic;
+      padding: 20px;
+    }
+
+    .roster-loading {
+      text-align: center;
+      color: #fde047;
+      padding: 20px;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      font-size: 14px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+      .wrap { max-width: 1160px; margin: 0 auto; padding: 24px; }
+
+    .toolbar {
+      position: sticky; top: 0; z-index: 50;
+      display:flex; flex-direction: column; gap:16px; margin-bottom:24px;
+      padding: 10px 0 14px 0; background: #0b0b0f;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      transition: all 0.3s ease;
+    }
+    .toolbar.collapsed {
+      padding: 8px 0;
+    }
+    .toolbar.collapsed .brand img {
+      height: 48px;
+    }
+    .toolbar.collapsed h1 {
+      font-size: 24px;
+    }
+    .toolbar.collapsed .search-controls,
+    .toolbar.collapsed .controls {
+      display: none;
+    }
+    .collapse-btn {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      background: rgba(0,0,0,.3);
+      color: #fde047;
+      border: 2px solid #fde047;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .collapse-btn:hover {
+      background: rgba(253,224,71,.2);
+      color: #fde047;
+      border-color: #fde047;
+    }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .brand img { height: 128px; width:auto; border-radius:4px; }
+    h1 { font-size:42px; font-weight:800; margin:0; letter-spacing:.02em; color: #fde047; font-family: 'Courier New', 'Monaco', 'Menlo', monospace; text-shadow: 0 0 10px rgba(253,224,71,.3); }
+
+    .search-controls { 
+      display:flex; align-items:center; justify-content:flex-end; gap:12px; flex-wrap:wrap; 
+      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .search-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+      .toggle-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; margin-top:12px; }
+      .jumpbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+      .jump-btn {
+        background: rgba(0,0,0,.3); color: #9ca3af; border: 2px solid #9ca3af;
+        border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+        transition: background .15s, color .15s, border-color .15s;
+        text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+      }
+      .jump-btn:hover {
+        background: rgba(156,163,175,.2);
+        color: #d1d5db;
+        border-color: #d1d5db;
+      }
+      .toggle-tags-btn,
+      .toggle-lawlinks-btn {
+        background: rgba(0,0,0,.3); color: #fde047; border: 1px solid #fde047;
+        border-radius: 6px; padding: 3px 6px; font-size: 10px; font-weight: 600; cursor: pointer;
+        transition: background .15s, color .15s, border-color .15s;
+        text-decoration:none; display:inline-flex; align-items:center; gap:3px;
+      }
+    .toggle-codes-btn,
+    .toggle-roster-btn,
+    .toggle-report-btn,
+    .toggle-weapon-btn {
+      background: rgba(0,0,0,.3); color: #fde047; border: 2px solid #fde047;
+      border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+      text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+    }
+      .toggle-tags-btn:hover,
+      .toggle-lawlinks-btn:hover {
+        background: rgba(253,224,71,.2); 
+        color: #fde047; 
+        border-color: #fde047; 
+      }
+    .toggle-codes-btn:hover,
+    .toggle-roster-btn:hover,
+    .toggle-report-btn:hover,
+    .toggle-weapon-btn:hover { 
+      background: rgba(253,224,71,.2); 
+      color: #fde047; 
+      border-color: #fde047; 
+    }
+
+      .search input{
+        width: 300px; background: rgba(255,255,255,.05); color:#fff; border:1px solid rgba(255,255,255,.12);
+        padding:10px 12px; border-radius:14px; outline:none; font-size:14px;
+      }
+
+      .section { margin: 14px 0 28px; scroll-margin-top: 92px; }
+      .section h2 { margin: 8px 0 10px; font-size:16px; font-weight:700; color: rgba(255,255,255,.9); }
+      .subhead { margin: 8px 0 10px; font-size:13px; font-weight:600; color: rgba(255,255,255,.65); text-transform: uppercase; letter-spacing:.04em; }
+      .cards { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+
+      .card {
+        background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius: 14px;
+        padding: 14px; position: relative; overflow: hidden;
+      }
+      .card::before { content:""; position:absolute; left:0; top:0; width:4px; height:100%; background:#444; border-radius: 14px 0 0 14px; }
+      .sev-Infraction::before { background:#22c55e; }   /* green */
+      .sev-Misdemeanor::before { background:#f59e0b; }  /* yellow */
+      .sev-Felony::before { background:#ef4444; }       /* red */
+      .sev-HUT::before { background:#7c3aed; }          /* purple (HUT) */
+      .sev-UTILITY::before { background:#38bdf8; }      /* light blue (UTILITY) */
+      .sev-LEGAL::before { background:#60a5fa; }        /* blue for legal refs */
+
+      .card h3 { margin: 0 0 4px; font-size:14px; font-weight:600; color:#fff; }
+      .desc { font-size:12px; color: rgba(255,255,255,.72); line-height:1.4; margin-bottom:8px; min-height: 32px; }
+
+      /* Previous/New tag line */
+      .prevline { margin: 0 0 8px; }
+      .prevline.hide-tags { display: none; }
+      .tag-pill {
+        display:inline-block; position: relative; overflow: hidden;
+        padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight:600;
+        border:1px solid transparent;
+      }
+      .tag-new { color:#fde68a; background: rgba(250,204,21,.10); border-color: rgba(250,204,21,.45); }
+      .tag-new::after{
+        content:""; position:absolute; top:0; left:-120%; width:60%; height:100%;
+        background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.35) 45%, transparent 70%);
+        animation: shimmer 2.6s linear infinite;
+      }
+      @keyframes shimmer { from{ left:-120%; } to{ left:140%; } }
+      .tag-prev { color:#fecaca; background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.4); }
+      .pill-missing { display:inline-block; font-size:10px; padding:3px 6px; border-radius:999px; background: rgba(253,224,71,.15); border:1px solid rgba(253,224,71,.35); color:#fde047; margin-left:6px; }
+
+      .meta { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:8px; }
+      .label { font-size:10px; text-transform: uppercase; letter-spacing:.04em; color: rgba(255,255,255,.55); margin-bottom:4px; }
+      .value { border:1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.3); border-radius:10px; padding:8px 10px; font-size:13px; }
+
+      /* related law links */
+      .law-links { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+      .law-chip {
+        display:inline-block; font-size:11px; padding:5px 8px; border-radius:999px;
+        background: rgba(96,165,250,.12); border:1px solid rgba(96,165,250,.35); color:#cfe3ff;
+        text-decoration:none;
+      }
+      .law-chip:hover { background: rgba(96,165,250,.2); }
+    .hide-law .law-links { display:none; }
+    .hide-report #sec-report,
+    .hide-report #sec-cart { display:none; }
+    .hide-weapon #sec-weapon { display:none; }
+    .hide-roster #sec-roster { display:none; }
+
+      /* Add button on cards — top-right & green */
+      .card .add-btn {
+        position:absolute; top:10px; right:10px;
+        width:32px; height:32px; border-radius:999px;
+        display:grid; place-items:center;
+        font-size:16px; font-weight:900; line-height:1;
+        padding:0;
+        background:#16a34a;
+        border:1px solid rgba(22,163,74,.6);
+        color:#fff; cursor:pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      }
+      .card .add-btn:hover { background:#15803d; }
+
+      /* CART */
+      .cart {
+        background: rgba(0,0,0,.3);
+        border: 2px solid #fde047;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+      .cart h2 { margin:0 0 10px; }
+      .cart-empty { color:rgba(255,255,255,.7); font-size:13px; }
+      .cart-items { display:flex; flex-direction:column; gap:8px; margin:10px 0; }
+      .cart-row {
+        display:grid; grid-template-columns: 1fr auto auto auto; gap:10px; align-items:center;
+        background: rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:8px 10px;
+      }
+      .qty { display:inline-flex; align-items:center; gap:6px; }
+      .qty button { width:28px; height:28px; border-radius:8px; background:#1f2937; color:#fff; border:1px solid rgba(255,255,255,.15); cursor:pointer; }
+      .qty input { width:56px; background:#0b0b0f; color:#fff; border:1px solid rgba(255,255,255,.15); border-radius:8px; padding:6px 8px; text-align:center; }
+      .remove-btn {
+        width:28px; height:28px; border-radius:8px;
+        background:#3b0f0f; color:#fecaca; border:1px solid rgba(239,68,68,.55);
+        cursor:pointer; display:grid; place-items:center; font-weight:900;
+      }
+
+      .totals { display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; }
+      .totals .pill { font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06); }
+      .cart-actions { display:flex; gap:10px; align-items:center; }
+      
+      /* Fine/Time Sliders */
+      .sliders { margin-top:16px; padding:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.12); border-radius:12px; }
+      .slider-group { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+      .slider-group:last-child { margin-bottom:0; }
+      .slider-label { font-size:12px; font-weight:600; color:rgba(255,255,255,.8); min-width:120px; }
+      .slider-container { flex:1; display:flex; align-items:center; gap:8px; }
+      .slider { flex:1; height:6px; background:rgba(255,255,255,.15); border-radius:3px; outline:none; cursor:pointer; }
+      .slider::-webkit-slider-thumb { appearance:none; width:18px; height:18px; background:#2563eb; border-radius:50%; cursor:pointer; border:2px solid #fff; }
+      .slider::-moz-range-thumb { width:18px; height:18px; background:#2563eb; border-radius:50%; cursor:pointer; border:2px solid #fff; }
+      .slider-value { font-size:12px; font-weight:600; color:#fff; min-width:80px; text-align:right; }
+      .clear-btn {
+        background: rgba(0,0,0,.3); color: #fde047; border: 2px solid #fde047;
+        border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 700; cursor: pointer;
+        transition: background .15s, color .15s, border-color .15s;
+      }
+      .clear-btn:hover {
+        background: rgba(253,224,71,.2);
+        color: #fde047;
+        border-color: #fde047;
+      }
+
+      .notes { margin-top:10px; padding-top:10px; border-top:1px dashed rgba(255,255,255,.15); }
+      .notes h3 { margin:0 0 6px; font-size:13px; color:rgba(255,255,255,.85); }
+      .note-list { display:flex; flex-wrap:wrap; gap:8px; }
+      .note-chip {
+        display:inline-flex; align-items:center; gap:6px;
+        font-size:11px; padding:5px 8px; border-radius:999px;
+        background: rgba(96,165,250,.12); border:1px solid rgba(96,165,250,.35); color:#cfe3ff;
+      }
+      .note-chip .x {
+        width:18px; height:18px; border-radius:6px;
+        display:grid; place-items:center; cursor:pointer; font-weight:900;
+        background:#3b0f0f; color:#fecaca; border:1px solid rgba(239,68,68,.55);
+      }
+
+      .muted { color: rgba(255,255,255,.6); font-size:13px; padding:14px; border:1px dashed rgba(255,255,255,.15); border-radius:14px; }
+      .fineprint { margin-top:6px; font-size:11px; color: rgba(255,255,255,.5); }
+
+      /* Police Codes Table */
+      .codes-section {
+        background: rgba(255,255,255,.03);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+      }
+      .codes-section.hidden { display: none; }
+      .codes-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+        background: rgba(0,0,0,.3);
+        border: 2px solid #fde047;
+        border-radius: 8px;
+        padding: 20px;
+      }
+      .codes-category {
+        background: transparent;
+        border: none;
+        padding: 0;
+      }
+      .codes-category h3 {
+        margin: 0 0 16px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #fde047;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        text-align: center;
+        border-bottom: 2px solid #fde047;
+        padding-bottom: 8px;
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+        text-shadow: 0 0 8px rgba(253,224,71,.2);
+      }
+      .codes-category.ten-codes h3 { color: #fde047; }
+      .codes-category.signals h3 { color: #fde047; }
+      .codes-category.other h3 { color: #fde047; }
+      .code-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        border: 1px solid #fde047;
+        margin-bottom: 4px;
+        font-size: 14px;
+        background: rgba(0,0,0,.2);
+      }
+      .code-item.auto-dispatch {
+        background: rgba(253,224,71,.2);
+      }
+      .code-item.critical {
+        background: rgba(239,68,68,.2);
+      }
+      .code-number {
+        font-weight: 700;
+        color: #fff;
+        min-width: 80px;
+        font-size: 14px;
+      }
+      .code-description {
+        color: #fff;
+        text-align: right;
+        flex: 1;
+        margin-left: 12px;
+        font-weight: 500;
+      }
+      .code-description.auto-dispatch {
+        color: #fde047;
+        font-weight: 700;
+      }
+      .code-description.critical {
+        color: #ef4444;
+        font-weight: 700;
+      }
+
+      /* Expandable Content */
+      .expandable-content {
+        display: none;
+        margin-top: 12px;
+        padding: 12px;
+        background: rgba(0,0,0,.2);
+        border: 1px solid #fde047;
+        border-radius: 8px;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .expandable-content.show {
+        display: block;
+      }
+      .expand-btn {
+        background: rgba(0,0,0,.3);
+        color: #fde047;
+        border: 1px solid #fde047;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-left: 8px;
+        transition: background .15s, color .15s, border-color .15s;
+      }
+      .expand-btn:hover {
+        background: rgba(253,224,71,.2);
+        color: #fde047;
+        border-color: #fde047;
+      }
+
+    @media (max-width:920px){
+      .controls { justify-content:flex-start; }
+      .search-controls { justify-content:flex-start; }
+    }
+    @media (max-width:720px){
+      .search input{ width:220px; }
+      .brand h1{ font-size:28px; }
+      .search-controls { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .search-right { justify-content: flex-start; }
+    }
+      
+    /* ---- Case Report ---- */
+      .report {
+        background: rgba(0,0,0,.3);
+        border: 2px solid #fde047;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+    .report-grid {
+      display:grid; gap:10px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .report .field { display:flex; flex-direction:column; gap:6px; }
+    .report label { font-size:11px; color:rgba(255,255,255,.7); letter-spacing:.04em; text-transform:uppercase; }
+    .report input[type="text"],
+    .report input[type="datetime-local"],
+    .report select,
+    .report textarea {
+      background:#0b0b0f; color:#fff; border:1px solid rgba(255,255,255,.15); border-radius:10px; padding:8px 10px; font-size:13px;
+    }
+    .report textarea { min-height:88px; }
+    .report #statements { min-height:150px; }
+    .report #seized { width: 100%; min-height: 60px; padding: 12px 14px; font-size: 14px; }
+    .report .row-6 { grid-column: span 6; }
+    .report .row-4 { grid-column: span 4; }
+    .report .row-3 { grid-column: span 3; }
+    .report .row-2 { grid-column: span 2; }
+    .report .row-12 { grid-column: 1 / -1; }
+
+    .report .checks { display:flex; flex-wrap:wrap; gap:10px; }
+    .report .check { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); padding:8px 10px; border-radius:10px; }
+    .report .check input[type="checkbox"] { width:16px; height:16px; }
+
+    .report-actions { display:flex; gap:10px; align-items:center; margin-top:10px; }
+    .create-btn {
+      background: rgba(0,0,0,.3); color: #fde047; border: 2px solid #fde047; border-radius: 10px; padding: 8px 12px; font-weight: 700; cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .create-btn:hover {
+      background: rgba(253,224,71,.2);
+      color: #fde047;
+      border-color: #fde047;
+    }
+    .copy-btn {
+      background: rgba(0,0,0,.3); color: #fde047; border: 2px solid #fde047; border-radius: 10px; padding: 8px 12px; font-weight: 700; cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .copy-btn:hover {
+      background: rgba(253,224,71,.2);
+      color: #fde047;
+      border-color: #fde047;
+    }
+    #reportPreview { width:100%; min-height:360px; white-space:pre-wrap; }
+
+    /* ---- Weapon Licensing ---- */
+    .weapon-licensing {
+      background: rgba(0,0,0,.3);
+      border: 2px solid #fde047;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .weapon-form {
+      display:grid; gap:16px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .weapon-form .field { display:flex; flex-direction:column; gap:6px; }
+    .weapon-form label { font-size:11px; color:rgba(255,255,255,.7); letter-spacing:.04em; text-transform:uppercase; }
+    .weapon-form input[type="text"],
+    .weapon-form input[type="checkbox"] {
+      background:#0b0b0f; color:#fff; border:1px solid rgba(255,255,255,.15); border-radius:10px; padding:8px 10px; font-size:13px;
+    }
+    .weapon-form .row-6 { grid-column: span 6; }
+    .weapon-form .row-12 { grid-column: 1 / -1; }
+    .weapon-form .checks { display:flex; flex-wrap:wrap; gap:10px; }
+    .weapon-form .check { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); padding:8px 10px; border-radius:10px; }
+    .weapon-form .check input[type="checkbox"] { width:16px; height:16px; }
+
+    .weapon-actions { display:flex; gap:10px; align-items:center; margin-top:16px; }
+    .approve-btn {
+      background: rgba(0,0,0,.3); color: #fde047; border: 2px solid #fde047; border-radius: 10px; padding: 8px 12px; font-weight: 700; cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .approve-btn:hover {
+      background: rgba(253,224,71,.2);
+      color: #fde047;
+      border-color: #fde047;
+    }
+    .deny-btn {
+      background: rgba(0,0,0,.3); color: #fde047; border: 2px solid #fde047; border-radius: 10px; padding: 8px 12px; font-weight: 700; cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .deny-btn:hover {
+      background: rgba(253,224,71,.2);
+      color: #fde047;
+      border-color: #fde047;
+    }
+    .copy-weapon-btn {
+      background: rgba(0,0,0,.3); color: #fde047; border: 2px solid #fde047; border-radius: 10px; padding: 8px 12px; font-weight: 700; cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .copy-weapon-btn:hover {
+      background: rgba(253,224,71,.2);
+      color: #fde047;
+      border-color: #fde047;
+    }
+
+    .weapon-questions {
+      margin-top:16px; padding:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.12); border-radius:12px;
+    }
+    .weapon-questions h3 { margin:0 0 12px; font-size:14px; color:rgba(255,255,255,.9); }
+    .question-item { margin-bottom:16px; padding:12px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.08); border-radius:8px; }
+    .question-text { font-size:13px; color:#fff; margin-bottom:8px; font-weight:600; }
+    .question-options { display:flex; flex-direction:column; gap:6px; }
+    .question-option { display:flex; align-items:center; gap:8px; font-size:12px; color:rgba(255,255,255,.8); }
+    .question-option input[type="radio"] { width:14px; height:14px; }
+
+    #weaponPreview { width:100%; min-height:120px; white-space:pre-wrap; }
+
+      
+    </style>
+    </head>
+    <body>
+    <!-- CLASSIFIED ENTRY SCREEN -->
+    <div id="classifiedEntry" class="classified-entry">
+      <img src="https://kappa.lol/3qib3z" alt="FIB Logo" class="classified-watermark" />
+      <div class="classified-content">
+        <div class="classified-header">
+          <div class="classified-logo">FIB</div>
+          <div class="classified-title">FEDERAL INVESTIGATION BUREAU</div>
+          <div class="classified-subtitle">CLASSIFIED DATABASE ACCESS</div>
+        </div>
+          
+          <div class="access-sequence">
+            <div class="access-line">
+              <span class="prompt">> ACCESSING SECURE SERVER...</span>
+            </div>
+            <div class="access-line">
+              <span class="prompt">> ENCRYPTION: AES-256</span>
+            </div>
+            <div class="access-line">
+              <span class="prompt">> AUTHENTICATING USER...</span>
+            </div>
+            <div class="access-line">
+              <span class="prompt">> PASSWORD: </span>
+              <span id="passwordDisplay" class="password-display"></span>
+            </div>
+            <div class="access-line">
+              <span class="prompt">> VERIFICATION: </span>
+              <span id="verificationStatus" class="verification-status"></span>
+            </div>
+            <div class="access-line">
+              <span class="prompt">> STATUS: </span>
+              <span id="accessStatus" class="access-status"></span>
+            </div>
+            <div class="access-line">
+              <span class="prompt">> WELCOME: </span>
+              <span id="welcomeMessage" class="welcome-message"></span>
+            </div>
+          </div>
+          
+          <div class="classified-footer">
+            <div class="security-level">TOP SECRET - EYES ONLY</div>
+            <div class="unauthorized-warning">UNAUTHORIZED ACCESS WILL RESULT IN IMMEDIATE TERMINATION</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wrap" id="mainContent" style="display: none;">
+        <div id="top" class="toolbar">
+          <button id="collapseBtn" class="collapse-btn" type="button">
+            <span class="collapse-text">Collapse</span>
+          </button>
+          <div class="brand">
+            <img src="https://kappa.lol/3qib3z" alt="FIB Logo" />
+            <h1>FEDERAL INVESTIGATION BUREAU<br>INTERNAL DATABASE</h1>
+          </div>
+        <div class="search-controls">
+          <div class="search-right">
+            <button id="toggleTagsBtn" class="toggle-tags-btn" type="button">Hide Previous/New Tags</button>
+            <button id="toggleLawLinksBtn" class="toggle-lawlinks-btn" type="button">Hide Caselaw Links</button>
+            <div class="search"><input id="search" type="search" placeholder="Search FIB Database…"></div>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="jumpbar">
+            <a class="jump-btn" href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">TOP</a>
+            <a class="jump-btn" href="#sec-infraction" onclick="document.getElementById('sec-infraction').scrollIntoView({behavior: 'smooth'}); return false;">Infraction</a>
+            <a class="jump-btn" href="#sec-misdemeanor" onclick="document.getElementById('sec-misdemeanor').scrollIntoView({behavior: 'smooth'}); return false;">Misdemeanor</a>
+            <a class="jump-btn" href="#sec-felony" onclick="document.getElementById('sec-felony').scrollIntoView({behavior: 'smooth'}); return false;">Felony</a>
+            <a class="jump-btn" href="#sec-felony-hut" onclick="document.getElementById('sec-felony-hut').scrollIntoView({behavior: 'smooth'}); return false;">Felony HUT</a>
+            <a class="jump-btn" href="#sec-legal" onclick="document.getElementById('sec-legal').scrollIntoView({behavior: 'smooth'}); return false;">Case Laws & Amendments</a>
+          <a class="jump-btn" href="#sec-roster" onclick="document.getElementById('sec-roster').scrollIntoView({behavior: 'smooth'}); return false;">Roster</a>
+          </div>
+        </div>
+        <div class="toggle-controls">
+          <button id="toggleCodesBtn" class="toggle-codes-btn" type="button">Hide Police Codes</button>
+          <button id="toggleRosterBtn" class="toggle-roster-btn" type="button">Hide Roster</button>
+          <button id="toggleReportBtn" class="toggle-report-btn" type="button">Hide Case Report & Charges</button>
+          <button id="toggleWeaponBtn" class="toggle-weapon-btn" type="button">Hide Weapon Licensing</button>
+        </div>
+        </div>
+
+    <!-- POLICE CODES TABLE -->
+    <div id="codesSection" class="codes-section">
+      <div class="codes-grid">
+        <!-- Left Column -->
+        <div class="codes-category ten-codes">
+          <h3>10 CODES</h3>
+          <div class="code-item"><span class="code-number">10-1</span><span class="code-description">Receiving Poorly</span></div>
+          <div class="code-item"><span class="code-number">10-2</span><span class="code-description auto-dispatch">Receiving Well</span></div>
+          <div class="code-item"><span class="code-number">10-3</span><span class="code-description">Stop Transmitting</span></div>
+          <div class="code-item"><span class="code-number">10-4</span><span class="code-description">Affirmative (OK)</span></div>
+          <div class="code-item"><span class="code-number">10-9</span><span class="code-description">Repeat last</span></div>
+          <div class="code-item"><span class="code-number">10-13</span><span class="code-description critical">Officer Down</span></div>
+          <div class="code-item"><span class="code-number">10-19</span><span class="code-description">Returning to station</span></div>
+          <div class="code-item"><span class="code-number">10-20</span><span class="code-description">Location</span></div>
+          <div class="code-item"><span class="code-number">10-23</span><span class="code-description">Arriving on scene</span></div>
+          <div class="code-item"><span class="code-number">10-31</span><span class="code-description">Suspicious activity</span></div>
+          <div class="code-item"><span class="code-number">10-35</span><span class="code-description">Illegal street racing</span></div>
+          <div class="code-item"><span class="code-number">10-38</span><span class="code-description">Traffic stop</span></div>
+          <div class="code-item"><span class="code-number">10-47</span><span class="code-description">Injured person</span></div>
+        </div>
+        
+        <!-- Middle Column -->
+        <div class="codes-category ten-codes">
+          <h3>10 CODES</h3>
+          <div class="code-item"><span class="code-number">10-50</span><span class="code-description">Traffic Accident</span></div>
+          <div class="code-item"><span class="code-number">10-70</span><span class="code-description">Foot Pursuit</span></div>
+          <div class="code-item"><span class="code-number">10-76</span><span class="code-description">Enroute</span></div>
+          <div class="code-item"><span class="code-number">10-80</span><span class="code-description">Chase in Progress</span></div>
+          <div class="code-item"><span class="code-number">10-90</span><span class="code-description auto-dispatch">Robbery in progress</span></div>
+          <div class="code-item"><span class="code-number">10-93</span><span class="code-description">Petty Crime</span></div>
+          <div class="code-item"><span class="code-number">10-95</span><span class="code-description">Suspect in Custody</span></div>
+          <div class="code-item"><span class="code-number">10-99</span><span class="code-description auto-dispatch">Shots Fired</span></div>
+          <div class="code-item"><span class="code-number">10-200</span><span class="code-description auto-dispatch">Potential Drug Sale</span></div>
+        </div>
+        
+        <!-- Right Column -->
+        <div class="codes-category signals">
+          <h3>RESPONSE CODES</h3>
+          <div class="code-item"><span class="code-number">Code 1</span><span class="code-description">No lights or siren</span></div>
+          <div class="code-item"><span class="code-number">Code 2</span><span class="code-description">Lights only</span></div>
+          <div class="code-item"><span class="code-number">Code 3</span><span class="code-description">Both lights and siren</span></div>
+          <div class="code-item"><span class="code-number">Code 4</span><span class="code-description">Scene under control</span></div>
+          <div class="code-item"><span class="code-number">Code 5</span><span class="code-description auto-dispatch">Felony Stop</span></div>
+          <div class="code-item"><span class="code-number">Code 6</span><span class="code-description">Searching the area</span></div>
+          <div class="code-item"><span class="code-number">UTL</span><span class="code-description">Unable to Locate</span></div>
+          <div class="code-item"><span class="code-number">VCB</span><span class="code-description">Visual Contact Broken</span></div>
+          
+          <!-- Other 10 Codes directly underneath -->
+          <div style="margin-top: 8px;">
+            <h3 style="color: #22c55e; margin: 8px 0 8px 0; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">OTHER 10 CODES</h3>
+            <div class="code-item"><span class="code-number">10-6</span><span class="code-description">Not responding to calls</span></div>
+            <div class="code-item"><span class="code-number">10-7</span><span class="code-description">Busy (on a scene)</span></div>
+            <div class="code-item"><span class="code-number">10-8</span><span class="code-description">Back in Service</span></div>
+            <div class="code-item"><span class="code-number">10-41</span><span class="code-description">Starting Shift</span></div>
+            <div class="code-item"><span class="code-number">10-42</span><span class="code-description">Ending Shift</span></div>
+            <div class="code-item"><span class="code-number">10-100</span><span class="code-description">Game Crash</span></div>
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- AGENT ROSTER -->
+  <div id="sec-roster" class="roster-section">
+    <h2>AGENT ROSTER</h2>
+    <div id="rosterContainer">
+      <div class="roster-loading">Loading roster data...</div>
+    </div>
+  </div>
+
+  <!-- CASE REPORT -->
+    <div id="sec-report" class="section">
+      <h2 style="color: #fde047; border-bottom: 2px solid #fde047; padding-bottom: 8px; text-align: center; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'Courier New', 'Monaco', 'Menlo', monospace; text-shadow: 0 0 8px rgba(253,224,71,.2);">CASE REPORT</h2>
+      <div class="report">
+        <div class="report-grid">
+          <div class="field row-3">
+            <label for="reportType">Template</label>
+            <select id="reportType">
+              <option>ARREST</option>
+              <option>WARRANT</option>
+              <option>INVESTIGATION</option>
+            </select>
+          </div>
+          <div class="field row-3">
+            <label for="suspect">Suspect</label>
+            <input id="suspect" type="text" placeholder="Full name(s)">
+          </div>
+          <div class="field row-3">
+            <label for="timeDate">Time & Date (US/Eastern)</label>
+            <input id="timeDate" type="text" readonly>
+          </div>
+          <div class="field row-3">
+            <label for="agent">Reporting Agent</label>
+            <input id="agent" type="text" value="Shermann Justiss">
+          </div>
+
+          <div class="field row-6">
+            <label for="startLoc">Start Location</label>
+            <input id="startLoc" type="text" placeholder="Where it began…">
+          </div>
+          <div class="field row-6">
+            <label for="endLoc">End Location</label>
+            <input id="endLoc" type="text" placeholder="Where it ended…">
+          </div>
+
+          <div class="field row-3">
+            <label for="plea">Plea</label>
+            <select id="plea">
+              <option>GUILTY</option>
+              <option>NOT GUILTY</option>
+              <option>NO CONTEST</option>
+            </select>
+          </div>
+          <div class="field row-12">
+            <label for="seized">Seized Items (comma-separated)</label>
+            <input id="seized" type="text" placeholder="e.g., 2x Glock 19, 5g cocaine, $2,300 cash">
+          </div>
+
+          <div class="row-12 checks">
+            <label class="check"><input id="rightsRead" type="checkbox"> <span>Rights Read</span></label>
+            <label class="check"><input id="lawyerOffered" type="checkbox"> <span>Lawyer Offered</span></label>
+            <label class="check">
+              <input id="lawyerReceived" type="checkbox"> <span>Lawyer Received</span>
+              <input id="lawyerName" type="text" placeholder="Lawyer Name" style="margin-left:6px; width:220px;">
+            </label>
+            <label class="check"><input id="medicalOffered" type="checkbox"> <span>Medical Offered</span></label>
+            <label class="check">
+              <input id="medicalReceived" type="checkbox"> <span>Medical Received</span>
+              <input id="medicName" type="text" placeholder="Medic Name" style="margin-left:6px; width:220px;">
+            </label>
+          <div class="license-revoked-section">
+            <label class="check">
+              <input id="licenseRevoked" type="checkbox"> <span>LICENSE REVOKED?</span>
+            </label>
+            <div class="license-types" id="licenseTypes" style="display: none; margin-left: 20px; margin-top: 8px;">
+              <label class="check"><input id="huntingRevoked" type="checkbox"> <span>Hunting</span></label>
+              <label class="check"><input id="drivingRevoked" type="checkbox"> <span>Driving</span></label>
+              <label class="check"><input id="fishingRevoked" type="checkbox"> <span>Fishing</span></label>
+              <label class="check"><input id="weaponsRevoked" type="checkbox"> <span>Weapons</span></label>
+              <div style="margin-top: 8px;">
+                <input id="revokedReason" type="text" placeholder="Revocation Reason" style="width: 100%; max-width: 400px;">
+              </div>
+            </div>
+          </div>
+          </div>
+
+          <div class="field row-12">
+            <label for="statements">Statement(s)</label>
+            <textarea id="statements" placeholder="Relevant statements from suspect(s)/others…"></textarea>
+          </div>
+        </div>
+
+        <div class="report-actions">
+          <button id="btnCreateReport" class="create-btn" type="button">Create Report Template</button>
+          <button id="btnCopyReport" class="copy-btn" type="button" disabled>Copy</button>
+        </div>
+
+        <div class="field" style="margin-top:8px;">
+          <label for="reportPreview">Preview</label>
+          <textarea id="reportPreview" readonly></textarea>
+        </div>
+      </div>
+    </div>
+
+        
+        <!-- CART / CASE CHARGES -->
+        <div id="sec-cart" class="section">
+          <h2 style="color: #fde047; border-bottom: 2px solid #fde047; padding-bottom: 8px; text-align: center; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'Courier New', 'Monaco', 'Menlo', monospace; text-shadow: 0 0 8px rgba(253,224,71,.2);">CASE CHARGES</h2>
+          <div class="cart" id="cart">
+            <div class="cart-actions">
+              <button class="clear-btn" id="clearCartBtn">Clear</button>
+              <div class="muted" id="emptyMsg">No charges added yet — use the “+” on any charge card below.</div>
+            </div>
+            <div class="cart-items" id="cartItems"></div>
+            <div class="totals" id="totals"></div>
+            <div class="sliders" id="sliders" style="display:none;">
+              <div class="slider-group">
+                <div class="slider-label">Fine Adjustment:</div>
+                <div class="slider-container">
+                  <input type="range" class="slider" id="fineSlider" min="0" max="100" value="100">
+                  <div class="slider-value" id="fineValue">100%</div>
+                </div>
+              </div>
+              <div class="slider-group">
+                <div class="slider-label">Time Adjustment:</div>
+                <div class="slider-container">
+                  <input type="range" class="slider" id="timeSlider" min="0" max="100" value="100">
+                  <div class="slider-value" id="timeValue">100%</div>
+                </div>
+              </div>
+            </div>
+            <div class="notes">
+              <h3>Notes — Case Laws & Amendments used</h3>
+              <div class="note-list" id="noteList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WEAPON LICENSING -->
+        <div id="sec-weapon" class="section">
+          <h2 style="color: #fde047; border-bottom: 2px solid #fde047; padding-bottom: 8px; text-align: center; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'Courier New', 'Monaco', 'Menlo', monospace; text-shadow: 0 0 8px rgba(253,224,71,.2);">WEAPON LICENSING</h2>
+          <div class="weapon-licensing">
+            <div class="weapon-form">
+              <div class="field row-6">
+                <label for="applicantFirstName">Applicant First Name</label>
+                <input id="applicantFirstName" type="text" placeholder="First Name">
+              </div>
+              <div class="field row-6">
+                <label for="applicantLastName">Applicant Last Name</label>
+                <input id="applicantLastName" type="text" placeholder="Last Name">
+              </div>
+              <div class="field row-6">
+                <label for="agentName">Agent Name</label>
+                <input id="agentName" type="text" placeholder="Your Name" value="Shermann Justiss">
+              </div>
+              <div class="field row-6">
+                <label for="licenseDate">License Date (UTC)</label>
+                <input id="licenseDate" type="text" readonly>
+              </div>
+
+              <div class="row-12 checks">
+                <label class="check"><input id="hasFelonies" type="checkbox"> <span>Any Felonies? (DENY IF SO)</span></label>
+                <label class="check"><input id="misdemeanorCheck" type="checkbox"> <span>No more than 2 misdemeanors in the past 7 days</span></label>
+                <label class="check"><input id="photoTaken" type="checkbox"> <span>Photo Taken?</span></label>
+              </div>
+            </div>
+
+            <div class="weapon-actions">
+              <button id="btnApprove" class="approve-btn" type="button">APPROVE</button>
+              <button id="btnDeny" class="deny-btn" type="button">DENY</button>
+              <button id="btnCopyWeapon" class="copy-weapon-btn" type="button" disabled>Copy License Text</button>
+            </div>
+
+            <div class="field" style="margin-top:8px;">
+              <label for="weaponPreview">License Text</label>
+              <textarea id="weaponPreview" readonly></textarea>
+            </div>
+
+            <div class="weapon-questions">
+              <h3>Knowledge Test (3 Questions)</h3>
+              <div id="questionsContainer"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="root"></div>
+      </div>
+
+    <script>
+    /* ---------- Helpers ---------- */
+    function c(name, severity, description, group, timeMonths, fineDollars){
+      const id = Math.random().toString(36).slice(2);
+      return {
+        id, name, severity, description, group,
+        sentenceMonths: Number(timeMonths),
+        fineAmount: Number(fineDollars),
+        sentenceLabel: fmtTime(timeMonths),
+        fineLabel: fmtMoney(fineDollars)
+      };
+    }
+    function fmtMoney(v){
+      const BIG = 1e8;
+      if (v === "-" || v == null) return "—";
+      const n = Number(v);
+      if (!isFinite(n) || n <= 0) return "—";
+      if (n >= BIG) return "Judge’s discretion";
+      return "$" + n.toLocaleString();
+    }
+    function fmtTime(v){
+      const BIG = 1e8;
+      if (v === "-" || v == null) return "—";
+      const n = Number(v);
+      if (!isFinite(n) || n <= 0) return "—";
+      if (n >= BIG) return "Judge’s discretion";
+      return n.toLocaleString() + " mo";
+    }
+    function slugify(s){ return (s||"").toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+
+
+      /* ======== Case Report helpers ======== */
+
+    // Fill "Time & Date" with current US/Eastern time
+    function setEasternNow() {
+      const now = new Date();
+      const s = now.toLocaleString('en-US', {
+        timeZone: 'America/New_York',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: true
+      });
+      document.getElementById('timeDate').value = s + " (ET)";
+    }
+    setEasternNow(); // once on load
+
+    // Build a list of charges from the CART (with quantities)
+    function cartChargeList() {
+      if (CART.size === 0) return ["—"];
+      const out = [];
+      for (const {item, qty} of CART.values()) {
+        out.push(`${item.name}${qty>1?` x${qty}`:""}`);
+      }
+      return out;
+    }
+
+    // Turn comma separated seized items into a cleaned list
+    function seizedItemsList() {
+      const raw = (document.getElementById('seized').value || "");
+      const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
+      return parts.length ? parts : ["—"];
+    }
+
+    function yn(v){ return v ? "Yes" : "No"; }
+
+  // Helper function to get license revoked details
+  function getLicenseRevokedDetails() {
+    const revokedTypes = [];
+    if (document.getElementById('huntingRevoked').checked) revokedTypes.push('Hunting');
+    if (document.getElementById('drivingRevoked').checked) revokedTypes.push('Driving');
+    if (document.getElementById('fishingRevoked').checked) revokedTypes.push('Fishing');
+    if (document.getElementById('weaponsRevoked').checked) revokedTypes.push('Weapons');
+    
+    const reason = document.getElementById('revokedReason').value || '—';
+    
+    if (revokedTypes.length === 0) {
+      return 'Revocation Reason: ' + reason;
+    } else {
+      return `Licenses Revoked: ${revokedTypes.join(', ')}\nRevocation Reason: ${reason}`;
+    }
+  }
+
+    // Get adjusted totals for report templates
+    function getAdjustedTotals() {
+      let totalFine = 0, totalMonths = 0;
+      let hasDiscretion = false;
+      for (const {item, qty} of CART.values()){
+        const f = Number(item.fineAmount); const m = Number(item.sentenceMonths);
+        if (isFinite(f) && f > 0 && f < 1e8) totalFine += f * qty; else if (f >= 1e8) hasDiscretion = true;
+        if (isFinite(m) && m > 0 && m < 1e8) totalMonths += m * qty; else if (m >= 1e8) hasDiscretion = true;
+      }
+      
+      const adjustedFine = Math.round(totalFine * fineMultiplier);
+      const adjustedMonths = Math.round(totalMonths * timeMultiplier);
+      
+      return {
+        fine: adjustedFine > 0 ? "$" + adjustedFine.toLocaleString() : "—",
+        months: adjustedMonths > 0 ? adjustedMonths.toLocaleString() + " mo" : "—",
+        hasDiscretion
+      };
+    }
+
+    function generateArrestTemplate() {
+      const charges = cartChargeList().map(c => `- ${c}`).join('\n');
+      const seized = seizedItemsList().map(s => `- ${s}`).join('\n');
+      const totals = getAdjustedTotals();
+
+      return `**ARREST TEMPLATE**
+
+    Time/Date:
+    ${document.getElementById('timeDate').value}
+
+    Start Location:
+    ${document.getElementById('startLoc').value || "—"}
+
+    End Location:
+    ${document.getElementById('endLoc').value || "—"}
+
+    Reporting Officer:
+    ${document.getElementById('agent').value || "—"}
+
+  Charge:
+  ${charges}
+
+    Plea:
+    ${document.getElementById('plea').value}
+
+    Seized Items:
+    ${seized}
+
+    Statement(s):
+    ${document.getElementById('statements').value || "—"}
+
+    Offered lawyer (Yes/No):
+    ${yn(document.getElementById('lawyerOffered').checked)}
+
+    Accepted Lawyer (Yes/No): 
+    ${yn(document.getElementById('lawyerReceived').checked)}
+    Lawyer Name: 
+    ${document.getElementById('lawyerName').value || "—"}
+
+    Offered medical (Yes/No): 
+    ${yn(document.getElementById('medicalOffered').checked)}
+
+    Received medical (Yes/No): 
+    ${yn(document.getElementById('medicalReceived').checked)}
+    Medic Name: 
+    ${document.getElementById('medicName').value || "—"}
+
+  License Revoked (Yes/No):
+  ${yn(document.getElementById('licenseRevoked').checked)}
+  ${document.getElementById('licenseRevoked').checked ? getLicenseRevokedDetails() : 'Revocation Reason: —'}
+
+  FINE CHANGED TO:
+  ${totals.fine}${totals.hasDiscretion ? " (+ discretionary)" : ""}
+  (Adjusted by ${Math.round(fineMultiplier * 100)}%)
+
+  TIME CHANGED TO:
+  ${totals.months}${totals.hasDiscretion ? " (+ discretionary)" : ""}
+  (Adjusted by ${Math.round(timeMultiplier * 100)}%)
+    `;
+    }
+
+    function generateWarrantTemplate() {
+      const charges = cartChargeList().map(c => `- ${c}`).join('\n');
+
+      return `Approved by
+
+
+
+    Arrest Warrant
+    Suspect(s) Name(s): 
+    ${document.getElementById('suspect').value || "—"}
+    Report Number(s):
+
+    Case Number(s): 
+    Date of Request: 
+    ${document.getElementById('timeDate').value}
+
+    Requesting:
+    ${document.getElementById('agent').value || "—"}
+
+
+
+    Incident Summary
+
+
+
+
+
+    Crime(s) Alleged:
+    ${charges}
+
+    PC per charge:
+
+
+    Evidence of Crimes:
+
+
+    EVIDENCE:
+
+
+    Witness Statements (Listed, statements below)
+
+
+    Statement of Probable Cause / Witness Statements
+
+
+    Victim / Witness
+
+
+  Requested Actions
+
+  FINE CHANGED TO:
+  ${getAdjustedTotals().fine}${getAdjustedTotals().hasDiscretion ? " (+ discretionary)" : ""}
+  (Adjusted by ${Math.round(fineMultiplier * 100)}%)
+
+  TIME CHANGED TO:
+  ${getAdjustedTotals().months}${getAdjustedTotals().hasDiscretion ? " (+ discretionary)" : ""}
+  (Adjusted by ${Math.round(timeMultiplier * 100)}%)
+    `;
+    }
+
+    function generateInvestigationTemplate() {
+      // Biggest charge = highest severity present
+      const rank = {"Felony (HUT)":3, "Felony":2, "Misdemeanor":1, "Infraction":0};
+      let biggest = "—", best = -1;
+      for (const {item} of CART.values()) {
+        const r = rank[item.severity] ?? -1;
+        if (r > best) { best = r; biggest = item.name; }
+      }
+
+      const charges = cartChargeList().map(c => `- ${c}`).join('\n');
+
+      return `FEDERAL INVESTIGATION BUREAU
+    Incident Report - ${biggest}
+    Date/Time: ${document.getElementById('timeDate').value}
+    Reporting Agent: ${document.getElementById('agent').value || "—"}
+
+    Summary of Events:
+
+    List your summery of events here
+
+
+
+    Statements:
+
+    Any statements go here from anyone aside from the A.O.
+
+
+
+    Status: Ongoing
+    Victims: List victims and there condition
+
+    Suspects: List suspects and how they were I.D.
+
+    Evidence:
+
+    Charges: List charges and where they come from
+    ${charges}
+
+
+
+    Filed by:
+    Agent ${document.getElementById('agent').value || "—"}
+    Federal Investigation Bureau
+
+    Medical Received: 
+    ${yn(document.getElementById('medicalReceived').checked)}
+    Medic Name: 
+    ${document.getElementById('medicName').value || "—"}
+
+  License Revoked: 
+  ${yn(document.getElementById('licenseRevoked').checked)}
+  ${document.getElementById('licenseRevoked').checked ? getLicenseRevokedDetails() : 'Revocation Reason: —'}
+
+  FINE CHANGED TO:
+  ${getAdjustedTotals().fine}${getAdjustedTotals().hasDiscretion ? " (+ discretionary)" : ""}
+  (Adjusted by ${Math.round(fineMultiplier * 100)}%)
+
+  TIME CHANGED TO:
+  ${getAdjustedTotals().months}${getAdjustedTotals().hasDiscretion ? " (+ discretionary)" : ""}
+  (Adjusted by ${Math.round(timeMultiplier * 100)}%)
+  `;
+    }
+
+    function buildReport() {
+      const type = document.getElementById('reportType').value;
+      const suspect = document.getElementById('suspect').value || "";
+      // keep suspect available for templates that might use it later
+      let text = "";
+      if (type === "ARREST") text = generateArrestTemplate();
+      else if (type === "WARRANT") text = generateWarrantTemplate();
+      else text = generateInvestigationTemplate();
+
+      const preview = document.getElementById('reportPreview');
+      preview.value = text;
+      document.getElementById('btnCopyReport').disabled = (text.trim().length === 0);
+    }
+
+  // Hook up buttons
+  document.getElementById('btnCreateReport').addEventListener('click', buildReport);
+  document.getElementById('btnCopyReport').addEventListener('click', async () => {
+    const txt = document.getElementById('reportPreview').value;
+    try {
+      await navigator.clipboard.writeText(txt);
+      const btn = document.getElementById('btnCopyReport');
+      const old = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(()=> btn.textContent = old, 1200);
+    } catch(e){
+      alert('Copy failed. Select and copy manually.');
+    }
+  });
+
+  // License revoked toggle functionality
+  document.getElementById('licenseRevoked').addEventListener('change', function() {
+    const licenseTypes = document.getElementById('licenseTypes');
+    if (this.checked) {
+      licenseTypes.style.display = 'block';
+    } else {
+      licenseTypes.style.display = 'none';
+      // Uncheck all license type checkboxes when main checkbox is unchecked
+      document.getElementById('huntingRevoked').checked = false;
+      document.getElementById('drivingRevoked').checked = false;
+      document.getElementById('fishingRevoked').checked = false;
+      document.getElementById('weaponsRevoked').checked = false;
+      document.getElementById('revokedReason').value = '';
+    }
+  });
+
+      
+    /* ---------- Previous/New Mapping (FULL) ---------- */
+    const HISTORY = {
+      "Vehicle Tampering": {type:"prev", label:"Vehicle Tampering"},
+      "Criminal Use of a Non-Firearm": {type:"prev", label:"Criminal Use of a Weapon"},
+      "Obstruction of Justice": {type:"prev", label:"Obstruction of Justice"},
+      "Aggravated Obstruction of Justice": {type:"prev", label:"Felony Obstruction of Justice"},
+      "Failure to Comply with a Court Order": {type:"new"},
+      "Distracted Driving": {type:"new"},
+      "Driving without a Valid License": {type:"prev", label:"Unlicensed Operation of Vehicle"},
+      "Failure to Display License Plate": {type:"new"},
+      "Failure to Maintain Lane": {type:"new"},
+      "Failure to Stop": {type:"prev", label:"Failure to Stop"},
+      "Speeding (3rd Degree)": {type:"prev", label:"Three Degree Speeding"},
+      "Speeding (2nd Degree)": {type:"prev", label:"Second Degree Speeding"},
+      "Speeding (1st Degree)": {type:"prev", label:"First Degree Speeding"},
+      "Illegal Parking": {type:"prev", label:"Unauthorized Parking"},
+      "Impeding Traffic": {type:"new"},
+      "Negligent Driving": {type:"prev", label:"Negligent Driving"},
+      "Passenger Endangerment": {type:"new"},
+      "Negligent Ownership of a Firearm": {type:"new"},
+      "Criminal Threats": {type:"new"},
+      "Disturbing the Peace": {type:"prev", label:"Disturbing the Peace"},
+      "Loitering on Gov. Property": {type:"prev", label:"Loitering on Government Properties"},
+      "Anti-mask Law": {type:"prev", label:"Anti-mask Law"},
+      "Misuse of Emergency Systems": {type:"prev", label:"Misuse of Emergency Systems"},
+      "Petty Theft": {type:"prev", label:"Petty Theft"},
+      "Vandalism": {type:"prev", label:"Vandalism"},
+      "Littering": {type:"prev", label:"Littering"},
+      "Unlawful Hunting": {type:"prev", label:"Hunting in Unlawful Manner"},
+      "Public Waste Offense": {type:"new"},
+      "Driving Under the Influence": {type:"prev", label:"Driving Under the Influence"},
+      "Driving with a Suspended License": {type:"new"},
+      "Evading": {type:"prev", label:"Evading"},
+      "Hit and Run (Property)": {type:"prev", label:"Hit and Run"},
+      "Theft of a Motor Vehicle": {type:"prev", label:"Joyriding"},
+      "Brandishing": {type:"prev", label:"Brandishing a Weapon"},
+      "Possession of Illegal Firearm Modification": {type:"prev", label:"Possession of Illegal Firearm Modification"},
+      "Reckless Use of a Firearm": {type:"new"},
+      "Possession of a Controlled Substance (Misdemeanor)": {type:"prev", label:"Misdemeanor Possession of a Controlled Substance"},
+      "Aggravated Criminal Threats": {type:"prev", label:"Threats against a Public Servant or Peace Officer"},
+      "Assault": {type:"prev", label:"Assault"},
+      "Battery": {type:"prev", label:"Battery (Felony)"},
+      "False Imprisonment": {type:"new"},
+      "Harassment": {type:"prev", label:"Harassment"},
+      "Stalking": {type:"new"},
+      "Indecent Exposure": {type:"new"},
+      "Public Intoxication": {type:"new"},
+      "Unlawful Assembly": {type:"prev", label:"Unlawful Assembly"},
+      "Impersonating a Gov. Employee": {type:"prev", label:"Impersonating a Government Official"},
+      "Introducing Contraband to a Gov. Facility": {type:"new"},
+      "Possession of Gov. Equipment": {type:"prev", label:"Possession of Government-Issued Items"},
+      "Contempt of Court": {type:"prev", label:"Contempt of Court (Felony)"},
+      "False Reporting": {type:"prev", label:"False Reporting"},
+      "Interference with Emergency Services": {type:"new"},
+      "Malfeasance": {type:"prev", label:"Malfeasance"},
+      "Resisting Arrest": {type:"prev", label:"Resisting Arrest"},
+      "Vigilantism": {type:"prev", label:"Vigilantism"},
+      "False Identification": {type:"new"},
+      "Failure to Appear": {type:"new"},
+      "Aggravated Vandalism": {type:"prev", label:"Vandalism of Government Property (Felony)"},
+      "Burglary": {type:"prev", label:"Burglary"},
+      "Fraud": {type:"prev", label:"Fraud"},
+      "Grand Theft": {type:"prev", label:"Grand Theft"},
+      "Possession of Stolen Property": {type:"prev", label:"Criminal Possession of Stolen Property"},
+      "Robbery": {type:"prev", label:"Robbery"},
+      "Theft": {type:"prev", label:"Theft"},
+      "Trespassing": {type:"prev", label:"Trespassing"},
+      "Possession of Marked Currency": {type:"new"},
+      "Animal Cruelty": {type:"prev", label:"Animal Cruelty"},
+      "Reckless Endangerment": {type:"prev", label:"Reckless Endangerment"},
+      "Aggravated Theft of a Motor Vehicle": {type:"new"},
+      "Grand Theft Auto": {type:"prev", label:"Grand Theft Auto"},
+      "Hit and Run (Person)": {type:"new"},
+      "Street Racing": {type:"prev", label:"Street Racing"},
+      "Theft of an Aircraft": {type:"prev", label:"Theft of an Aircraft"},
+      "Possession of an Illegal Firearm (Class-1)": {type:"prev", label:"Criminal posession of a firearm (Class 1)"},
+      "Possession of an Illegal Firearm (Class-2)": {type:"prev", label:"Criminal posession of a firearm (Class 2)"},
+      "Possession of an Illegal Firearm (Class-3)": {type:"prev", label:"Criminal posession of a firearm (Class 3)"},
+      "Criminal Distribution of Firearm": {type:"prev", label:"Criminal Sale of Firearm"},
+      "Criminal Use of Illegal Explosives": {type:"prev", label:"Criminal Use of Explosives"},
+      "Criminal Use of a Firearm": {type:"new"},
+      "Possession of Illegal Explosives": {type:"prev", label:"Criminal Possession of Explosives"},
+      "Manufacturing of Controlled Substance": {type:"prev", label:"Felony Manufacturing of a Controlled Substance"},
+      "Possession of a Controlled Substance (Felony)": {type:"prev", label:"Felony Possession of a Controlled Substance"},
+      "Sale of Controlled Substance": {type:"prev", label:"Sale of a Controlled Substance"},
+      "Aggravated Assault": {type:"prev", label:"Assault with a Deadly Weapon"},
+      "Aggravated Battery": {type:"prev", label:"Aggravated Battery of a Public Servant or Peace Officer"},
+      "Aggravated False Imprisonment": {type:"prev", label:"Unlawful Imprisonment of a Public Servant or Peace Officer"},
+      "Aggravated Hostage Taking": {type:"new"},
+      "Aggravated Kidnapping": {type:"new"},
+      "Attempted 1st Degree Murder": {type:"prev", label:"Attempted First Degree Murder"},
+      "Attempted 2nd Degree Murder": {type:"prev", label:"Attempted Second Degree Murder"},
+      "Attempted Murder of a Gov. Employee": {type:"new"},
+      "Hostage Taking": {type:"new"},
+      "Involuntary Manslaughter": {type:"prev", label:"Involuntary Manslaughter"},
+      "Kidnapping": {type:"prev", label:"Kidnapping"},
+      "Gang Related Violence": {type:"prev", label:"Gang related shooting"},
+      "Torture": {type:"prev", label:"Torture"},
+      "Unlawful Wiretapping": {type:"new"},
+      "Aggravated Interference with Emergency Services": {type:"new"},
+      "Aggravated Malfeasance": {type:"prev", label:"Aggravated Malfeasance"},
+      "Bribery": {type:"prev", label:"Bribery of a Government Official"},
+      "Conspiracy": {type:"prev", label:"Conspiracy"},
+      "Escaping Custody": {type:"prev", label:"Escaping Custody"},
+      "Evidence Tampering": {type:"prev", label:"Evidence Tampering"},
+      "Inciting a Riot": {type:"prev", label:"Inciting a Riot"},
+      "Malpractice": {type:"new"},
+      "Perjury": {type:"prev", label:"Perjury"},
+      "Unlawful Practice": {type:"prev", label:"Unlawful Practice"},
+      "Disobeying a Lawful Order": {type:"prev", label:"Failure to Obey a Peace Officer"},
+      "Violation of a Restraining Order": {type:"prev", label:"Violation of a Restraining Order"},
+      "Witness Tampering": {type:"prev", label:"Witness Tampering"},
+      "Cybercrime": {type:"new"},
+      "Disrupting a Scheduled Court Case": {type:"new"},
+      "Money Laundering": {type:"prev", label:"Money Laundering"},
+      "Extortion": {type:"prev", label:"Extortion"},
+      "Aggravated Burglary": {type:"new"},
+      "Aggravated Trespassing": {type:"prev", label:"Felony Trespassing"},
+      "Arson": {type:"prev", label:"Arson"},
+      "Blackmail": {type:"new"},
+      "Grand Robbery": {type:"prev", label:"Grand Robbery"},
+      "Desecration of a Corpse": {type:"prev", label:"Desecration of a Corpse"},
+      "Weapon Trafficking": {type:"prev", label:"Weapon Trafficking"},
+      "Drug Trafficking": {type:"prev", label:"Drug Trafficking"},
+      "2nd Degree Murder": {type:"prev", label:"Second Degree Murder"},
+      "1st Degree Murder": {type:"prev", label:"First Degree Murder"},
+      "Murder of a Gov. Employee": {type:"prev", label:"Murder of a Public Servant or Peace Officer"},
+      "Mayhem": {type:"new"},
+      "Human Trafficking": {type:"new"},
+      "Aggravated Torture": {type:"new"},
+      "Gov. Corruption": {type:"prev", label:"Government Corruption"},
+      "Insurrection": {type:"prev", label:"Insurrection"},
+      "Jailbreak": {type:"new"},
+      "Terrorism": {type:"prev", label:"Terrorism"},
+      "Cyberterrorism": {type:"new"},
+      "Aggravated Embezzlement": {type:"new"},
+      "Aggravated Money Laundering": {type:"new"},
+      "Accomplice": {type:"new"},
+      "Attempted": {type:"new"}
+    };
+
+    /* ---------- Charges data (FULL) ---------- */
+    const charges = [
+      /* === INFRACTIONS === */
+      c("Distracted Driving","Infraction","Suspect operated a motor vehicle while engaging in a non-driving activity that significantly impairs attention or control of the vehicle.","Traffic & Vehicle",0,300),
+      c("Driving without a Valid License","Infraction","Suspect found operating a motor vehicle without a valid physical license in their possession.","Traffic & Vehicle",0,250),
+      c("Failure to Display License Plate","Infraction","Suspect's vehicle was found to be parked next to, or operated upon State's paved roadway without visible and accurate license plate.","Traffic & Vehicle",0,150),
+      c("Failure to Maintain Lane","Infraction","Suspect failed to operate a vehicle in a proper lane of travel, without lawful justification.","Traffic & Vehicle",0,100),
+      c("Failure to Stop","Infraction","Suspect failed to come to a stop at an appropriate traffic control device or marking.","Traffic & Vehicle",0,200),
+      c("Speeding (3rd Degree)","Infraction","Suspect was found operating a motor vehicle over the posted speed limit.","Traffic & Vehicle",0,100),
+      c("Speeding (2nd Degree)","Infraction","Suspect was found operating a motor vehicle 25 mph or more over the posted speed limit.","Traffic & Vehicle",0,250),
+      c("Speeding (1st Degree)","Infraction","Suspect was found operating a motor vehicle 50 mph or more over the posted speed limit.","Traffic & Vehicle",0,750),
+      c("Illegal Parking","Infraction","Suspect's vehicle was found in violation of State parking code, without lawful justification or falling within the parking exemptions. (Subject to tow)","Traffic & Vehicle",0,100),
+      c("Impeding Traffic","Infraction","Suspect's actions continuously disrupted or stopped the flow of traffic.","Traffic & Vehicle",0,300),
+      c("Negligent Driving","Infraction","Suspect was seen breaking multiple traffic laws, creating unnecessary risk to others' safety.","Traffic & Vehicle",0,200),
+      c("Passenger Endangerment","Infraction","Suspect knowingly failed to secure their passengers, transporting them in an unsafe fashion or manner.","Traffic & Vehicle",0,250),
+      c("Negligent Ownership of a Firearm","Infraction","Suspect failed to exercise reasonable safety in handling or storing their legally registered firearm, including possession of an expired weapon license.","Weapons",0,200),
+      c("Criminal Threats","Infraction","Suspect made clear and convincing threats against a person's life or safety, causing reasonable fear.","Person & Violent",0,400),
+      c("Loitering on Gov. Property","Infraction","Suspect was found present on Government owned property for an extended period of time without apparent purpose or reason, and refused to leave.","Government & Court",0,200),
+      c("Anti-mask Law","Infraction","Suspect was found obstructing their face while on government ground, without lawful justification.","Government & Court",0,250),
+      c("Disturbing the Peace","Infraction","Suspect acted without lawful justification, in a manner that unreasonably disturbed the public, and refused or failed to cease such actions after being confronted by an LEO.","Person & Violent",0,500),
+      c("Littering","Infraction","Suspect found to be discarding waste outside of a designated area or receptacle.","Other",0,100),
+      c("Misuse of Emergency Systems","Infraction","Suspect knowingly and unlawfully used the emergency line for non-emergency reasons.","Government & Court",0,500),
+      c("Petty Theft","Infraction","Suspect has knowingly and unlawfully taken property of another person or business, valued at below $50.","Property & Economic",0,150),
+      c("Unlawful Hunting","Infraction","Suspect failed to comply with hunting rules specified within the public legislation.","Other",0,250),
+      c("Vandalism","Infraction","Suspect willfully and unlawfully caused destruction of private or business property.","Property & Economic",0,500),
+      c("Public Waste Offense","Infraction","Suspect willfully relieved themselves outside of designated restroom facilities, thereby creating a public nuisance, sanitation hazard, or offense to public.","Other",0,300),
+
+      /* === MISDEMEANORS === */
+      c("Driving Under the Influence","Misdemeanor","Suspect was found operating a motor vehicle while under the influence of alcohol (above 0.08% BAC) or a controlled dangerous substance.","Traffic & Vehicle",10,2000),
+      c("Driving with a Suspended License","Misdemeanor","Suspect was found to be operating a motor vehicle while their license was revoked or suspended.","Traffic & Vehicle",5,350),
+      c("Evading","Misdemeanor","Suspect was witnessed fleeing lawful detainment or arrest using a vehicle.","Traffic & Vehicle",10,1000),
+      c("Hit and Run (Property)","Misdemeanor","Suspect has struck property with their vehicle causing damage, and fled the scene without identifying oneself to the present, affected party.","Traffic & Vehicle",5,500),
+      c("Theft of a Motor Vehicle","Misdemeanor","Suspect was found in unlawful possession of a vehicle that's unregistered, or registered to another person.","Traffic & Vehicle",10,1000),
+      c("Possession of a Controlled Substance (Misdemeanor)","Misdemeanor","Suspect was found in possession of a controlled dangerous substance or prescription medication without a valid prescription. (Marijuana – more than 10 joints or 1 baggie.)","Drugs",20,1500),
+      c("Brandishing","Misdemeanor","Suspect intentionally displays a weapon without lawful justification, causing reasonable fear of harm.","Weapons",10,500),
+      c("Criminal Use of a Non-Firearm","Misdemeanor","Suspect used a non-firearm weapon in a commission of a serious crime.","Weapons",10,500),
+      c("Possession of Illegal Firearm Modification","Misdemeanor","Suspect was found in unlawful possession of an illegal firearm attachment or modification.","Weapons",5,500),
+      c("Reckless Use of a Firearm","Misdemeanor","Suspect failed to exercise reasonable safety in handling or use of their legally registered firearm, creating substantial risk to public safety.","Weapons",5,500),
+      c("Aggravated Criminal Threats","Misdemeanor","Suspect made clear and convincing threat against a government employee's life or safety, causing reasonable fear. Victim's occupation was known to the suspect or would be reasonable to conclude.","Person & Violent",5,500),
+      c("Assault","Misdemeanor","Suspect engaged in a physical attack that caused reasonable fear of serious harm or engaged in extremely offensive contact.","Person & Violent",10,1000),
+      c("Battery","Misdemeanor","Suspect engaged in an unlawful physical act resulting in serious injury of another.","Person & Violent",30,2500),
+      c("False Imprisonment","Misdemeanor","Suspect intentionally restrained another’s freedom of movement, without lawful authority, by force, threat, or deception.","Person & Violent",25,2000),
+      c("Harassment","Misdemeanor","Suspect engaged in a course of unwanted contact or communication, without consent and serving no legitimate or lawful purpose, causing unreasonable interference with daily activities.","Person & Violent",10,1000),
+      c("Stalking","Misdemeanor","Suspect was identified to knowingly and repeatedly follow or surveil another person without consent or lawful reason, causing a reasonable fear for their safety.","Person & Violent",25,2000),
+      c("Impersonating a Gov. Employee","Misdemeanor","Suspect presented themselves as a government employee, in a reasonably convincing manner.","Government & Court",10,500),
+      c("Introducing Contraband to a Gov. Facility","Misdemeanor","Suspect introduced contraband to a government facility, including but not limited to; restricted areas of Police Departments, State Prison, City Hall and its Courtroom.","Government & Court",25,2500),
+      c("Possession of Gov. Equipment","Misdemeanor","Suspect was found in unlawful possession of government issued equipment.","Government & Court",30,3000),
+      c("Aggravated Vandalism","Misdemeanor","Suspect willfully and unlawfully caused destruction of state property.","Property & Economic",15,1500),
+      c("Animal Cruelty","Misdemeanor","Suspect knowingly and intentionally partook in actions inflicting unnecessary suffering or pain upon an animal.","Other",15,1000),
+      c("Burglary","Misdemeanor","Suspect entered a private or business property without consent or legal justification, in order to commit a crime.","Property & Economic",10,1000),
+      c("Contempt of Court","Misdemeanor","Suspect engaged in conduct deemed by a judge presiding over a case to be disruptive and unwelcome (Time and fine up to Judge's discretion).","Government & Court",999999999,999999999),
+      c("Disobeying a Lawful Order","Misdemeanor","Suspect knowingly fails or refuses to follow a simple, reasonable order issued by a law enforcement officer acting within their lawful authority.","Government & Court",5,500),
+      c("False Reporting","Misdemeanor","Suspect knowingly and unlawfully made a false report of a crime.","Government & Court",10,1000),
+      c("Fraud","Misdemeanor","Suspect used false information or engaged in deceptive conduct with intentions to deceive another for financial gain in either personal or business dealings.","Property & Economic",30,3000),
+      c("Grand Theft","Misdemeanor","Suspect has knowingly and unlawfully taken property of another person or business, without consent, valued at above $3000.","Property & Economic",30,2000),
+      c("Interference with Emergency Services","Misdemeanor","Suspect knowingly and intentionally acts in a way that interferes with State's emergency services.","Government & Court",15,1500),
+      c("Malfeasance","Misdemeanor","Suspect was a government employee, and knowingly engaged in an unlawful activity, which did or could result in harm, suppression of rights or general abuse of power. | To be pushed by DAO.","Government & Court",10,1500),
+      c("Obstruction of Justice","Misdemeanor","Suspect knowingly and unlawfully acted in a way that interfered with law enforcement officer's active duty, criminal investigation or a judicial proceeding.","Government & Court",20,1000),
+      c("Possession of Stolen Property","Misdemeanor","Suspect was found in possession of stolen property, with knowledge of its origin or lack of reasonable belief for it to not be such.","Property & Economic",20,2000),
+      c("Reckless Endangerment","Misdemeanor","Suspect knowingly and with no lawful justification engaged in conduct that created substantial risk of injury or death to others.","Other",10,1000),
+      c("Resisting Arrest","Misdemeanor","Suspect engaged in physical actions to avoid lawful detainment.","Government & Court",10,500),
+      c("Robbery","Misdemeanor","Suspect used threats of harm or force against another person or business for financial or personal gain.","Property & Economic",25,1000),
+      c("Theft","Misdemeanor","Suspect has knowingly and unlawfully taken property of another person or business, without consent, valued at between $50 and $3000.","Property & Economic",10,1000),
+      c("Trespassing","Misdemeanor","Suspect knowingly entered a clearly restricted property, or failed to leave a property upon notice from a party authorized by the owner.","Property & Economic",10,500),
+      c("Vehicle Tampering","Misdemeanor","Suspect deliberately interfered with normal functions of a vehicle, creating potential for operator's injury as results of their actions.","Traffic & Vehicle",15,1500),
+      c("Vigilantism","Misdemeanor","Suspect acted in the scope of law enforcement duties without proper legal authority to do so.","Government & Court",25,1000),
+      c("Indecent Exposure","Misdemeanor","Suspect willlfully exposed their genitals or engaged in lewd display of their body in a public area, causing offense or alarm to another.","Person & Violent",10,500),
+      c("Public Intoxication","Misdemeanor","Suspect was found under the influence of alcohol or controlled substance while unreasonably disturbing the peace, or presenting danger to themselves or others.","Person & Violent",15,500),
+      c("Unlawful Assembly","Misdemeanor","Suspect was found gathered with others in a public place in a manner that created danger of disorder or violence, and refused to disperse upon lawful order.","Person & Violent",10,1000),
+      c("False Identification","Misdemeanor","Suspect purposefully provided false or misleading identification when lawfully required to identify.","Government & Court",10,1000),
+      c("Failure to Appear","Misdemeanor","Suspect unreasonably failed to appear in court or at a scheduled legal proceeding as required by lawful order or summons.","Government & Court",20,2500),
+      c("Possession of Marked Currency","Misdemeanor","Suspect was found in possession of up to $3,000 in marked or illicit currency.","Property & Economic",10,1000),
+
+      /* === FELONIES === */
+      c("Aggravated Theft of a Motor Vehicle","Felony","Suspect found in unlawful possession of a government agency owned vehicle, or engaged in the act of stealing a vehicle involving a deadly weapon.","Traffic & Vehicle",30,2500),
+      c("Grand Theft Auto","Felony","Suspect found in possession of a stolen vehicle, having taken unlawful actions designed to permanently deprive the vehicle owner of its custody.","Traffic & Vehicle",40,2500),
+      c("Hit and Run (Person)","Felony","Suspect has struck person(s) with their vehicle, causing bodily harm, and fled the scene without identifying oneself to the present, affected party.","Traffic & Vehicle",30,1500),
+
+      c("Possession of a Controlled Substance (Felony)","Felony","Suspect was found in possession of a controlled dangerous substance or prescription medication without a valid prescription.","Drugs",40,3000),
+      c("Manufacturing of Controlled Substance","Felony","Suspect was found engaging in cultivation or manufacturing of a controlled dangerous substance, without lawful reason or proper state-issued license.","Drugs",50,4000),
+      c("Sale of Controlled Substance","Felony","Suspect engaged in the unlawful sale or exchange of controlled dangerous substances or prescription medication.","Drugs",30,2500),
+      c("Money Laundering","Felony","Suspect was found in possession of more than $3,000 in marked or illicit currency, or engaged in financial transactions intended to conceal or legitimize proceeds of personal unlawful activity.","Property & Economic",30,3000),
+
+      c("Criminal Distribution of Firearm","Felony","Suspect knowingly distributed ownership of a firearm without lawful permission from the State.","Weapons",20,1500),
+      c("Criminal Use of Illegal Explosives","Felony","Suspect unlawfully used a lethal explosive material or device designed to cause harm or mass-destruction.","Weapons",50,5000),
+      c("Criminal Use of a Firearm","Felony","Suspect used a firearm, regardless of legal ownership, in a commission of a serious crime.","Weapons",15,1000),
+      c("Possession of Illegal Explosives","Felony","Suspect was found in unlawful possession of lethal explosive material or device designed to cause harm or mass-destruction.","Weapons",30,3000),
+      c("Possession of an Illegal Firearm (Class-1)","Felony","Suspect was found in unlawful possession of a an improperly registered, self-manufactured, or stolen class-1 firearm(s). | Up to 5 firearms per charge.","Weapons",10,1000),
+      c("Possession of an Illegal Firearm (Class-2)","Felony","Suspect was found in unlawful possession of a an improperly registered, self-manufactured, or stolen class-2 firearm(s). | Up to 5 firearms per charge.","Weapons",20,2000),
+      c("Possession of an Illegal Firearm (Class-3)","Felony","Suspect was found in unlawful possession of a an improperly registered, self-manufactured, or stolen class-3 firearm(s). | Up to 5 firearms per charge.","Weapons",40,4000),
+      c("Unlawful Wiretapping","Felony","Suspect was found unlawfully intercepting or monitoring communications through technical means.","Government & Court",40,3000),
+
+      c("Aggravated Assault","Felony","Suspect engaged in a physical act using a deadly weapon that caused reasonable fear of serious harm, or committed assault against a government employee.","Person & Violent",25,2000),
+      c("Aggravated Battery","Felony","Suspect engaged in an unlawful physical act resulting in serious injury of a government employee, or used a deadly weapon.","Person & Violent",50,4000),
+      c("Aggravated False Imprisonment","Felony","Suspect intentionally restrained government employee’s freedom of movement without lawful authority.","Person & Violent",35,2500),
+      c("Aggravated Hostage Taking","Felony","Suspect restrained a government employee for ransom/hostage use/obstruction, etc.","Person & Violent",40,3000),
+      c("Aggravated Kidnapping","Felony","Suspect kidnapped a government employee by force, threat, deception and moved/confined them.","Person & Violent",30,3000),
+      c("Attempted 1st Degree Murder","Felony","Intentional, premeditated attempt to kill.","Person & Violent",100,8000),
+      c("Attempted 2nd Degree Murder","Felony","Intentional attempt to kill without premeditation.","Person & Violent",50,4000),
+      c("Attempted Murder of a Gov. Employee","Felony","Attempt to kill a government employee.","Person & Violent",65,5000),
+      c("Extortion","Felony","Threats of harm/force for substantial gain, other than theft of property.","Property & Economic",40,3000),
+      c("Hostage Taking","Felony","Restraint for ransom/hostage/obstruction purposes.","Person & Violent",30,2000),
+      c("Involuntary Manslaughter","Felony","Gross negligence causing death.","Person & Violent",150,7000),
+      c("Kidnapping","Felony","Restraint with movement/confinement without authority.","Person & Violent",20,2000),
+      c("Aggravated Burglary","Felony","Entered government/financial/occupied dwelling to commit a crime.","Property & Economic",30,3000),
+      c("Aggravated Interference with Emergency Services","Felony","Interfered with emergency services using deadly force or threats.","Government & Court",50,5000),
+      c("Aggravated Malfeasance","Felony","Gov. employee repeatedly engaged in unlawful activity causing harm/abuse of power.","Government & Court",25,2500),
+      c("Aggravated Obstruction of Justice","Felony","Interfered with LEO/judicial process using deadly force or threats.","Government & Court",40,3000),
+      c("Aggravated Trespassing","Felony","Entered a property with an active/served trespass order filed.","Property & Economic",40,2000),
+      c("Arson","Felony","Used fire to cause harm or destroy property.","Property & Economic",35,3000),
+      c("Blackmail","Felony","Threatened to expose damaging information for gain.","Property & Economic",35,2000),
+      c("Bribery","Felony","Offered gain to a gov. employee for favorable treatment.","Government & Court",25,1500),
+      c("Conspiracy","Felony","Joined with at least one other to plan and act on violating the law.","Government & Court",10,1000),
+      c("Desecration of a Corpse","Felony","Unlawful acts involving a deceased individual.","Other",100,4000),
+      c("Escaping Custody","Felony","Escaped custody prior to full incarceration.","Government & Court",30,2000),
+      c("Evidence Tampering","Felony","Concealed/removed/tampered with evidence.","Government & Court",25,2000),
+      c("Gang Related Violence","Felony","Unlawful deadly exchange between opposing criminal factions.","Person & Violent",30,2000),
+      c("Grand Robbery","Felony","Robbery of gov. agency or financial institution.","Property & Economic",40,3000),
+      c("Inciting a Riot","Felony","Urged/aided group to violent unlawful conduct risking injury/damage.","Government & Court",40,2500),
+      c("Malpractice","Felony","Licensed professional gross negligence/misconduct causing serious harm.","Government & Court",30,3000),
+      c("Perjury","Felony","False statement under oath on the witness stand.","Government & Court",50,5000),
+      c("Street Racing","Felony","Participated in unlawful speed/performance contest.","Traffic & Vehicle",30,3000),
+      c("Theft of an Aircraft","Felony","Unlawful possession of aircraft.","Traffic & Vehicle",40,3000),
+      c("Torture","Felony","Extreme violence/psychological torment beyond battery.","Person & Violent",75,5000),
+      c("Unlawful Practice","Felony","Acted within a licensed profession without proper licensing.","Government & Court",25,2000),
+      c("Violation of a Restraining Order","Felony","Engaged in actions prohibited by a valid restraining order.","Government & Court",60,2000),
+      c("Witness Tampering","Felony","Used threat/force/deception to affect actions in a court proceeding.","Government & Court",80,3000),
+      c("Cybercrime","Felony","Unauthorized access/manipulation/disruption of systems for gain/harm.","Government & Court",30,2000),
+      c("Disrupting a Scheduled Court Case","Felony","Disrupted court with force/threats or repeated ordered-to-cease behavior.","Government & Court",60,5000),
+      c("Failure to Comply with a Court Order","Felony","Willfully failed to comply with a lawful court order.","Government & Court",50,5000),
+
+      /* === FELONY (HUT) === */
+      c("2nd Degree Murder","Felony (HUT)","Intentional unlawful acts designed to end life, without premeditation, resulting in death.","Person & Violent",999999999,999999999),
+      c("Aggravated Embezzlement","Felony (HUT)","Stole/misappropriated funds of a public institution or state agency using trusted access.","Property & Economic",999999999,999999999),
+      c("Drug Trafficking","Felony (HUT)","Large quantity transport/possession of CDS.","Drugs",999999999,999999999),
+      c("Weapon Trafficking","Felony (HUT)","Transport/possession of 20+ illegal weapons/explosives.","Weapons",999999999,999999999),
+      c("1st Degree Murder","Felony (HUT)","Premeditated killing resulting in death.","Person & Violent",999999999,999999999),
+      c("Murder of a Gov. Employee","Felony (HUT)","Premeditated killing of a known gov. employee.","Person & Violent",999999999,999999999),
+      c("Gov. Corruption","Felony (HUT)","Abused/manipulated state office for gain.","Government & Court",999999999,999999999),
+      c("Insurrection","Felony (HUT)","Violence/threats to overthrow the executive branch.","Government & Court",999999999,999999999),
+      c("Jailbreak","Felony (HUT)","Escaped custody while in state prison confines.","Government & Court",999999999,999999999),
+      c("Mayhem","Felony (HUT)","Repeated torture over multiple days (within 21 days window).","Person & Violent",999999999,999999999),
+      c("Human Trafficking","Felony (HUT)","Kidnapping/transporting 5+ persons for exploitation.","Person & Violent",999999999,999999999),
+      c("Aggravated Torture","Felony (HUT)","Extreme violence causing grievous harm well beyond battery.","Person & Violent",999999999,999999999),
+      c("Terrorism","Felony (HUT)","Deadly violence/extreme intimidation intended to influence state/populace/ideology.","Government & Court",999999999,999999999),
+      c("Cyberterrorism","Felony (HUT)","Electronic attacks/disruptions to intimidate/coerce causing substantial harm to State/public.","Government & Court",999999999,999999999),
+      c("Aggravated Money Laundering","Felony (HUT)","> $50,000 illicit currency or laundering for organized criminal activity.","Property & Economic",999999999,999999999),
+
+      /* === UTILITY === */
+      c("Accomplice","UTILITY","Utility charge.","Other","-","-"),
+      c("Attempted","UTILITY","Utility charge.","Other","-","-"),
+    ];
+
+    /* ---------- Case Law & Amendments (FULL) ---------- */
+    function law(name, holding, topic, citation){
+      const id = "case-" + slugify(name);
+      return { id, name, holding, topic, citation };
+    }
+    const CASE_LAW = [
+      law("Pennsylvania v. Mimms (1977)", "During a lawful traffic stop, officers may order the driver out of the vehicle for officer safety.", "Traffic stop / officer safety", "434 U.S. 106"),
+      law("Terry v. Ohio (1968)", "Allows brief stop based on reasonable suspicion and a pat-down for weapons if officer reasonably believes the person is armed and dangerous.", "Stops / frisks", "392 U.S. 1"),
+      law("Miranda v. Arizona (1966)", "Custodial interrogation requires Miranda warnings; unwarned statements are generally inadmissible.", "Interrogation / 5th", "384 U.S. 436"),
+      law("Tennessee v. Garner (1985)", "Deadly force against a fleeing suspect only when there is probable cause of a significant threat.", "Use of force", "471 U.S. 1"),
+      law("Garrity v. New Jersey (1967)", "Compelled statements from public employees under threat of job loss cannot be used criminally.", "Compelled statements", "385 U.S. 493"),
+      law("Graham v. Connor (1989)", "Use of force judged by objective reasonableness under the 4th Amendment.", "Use of force", "490 U.S. 386"),
+      law("Mapp v. Ohio (1961)", "Exclusionary rule applies to the states; illegally obtained evidence is inadmissible.", "Exclusionary rule", "367 U.S. 643"),
+      law("Davis v. United States (2011)", "Good-faith exception when officers rely on binding precedent later overruled.", "Exclusionary rule / good faith", "564 U.S. 229"),
+      law("Maryland v. King (2013)", "DNA swab of arrestees for serious offenses is a reasonable booking procedure.", "Search incident to arrest", "569 U.S. 435"),
+      law("United States v. Ross (1982)", "Vehicle probable cause allows searching containers that could hold the object.", "Automobile exception / containers", "456 U.S. 798"),
+      law("California v. Carney (1985)", "Automobile exception applies to readily mobile motorhomes.", "Automobile exception", "471 U.S. 386"),
+      law("United States v. Ludwig (10th Cir. 1993)", "Exterior K9 sniff during a lawful stop is not a search.", "K9", "10 F.3d 1523"),
+      law("Scott v. Harris (2007)", "PIT/ramming can be reasonable when suspect driving poses grave risk.", "Pursuits / force", "550 U.S. 372"),
+      law("Wyoming v. Houghton (1999)", "Probable cause for vehicle allows search of passenger belongings.", "Automobile exception / passengers", "526 U.S. 295"),
+      law("Carroll v. United States (1925)", "Automobile exception permits warrantless vehicle search with probable cause.", "Automobile exception", "267 U.S. 132"),
+    ];
+    function amd(no, text, scope){ return { id: "amd-" + no, no, text, scope }; }
+    const AMENDMENTS = [
+      amd(1, "Freedom of speech, press, religion, assembly, petition.", "Speech/public order"),
+      amd(2, "Right to keep and bear arms (subject to regulation).", "Weapons"),
+      amd(3, "No quartering of soldiers in homes in peacetime without consent.", "Rare search/seizure context"),
+      amd(4, "No unreasonable searches/seizures; warrants/probable cause/particularity.", "Stops/searches/seizures"),
+      amd(5, "Grand jury, double jeopardy, self-incrimination, due process; Miranda stems here.", "Interrogation/process"),
+      amd(6, "Speedy/public trial, impartial jury, counsel, confrontation, compulsory process.", "Criminal procedure"),
+      amd(7, "Jury in civil cases (federal).", "Civil"),
+      amd(8, "No excessive bail/fines; no cruel/unusual punishment.", "Detention/sentencing"),
+      amd(9, "Rights retained by the people beyond those enumerated.", "General"),
+      amd(10, "Powers not delegated to U.S. reserved to states/people.", "Federalism"),
+      amd(11, "Limits suits against states in federal court.", "Sovereign immunity"),
+      amd(12, "Revises presidential election procedures.", "Executive elections"),
+      amd(13, "Abolishes slavery and involuntary servitude (except as punishment for crime).", "Fundamental rights"),
+      amd(14, "Citizenship; Due Process; Equal Protection; incorporation to states.", "Constitutional floor"),
+      amd(15, "No race-based voting restrictions.", "Elections")
+    ];
+
+    /* ---------- Related-law resolver (chips on charge cards) ---------- */
+    const LAW_INDEX = new Map(CASE_LAW.map(l => [l.name, l]));
+    function relatedForCharge(ch){
+      const rel = [];
+      const push = (title)=>{ const L = Array.from(LAW_INDEX.keys()).find(k=>k.toLowerCase().startsWith(title.toLowerCase())); if(L) rel.push(LAW_INDEX.get(L)); };
+
+      if (ch.group === "Traffic & Vehicle") {
+        push("Pennsylvania v. Mimms"); push("Carroll v. United States"); push("United States v. Ross");
+        push("California v. Carney"); push("United States v. Ludwig"); push("Wyoming v. Houghton");
+        push("Scott v. Harris"); push("Tennessee v. Garner");
+      }
+      if (ch.group === "Weapons" || /firearm|weapon/i.test(ch.name)) {
+        push("Graham v. Connor"); push("Tennessee v. Garner"); push("Mapp v. Ohio"); push("Carroll v. United States");
+      }
+      if (ch.group === "Drugs") {
+        push("Carroll v. United States"); push("United States v. Ross"); push("California v. Carney"); push("Mapp v. Ohio"); push("Davis v. United States");
+      }
+      if (ch.group === "Government & Court") {
+        push("Miranda v. Arizona"); push("Davis v. United States"); push("Garrity v. New Jersey"); push("Maryland v. King");
+      }
+      if (ch.group === "Person & Violent") {
+        push("Graham v. Connor"); push("Tennessee v. Garner"); push("Terry v. Ohio"); push("Miranda v. Arizona");
+      }
+      if (rel.length === 0) { push("Terry v. Ohio"); push("Mapp v. Ohio"); }
+      const seen = new Set(); return rel.filter(l=>!seen.has(l.id) && seen.add(l.id));
+    }
+
+    /* ---------- CART STATE ---------- */
+    const CART = new Map(); // chargeId -> {item, qty}
+    const NOTES = [];       // array of strings (can contain duplicates)
+
+    // Slider state
+    let fineMultiplier = 1.0;
+    let timeMultiplier = 1.0;
+
+    function addCharge(item){
+      const cur = CART.get(item.id);
+      if (cur) cur.qty += 1; else CART.set(item.id, { item, qty: 1 });
+      renderCart();
+    }
+    function setChargeQty(id, qty){
+      qty = Math.max(0, Math.floor(Number(qty)||0));
+      const cur = CART.get(id);
+      if (!cur) return;
+      if (qty === 0) CART.delete(id); else cur.qty = qty;
+      renderCart();
+    }
+    function addNote(label){
+      NOTES.push(label);
+      renderCart();
+    }
+    function removeNoteAt(idx){
+      if (idx>=0 && idx<NOTES.length) { NOTES.splice(idx,1); renderCart(); }
+    }
+    function clearAll(){
+      CART.clear(); NOTES.length = 0; renderCart();
+    }
+
+    function renderCart(){
+      const cartItems = document.getElementById('cartItems');
+      const totals = document.getElementById('totals');
+      const noteList = document.getElementById('noteList');
+      const emptyMsg = document.getElementById('emptyMsg');
+      const sliders = document.getElementById('sliders');
+
+      cartItems.innerHTML = '';
+      noteList.innerHTML = '';
+      totals.innerHTML = '';
+
+      // Items
+      if (CART.size === 0) {
+        emptyMsg.style.display = 'block';
+        sliders.style.display = 'none';
+      } else {
+        emptyMsg.style.display = 'none';
+        sliders.style.display = 'block';
+        for (const [id, rec] of CART){
+          const row = document.createElement('div'); row.className = 'cart-row';
+
+          const title = document.createElement('div');
+          title.textContent = rec.item.name + " — " + rec.item.severity;
+          row.appendChild(title);
+
+          const fine = document.createElement('div');
+          fine.className = 'pill';
+          fine.textContent = "Max Fine: " + rec.item.fineLabel;
+          row.appendChild(fine);
+
+          const sentence = document.createElement('div');
+          sentence.className = 'pill';
+          sentence.textContent = "Max Sentence: " + rec.item.sentenceLabel;
+          row.appendChild(sentence);
+
+          const qty = document.createElement('div'); qty.className = 'qty';
+          const minus = document.createElement('button'); minus.textContent = '–';
+          const input = document.createElement('input'); input.type='number'; input.min='0'; input.value = rec.qty;
+          const plus = document.createElement('button'); plus.textContent = '+';
+          const remove = document.createElement('button'); remove.textContent = 'X'; remove.className='remove-btn';
+          minus.addEventListener('click', ()=> setChargeQty(id, rec.qty-1));
+          plus.addEventListener('click', ()=> setChargeQty(id, rec.qty+1));
+          input.addEventListener('change', ()=> setChargeQty(id, input.value));
+          remove.addEventListener('click', ()=> setChargeQty(id, 0));
+          qty.append(minus, input, plus, remove);
+          row.appendChild(qty);
+
+          cartItems.appendChild(row);
+        }
+      }
+
+      // Totals
+      let totalFine = 0, totalMonths = 0;
+      let hasDiscretion = false;
+      for (const {item, qty} of CART.values()){
+        const f = Number(item.fineAmount); const m = Number(item.sentenceMonths);
+        if (isFinite(f) && f > 0 && f < 1e8) totalFine += f * qty; else if (f >= 1e8) hasDiscretion = true;
+        if (isFinite(m) && m > 0 && m < 1e8) totalMonths += m * qty; else if (m >= 1e8) hasDiscretion = true;
+      }
+      
+      // Apply slider multipliers
+      const adjustedFine = Math.round(totalFine * fineMultiplier);
+      const adjustedMonths = Math.round(totalMonths * timeMultiplier);
+      
+      const finePill = document.createElement('div'); finePill.className='pill';
+      finePill.textContent = "TOTAL MAX FINE: " + (adjustedFine>0?("$"+adjustedFine.toLocaleString()):"—") + (hasDiscretion?"  (+ discretionary)":"");
+      const sentPill = document.createElement('div'); sentPill.className='pill';
+      sentPill.textContent = "TOTAL MAX SENTENCE: " + (adjustedMonths>0?(adjustedMonths.toLocaleString()+" mo"):"—") + (hasDiscretion?"  (+ discretionary)":"");
+      totals.append(finePill, sentPill);
+
+      // Notes
+      if (NOTES.length === 0){
+        const m = document.createElement('div'); m.className='cart-empty'; m.textContent = "No case laws or amendments added yet — use the “+” on those cards.";
+        noteList.appendChild(m);
+      } else {
+        NOTES.forEach((txt, idx)=>{
+          const chip = document.createElement('span'); chip.className='note-chip';
+          const label = document.createElement('span'); label.textContent = txt;
+          const x = document.createElement('button'); x.className='x'; x.type='button'; x.textContent='X';
+          x.addEventListener('click', ()=> removeNoteAt(idx));
+          chip.append(label, x);
+          noteList.appendChild(chip);
+        });
+      }
+    }
+    document.getElementById('clearCartBtn').addEventListener('click', clearAll);
+
+    // Slider event listeners
+    document.getElementById('fineSlider').addEventListener('input', (e) => {
+      fineMultiplier = e.target.value / 100;
+      document.getElementById('fineValue').textContent = e.target.value + '%';
+      renderCart();
+    });
+
+    document.getElementById('timeSlider').addEventListener('input', (e) => {
+      timeMultiplier = e.target.value / 100;
+      document.getElementById('timeValue').textContent = e.target.value + '%';
+      renderCart();
+    });
+
+    /* ---------- Render main sections ---------- */
+    const ORDER_SEVERITY = ["Infraction","Misdemeanor","Felony","Felony (HUT)","UTILITY"];
+    const ORDER_GROUPS = ["Traffic & Vehicle","Weapons","Drugs","Person & Violent","Government & Court","Property & Economic","Other"];
+
+    const root = document.getElementById("root");
+    const searchEl = document.getElementById("search");
+
+    function sectionIdForSeverity(sev){
+      if (sev === "Infraction") return "sec-infraction";
+      if (sev === "Misdemeanor") return "sec-misdemeanor";
+      if (sev === "Felony") return "sec-felony";
+      if (sev === "Felony (HUT)") return "sec-felony-hut";
+      return "sec-"+slugify(sev);
+    }
+
+    function render(){
+      const q = (searchEl.value||"").toLowerCase();
+      root.innerHTML = "";
+
+      ORDER_SEVERITY.forEach(sev => {
+        const inSev = charges.filter(c => c.severity === sev)
+          .filter(c => (c.name + " " + (c.description||"") + " " + c.group).toLowerCase().includes(q));
+
+        const sec = el("div",{class:"section", id: sectionIdForSeverity(sev)});
+        sec.appendChild(el("h2",{}, sev));
+
+        ORDER_GROUPS.forEach(gr => {
+          const list = inSev.filter(c => c.group === gr);
+          if(list.length===0) return;
+          sec.appendChild(el("div",{class:"subhead"}, gr));
+          const cards = el("div",{class:"cards"});
+          list.forEach(ch => cards.appendChild(card(ch)));
+          sec.appendChild(cards);
+        });
+
+        if (!inSev.length){
+          const cards = el("div",{class:"cards"});
+          cards.appendChild(el("div",{class:"muted"},"No charges found in this category."));
+          sec.appendChild(cards);
+        }
+        root.appendChild(sec);
+      });
+
+      // ---- Case Law & Amendments Section ----
+      const legal = el("div",{class:"section", id:"sec-legal"});
+      legal.appendChild(el("h2",{}, "Case Laws & Amendments"));
+
+      // Case Law
+      const caseList = CASE_LAW.filter(l =>
+        (l.name + " " + l.holding + " " + l.topic + " " + l.citation).toLowerCase().includes(q)
+      );
+      legal.appendChild(el("div",{class:"subhead"},"Case Law"));
+      const caseCards = el("div",{class:"cards"});
+      (caseList.length?caseList:[{name:"—",holding:"No matching case law.",topic:"",citation:"",id:""}]).forEach(l=>{
+        caseCards.appendChild(legalCard(l));
+      });
+      legal.appendChild(caseCards);
+
+      // Amendments
+      const amdList = AMENDMENTS.filter(a =>
+        (String(a.no) + " " + a.text + " " + a.scope).toLowerCase().includes(q)
+      );
+      legal.appendChild(el("div",{class:"subhead"},"Constitutional Amendments (1–15)"));
+      const amdCards = el("div",{class:"cards"});
+      (amdList.length?amdList:[{no:"—",text:"No matching amendments.",scope:""}]).forEach(a=>{
+        amdCards.appendChild(amendmentCard(a));
+      });
+      legal.appendChild(amdCards);
+
+      legal.appendChild(el("div",{class:"fineprint"},
+        "Summaries are for quick reference (role-play guide), not legal advice.")
+      );
+
+      root.appendChild(legal);
+
+      // Re-apply toggles after fresh render
+      applyTagToggle();
+      applyLawLinksToggle();
+    }
+
+    function card(cg){
+      const cls = cg.severity==="Felony (HUT)" ? "sev-HUT"
+                : cg.severity==="UTILITY" ? "sev-UTILITY"
+                : "sev-"+cg.severity;
+      const card = el("div",{class:"card "+cls});
+      card.appendChild(el("h3",{}, cg.name));
+
+      // Previous/New pill
+      const prevWrap = el("div",{class:"prevline"}, null);
+      const prev = HISTORY[cg.name];
+      let needsTag = false;
+
+      if (!prev){
+        needsTag = true;
+        prevWrap.appendChild(el("span",{class:"tag-pill tag-prev"}, "Previously: —"));
+      } else if (prev.type === "new"){
+        prevWrap.appendChild(el("span",{class:"tag-pill tag-new"}, "New Charge"));
+      } else if (prev.type === "prev"){
+        const txt = "Previously: " + (prev.label || "—");
+        prevWrap.appendChild(el("span",{class:"tag-pill tag-prev"}, txt));
+        if (!prev.label) needsTag = true;
+      }
+      if (needsTag) prevWrap.appendChild(el("span",{class:"pill-missing"},"Needs previous/new tag"));
+      card.appendChild(prevWrap);
+
+      card.appendChild(el("div",{class:"desc"}, cg.description||""));
+
+      // Related law chips
+      const related = relatedForCharge(cg);
+      if (related.length){
+        const links = el("div",{class:"law-links"});
+        related.slice(0,6).forEach(L=>{
+          const a = el("a",{class:"law-chip", href:"#"+L.id}, L.name.split(" (")[0]);
+          links.appendChild(a);
+        });
+        card.appendChild(links);
+      }
+
+      const meta = el("div",{class:"meta"});
+      meta.appendChild(field("MAX FINE", cg.fineLabel||"—"));
+      meta.appendChild(field("MAX SENTENCE", cg.sentenceLabel||"—"));
+      card.appendChild(meta);
+
+      // Add button (green +, top-right)
+      const add = el("button",{class:"add-btn", type:"button"},"+");
+      add.addEventListener('click', ()=> addCharge(cg));
+      card.appendChild(add);
+
+      return card;
+    }
+
+    /* ---- legal cards ---- */
+    function legalCard(l){
+      const card = el("div",{class:"card sev-LEGAL", id:l.id || undefined});
+      card.appendChild(el("h3",{}, l.name));
+      card.appendChild(el("div",{class:"desc"}, l.holding));
+      const meta = el("div",{class:"meta"});
+      meta.appendChild(field("TOPIC", l.topic||"—"));
+      meta.appendChild(field("CITATION", l.citation||"—"));
+      card.appendChild(meta);
+
+      // Add expand button and detailed content
+      const expandBtn = el("button",{class:"expand-btn", type:"button"},"Expand");
+      const expandContent = el("div",{class:"expandable-content"});
+      
+      // Add detailed information based on case
+      const detailedInfo = getDetailedCaseInfo(l.name);
+      if (detailedInfo) {
+        expandContent.innerHTML = detailedInfo;
+        card.appendChild(expandBtn);
+        card.appendChild(expandContent);
+        
+        expandBtn.addEventListener('click', () => {
+          const isExpanded = expandContent.classList.contains('show');
+          if (isExpanded) {
+            expandContent.classList.remove('show');
+            expandBtn.textContent = 'Expand';
+          } else {
+            expandContent.classList.add('show');
+            expandBtn.textContent = 'Collapse';
+          }
+        });
+      }
+
+      const add = el("button",{class:"add-btn", type:"button"},"+");
+      add.addEventListener('click', ()=> addNote(l.name));
+      card.appendChild(add);
+      return card;
+    }
+    function amendmentCard(a){
+      const card = el("div",{class:"card sev-LEGAL", id:a.id||undefined});
+      card.appendChild(el("h3",{}, `Amendment ${a.no}`));
+      card.appendChild(el("div",{class:"desc"}, a.text));
+      const meta = el("div",{class:"meta"});
+      meta.appendChild(field("SCOPE", a.scope||"—"));
+      meta.appendChild(field("REFERENCE", "U.S. Constitution"));
+      card.appendChild(meta);
+
+      // Add expand button and detailed content
+      const expandBtn = el("button",{class:"expand-btn", type:"button"},"Expand");
+      const expandContent = el("div",{class:"expandable-content"});
+      
+      // Add detailed information based on amendment
+      const detailedInfo = getDetailedAmendmentInfo(a.no);
+      if (detailedInfo) {
+        expandContent.innerHTML = detailedInfo;
+        card.appendChild(expandBtn);
+        card.appendChild(expandContent);
+        
+        expandBtn.addEventListener('click', () => {
+          const isExpanded = expandContent.classList.contains('show');
+          if (isExpanded) {
+            expandContent.classList.remove('show');
+            expandBtn.textContent = 'Expand';
+          } else {
+            expandContent.classList.add('show');
+            expandBtn.textContent = 'Collapse';
+          }
+        });
+      }
+
+      const add = el("button",{class:"add-btn", type:"button"},"+");
+      add.addEventListener('click', ()=> addNote("Amendment " + a.no));
+      card.appendChild(add);
+      return card;
+    }
+
+    function field(label, value){
+      const wrap = el("div",{});
+      wrap.appendChild(el("div",{class:"label"}, label));
+      wrap.appendChild(el("div",{class:"value"}, value));
+      return wrap;
+    }
+
+    // Detailed case information
+    function getDetailedCaseInfo(caseName) {
+      const caseDetails = {
+        "Pennsylvania v. Mimms (1977)": `
+          <strong>Holding:</strong> Police officers can order drivers to exit their vehicles during traffic stops without violating the Fourth Amendment, justified by officer safety concerns.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Officer safety is a legitimate concern during traffic stops</li>
+            <li>Minimal intrusion on driver's liberty</li>
+            <li>Standard procedure for traffic stops</li>
+          </ul>
+        `,
+        "Terry v. Ohio (1968)": `
+          <strong>Holding:</strong> Police may stop and frisk individuals without a warrant if they have a reasonable suspicion that the person is involved in criminal activity and may be armed. The stop and frisk must be based on specific and articulable facts.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Reasonable suspicion standard (lower than probable cause)</li>
+            <li>Must be based on specific, articulable facts</li>
+            <li>Limited to outer clothing pat-down for weapons</li>
+          </ul>
+        `,
+        "Miranda v. Arizona (1966)": `
+          <strong>Holding:</strong> Suspects must be informed of their rights to remain silent and to have an attorney present during custodial interrogation. Failure to provide Miranda warnings renders statements inadmissible in court.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Right to remain silent</li>
+            <li>Right to attorney</li>
+            <li>Statements without Miranda warnings are inadmissible</li>
+            <li>Only applies to custodial interrogation</li>
+          </ul>
+        `,
+        "Tennessee v. Garner (1985)": `
+          <strong>Holding:</strong> The use of deadly force to prevent the escape of a fleeing suspect is a "seizure" under the Fourth Amendment and is only reasonable if the suspect poses a significant threat of death or serious physical injury to the officer or others.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Deadly force is a seizure under Fourth Amendment</li>
+            <li>Must pose significant threat of death or serious injury</li>
+            <li>Cannot use deadly force solely to prevent escape</li>
+          </ul>
+        `,
+        "Garrity v. New Jersey (1967)": `
+          <strong>Holding:</strong> Law enforcement officers are protected by the Fifth Amendment against self-incrimination in internal investigations. Statements made under threat of removal from office cannot be used in criminal prosecutions.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Protection against self-incrimination in internal investigations</li>
+            <li>Statements under threat of job loss cannot be used criminally</li>
+            <li>Applies to law enforcement officers</li>
+          </ul>
+        `,
+        "Graham v. Connor (1989)": `
+          <strong>Holding:</strong> Claims of excessive force by law enforcement officers during an investigatory stop, arrest, or other seizures are analyzed under the Fourth Amendment's "objective reasonableness" standard, considering factors such as the severity of the crime, immediate threat, and resistance by the suspect.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Objective reasonableness standard</li>
+            <li>Consider severity of crime</li>
+            <li>Consider immediate threat to officer/others</li>
+            <li>Consider suspect's resistance</li>
+          </ul>
+        `,
+        "Mapp v. Ohio (1961)": `
+          <strong>Holding:</strong> Evidence obtained through unlawful searches and seizures is inadmissible in state courts under the Exclusionary Rule.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Exclusionary rule applies to states</li>
+            <li>Illegally obtained evidence is inadmissible</li>
+            <li>Deterrent effect on police misconduct</li>
+          </ul>
+        `,
+        "Davis v. United States (2011)": `
+          <strong>Holding:</strong> The good-faith exception applies if police relied on binding precedent when conducting a search, even if the precedent is later overturned.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Good-faith exception to exclusionary rule</li>
+            <li>Applies when police rely on binding precedent</li>
+            <li>Even if precedent is later overturned</li>
+          </ul>
+        `,
+        "Maryland v. King (2013)": `
+          <strong>Holding:</strong> Police may collect DNA from individuals arrested for serious crimes as part of standard booking procedures without a warrant.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>DNA collection during booking is reasonable</li>
+            <li>Part of standard booking procedures</li>
+            <li>Applies to serious crimes</li>
+          </ul>
+        `,
+        "United States v. Ross (1982)": `
+          <strong>Holding:</strong> Police may search containers in a vehicle without a warrant if they have probable cause to believe they contain contraband.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Automobile exception applies to containers</li>
+            <li>Probable cause required</li>
+            <li>Containers that could hold contraband</li>
+          </ul>
+        `,
+        "California v. Carney (1985)": `
+          <strong>Holding:</strong> The automobile exception to the warrant requirement applies to motor homes if they are readily mobile and used on public roads.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Automobile exception applies to motorhomes</li>
+            <li>Must be readily mobile</li>
+            <li>Used on public roads</li>
+          </ul>
+        `,
+        "United States v. Ludwig (10th Cir. 1993)": `
+          <strong>Holding:</strong> A warrantless stop of a vehicle was justified based on reasonable suspicion; affirmed that reasonable suspicion applies to vehicle stops under Terry.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Reasonable suspicion for vehicle stops</li>
+            <li>Terry standard applies to vehicles</li>
+            <li>Exterior K9 sniff is not a search</li>
+          </ul>
+        `,
+        "Scott v. Harris (2007)": `
+          <strong>Holding:</strong> A police officer's use of force (e.g., ramming a fleeing suspect's car) was reasonable under the Fourth Amendment when the suspect posed a substantial risk to public safety.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>PIT/ramming can be reasonable</li>
+            <li>When suspect poses grave risk</li>
+            <li>Public safety considerations</li>
+          </ul>
+        `,
+        "Wyoming v. Houghton (1999)": `
+          <strong>Holding:</strong> Police officers may search personal belongings of passengers in a car (e.g., purse) if they have probable cause to search the vehicle.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Automobile exception applies to passenger belongings</li>
+            <li>Probable cause for vehicle allows passenger search</li>
+            <li>Includes personal items like purses</li>
+          </ul>
+        `,
+        "Carroll v. United States (1925)": `
+          <strong>Holding:</strong> Established the automobile exception to the Fourth Amendment. Police may search a vehicle without a warrant if they have probable cause to believe it contains contraband.<br><br>
+          <strong>Key Points:</strong>
+          <ul>
+            <li>Established automobile exception</li>
+            <li>Probable cause required</li>
+            <li>Vehicle mobility justifies warrantless search</li>
+          </ul>
+        `
+      };
+      
+      return caseDetails[caseName] || null;
+    }
+
+    // Detailed amendment information
+    function getDetailedAmendmentInfo(amendmentNo) {
+      const amendmentDetails = {
+        4: `
+          <strong>Fourth Amendment - Search and Seizure</strong><br><br>
+          <strong>Key Protections:</strong>
+          <ul>
+            <li>Protects against unreasonable searches and seizures</li>
+            <li>Requires a warrant supported by probable cause for searches and arrests</li>
+            <li>Establishes exclusionary rule for illegally obtained evidence</li>
+            <li>Balances individual privacy with law enforcement needs</li>
+          </ul>
+        `,
+        5: `
+          <strong>Fifth Amendment - Due Process and Self-Incrimination</strong><br><br>
+          <strong>Key Protections:</strong>
+          <ul>
+            <li>Protects against self-incrimination</li>
+            <li>Guarantees due process of law</li>
+            <li>Prohibits double jeopardy (being tried twice for the same crime)</li>
+            <li>Right to grand jury indictment for serious crimes</li>
+            <li>Just compensation for property taken by government</li>
+          </ul>
+        `,
+        6: `
+          <strong>Sixth Amendment - Criminal Trial Rights</strong><br><br>
+          <strong>Key Protections:</strong>
+          <ul>
+            <li>Right to a speedy and public trial by an impartial jury</li>
+            <li>Right to be informed of criminal charges</li>
+            <li>Right to confront witnesses and have compulsory process for obtaining witnesses</li>
+            <li>Right to assistance of counsel</li>
+            <li>Right to trial in the district where crime was committed</li>
+          </ul>
+        `,
+        7: `
+          <strong>Seventh Amendment - Civil Trial Rights</strong><br><br>
+          <strong>Key Protections:</strong>
+          <ul>
+            <li>Guarantees the right to a jury trial in civil cases where the value in controversy exceeds twenty dollars</li>
+            <li>Prevents courts from overturning a jury's findings of fact</li>
+            <li>Applies to federal civil cases</li>
+          </ul>
+        `,
+        8: `
+          <strong>Eighth Amendment - Cruel and Unusual Punishment</strong><br><br>
+          <strong>Key Protections:</strong>
+          <ul>
+            <li>Prohibits excessive bail</li>
+            <li>Prohibits excessive fines</li>
+            <li>Prohibits cruel and unusual punishment</li>
+            <li>Applies to both federal and state governments</li>
+          </ul>
+        `,
+        10: `
+          <strong>Tenth Amendment - States' Rights</strong><br><br>
+          <strong>Key Provisions:</strong>
+          <ul>
+            <li>Powers not delegated to the federal government by the Constitution are reserved to the states or the people</li>
+            <li>Establishes federalism principle</li>
+            <li>Limits federal government power</li>
+            <li>Preserves state sovereignty</li>
+          </ul>
+        `,
+        14: `
+          <strong>Fourteenth Amendment - Equal Protection and Due Process</strong><br><br>
+          <strong>Key Provisions:</strong>
+          <ul>
+            <li><strong>Due Process Clause:</strong> Prohibits state and local governments from depriving persons of life, liberty, or property without due process of law</li>
+            <li><strong>Equal Protection Clause:</strong> Requires states to provide equal protection under the law to all people within their jurisdictions</li>
+            <li>Incorporates most Bill of Rights protections to states</li>
+            <li>Establishes citizenship rights</li>
+          </ul>
+        `
+      };
+      
+      return amendmentDetails[amendmentNo] || null;
+    }
+
+    function el(tag, attrs={}, text, ...children){
+      const n = document.createElement(tag);
+      for (const k in attrs) n.setAttribute(k, attrs[k]);
+      if (text!=null) n.textContent = text;
+      children.forEach(ch => n.appendChild(ch));
+      return n;
+    }
+
+    /* ----- Toggles ----- */
+    const toggleCodesBtn = document.getElementById("toggleCodesBtn");
+    let codesShown = true;
+    toggleCodesBtn.addEventListener("click", () => {
+      codesShown = !codesShown;
+      toggleCodesBtn.textContent = codesShown ? "Hide Police Codes" : "Show Police Codes";
+      applyCodesToggle();
+    });
+    function applyCodesToggle(){
+      const codesSection = document.getElementById('codesSection');
+      if (!codesShown) codesSection.classList.add('hidden');
+      else codesSection.classList.remove('hidden');
+    }
+
+    const toggleTagsBtn = document.getElementById("toggleTagsBtn");
+    let tagsShown = true;
+    toggleTagsBtn.addEventListener("click", () => {
+      tagsShown = !tagsShown;
+      toggleTagsBtn.textContent = tagsShown ? "Hide Previous/New Tags" : "Show Previous/New Tags";
+      applyTagToggle();
+    });
+    function applyTagToggle(){
+      document.querySelectorAll('.prevline').forEach(el => {
+        if (tagsShown) el.classList.remove('hide-tags');
+        else el.classList.add('hide-tags');
+      });
+    }
+
+    const toggleLawLinksBtn = document.getElementById("toggleLawLinksBtn");
+    let lawLinksShown = true;
+    toggleLawLinksBtn.addEventListener("click", () => {
+      lawLinksShown = !lawLinksShown;
+      toggleLawLinksBtn.textContent = lawLinksShown ? "Hide Caselaw Links" : "Show Caselaw Links";
+      applyLawLinksToggle();
+    });
+    function applyLawLinksToggle(){
+      if (!lawLinksShown) document.body.classList.add('hide-law');
+      else document.body.classList.remove('hide-law');
+    }
+
+    const toggleReportBtn = document.getElementById("toggleReportBtn");
+    let reportShown = true;
+    toggleReportBtn.addEventListener("click", () => {
+      reportShown = !reportShown;
+      toggleReportBtn.textContent = reportShown ? "Hide Case Report & Charges" : "Show Case Report & Charges";
+      applyReportToggle();
+    });
+    function applyReportToggle(){
+      if (!reportShown) document.body.classList.add('hide-report');
+      else document.body.classList.remove('hide-report');
+    }
+
+  const toggleRosterBtn = document.getElementById("toggleRosterBtn");
+  let rosterShown = true;
+  toggleRosterBtn.addEventListener("click", () => {
+    rosterShown = !rosterShown;
+    toggleRosterBtn.textContent = rosterShown ? "Hide Roster" : "Show Roster";
+    applyRosterToggle();
+  });
+  function applyRosterToggle(){
+    if (!rosterShown) document.body.classList.add('hide-roster');
+    else document.body.classList.remove('hide-roster');
+  }
+
+  const toggleWeaponBtn = document.getElementById("toggleWeaponBtn");
+  let weaponShown = true;
+  toggleWeaponBtn.addEventListener("click", () => {
+    weaponShown = !weaponShown;
+    toggleWeaponBtn.textContent = weaponShown ? "Hide Weapon Licensing" : "Show Weapon Licensing";
+    applyWeaponToggle();
+  });
+  function applyWeaponToggle(){
+    if (!weaponShown) document.body.classList.add('hide-weapon');
+    else document.body.classList.remove('hide-weapon');
+  }
+
+    /* ----- Weapon Licensing ----- */
+    // Set UTC date on load
+    function setWeaponLicenseDate() {
+      const now = new Date();
+      const utcString = now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+      document.getElementById('licenseDate').value = utcString;
+    }
+    setWeaponLicenseDate();
+
+    // Weapon licensing questions
+    const WEAPON_QUESTIONS = [
+      {
+        question: "When is it legal to discharge a firearm in public?",
+        options: [
+          "In self-defense OR defense of others, if there's an immediate threat",
+          "Whenever you feel threatened",
+          "Only in designated shooting ranges",
+          "Never under any circumstances"
+        ],
+        correct: 0
+      },
+      {
+        question: "Where must you store your firearm when it's not in use?",
+        options: [
+          "In a secure and safe location, such as a locked safe or storage container",
+          "Under your pillow for quick access",
+          "In your car's glove compartment",
+          "Anywhere as long as it's hidden"
+        ],
+        correct: 0
+      },
+      {
+        question: "Are you allowed to carry a firearm into government buildings or police stations?",
+        options: [
+          "No. Firearms are prohibited in these locations",
+          "Yes, if you have a license",
+          "Only if you're a government employee",
+          "Yes, but only concealed"
+        ],
+        correct: 0
+      },
+      {
+        question: "Can someone with a felony conviction be issued a firearm license in San Andreas?",
+        options: [
+          "No. Felons are not eligible.",
+          "Yes, after 5 years",
+          "Yes, with special permission",
+          "Yes, if they complete community service"
+        ],
+        correct: 0
+      },
+      {
+        question: "You hear a strange noise outside at 3AM. What's the best course of action?",
+        options: [
+          "Fire warning shots into the air like it's the 4th of July",
+          "Yell \"Who dat?!\" while pointing your gun at the window",
+          "Call 911 or investigate safely without using your weapon unless absolutely necessary",
+          "Go outside immediately with your gun drawn"
+        ],
+        correct: 2
+      },
+      {
+        question: "Drinking alcohol while handling firearms is safe as long as your blood alcohol level remains below the legal limit.",
+        options: [
+          "True",
+          "False - firearms should not be handled at all while under the influence of any drugs or alcohol"
+        ],
+        correct: 1
+      },
+      {
+        question: "Before cleaning a gun, always ______ it first.",
+        options: [
+          "EMPTY IT of ammo / unload",
+          "Point it at a wall",
+          "Load it with blanks",
+          "Check if it's loaded"
+        ],
+        correct: 0
+      },
+      {
+        question: "Where should your finger be when you're not ready to shoot?",
+        options: [
+          "On the trigger",
+          "Off the trigger",
+          "On the safety",
+          "It doesn't matter"
+        ],
+        correct: 1
+      }
+    ];
+
+    function generateRandomQuestions() {
+      const shuffled = [...WEAPON_QUESTIONS].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, 3);
+    }
+
+    function renderQuestions() {
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = '';
+      
+      const questions = generateRandomQuestions();
+      
+      questions.forEach((q, index) => {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'question-item';
+        
+        const questionText = document.createElement('div');
+        questionText.className = 'question-text';
+        questionText.textContent = `${index + 1}. ${q.question}`;
+        questionDiv.appendChild(questionText);
+        
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'question-options';
+        
+        q.options.forEach((option, optIndex) => {
+          const optionDiv = document.createElement('div');
+          optionDiv.className = 'question-option';
+          
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = `question_${index}`;
+          radio.value = optIndex;
+          
+          const label = document.createElement('label');
+          label.textContent = option;
+          label.style.marginLeft = '8px';
+          
+          // Highlight the correct answer for the issuing officer
+          if (optIndex === q.correct) {
+            optionDiv.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+            optionDiv.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+            optionDiv.style.borderRadius = '6px';
+            optionDiv.style.padding = '8px';
+            label.style.fontWeight = '600';
+            label.style.color = '#22c55e';
+          }
+          
+          optionDiv.appendChild(radio);
+          optionDiv.appendChild(label);
+          optionsDiv.appendChild(optionDiv);
+        });
+        
+        // Add correct answer indicator
+        const correctAnswerDiv = document.createElement('div');
+        correctAnswerDiv.style.marginTop = '8px';
+        correctAnswerDiv.style.padding = '8px';
+        correctAnswerDiv.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+        correctAnswerDiv.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+        correctAnswerDiv.style.borderRadius = '6px';
+        correctAnswerDiv.style.fontSize = '12px';
+        correctAnswerDiv.style.color = '#22c55e';
+        correctAnswerDiv.style.fontWeight = '600';
+        correctAnswerDiv.textContent = `✓ CORRECT ANSWER: ${q.options[q.correct]}`;
+        
+        questionDiv.appendChild(optionsDiv);
+        questionDiv.appendChild(correctAnswerDiv);
+        container.appendChild(questionDiv);
+      });
+    }
+
+    function generateWeaponLicense() {
+      const firstName = document.getElementById('applicantFirstName').value;
+      const lastName = document.getElementById('applicantLastName').value;
+      const agentName = document.getElementById('agentName').value;
+      const licenseDate = document.getElementById('licenseDate').value;
+      
+      if (!firstName || !lastName || !agentName) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+      
+      const hasFelonies = document.getElementById('hasFelonies').checked;
+      const misdemeanorCheck = document.getElementById('misdemeanorCheck').checked;
+      const photoTaken = document.getElementById('photoTaken').checked;
+      
+      if (hasFelonies) {
+        alert('APPLICATION DENIED: Applicant has felonies.');
+        return;
+      }
+      
+      if (!misdemeanorCheck || !photoTaken) {
+        alert('APPLICATION DENIED: Missing required checks.');
+        return;
+      }
+      
+      const licenseText = `WEAPON LICENSE WAS ISSUED ON ${licenseDate} by AGENT ${agentName}`;
+      
+      document.getElementById('weaponPreview').value = licenseText;
+      document.getElementById('btnCopyWeapon').disabled = false;
+    }
+
+    function denyApplication() {
+      const firstName = document.getElementById('applicantFirstName').value;
+      const lastName = document.getElementById('applicantLastName').value;
+      
+      if (!firstName || !lastName) {
+        alert('Please enter applicant name first.');
+        return;
+      }
+      
+      const licenseText = `WEAPON LICENSE APPLICATION DENIED for ${firstName} ${lastName}`;
+      
+      document.getElementById('weaponPreview').value = licenseText;
+      document.getElementById('btnCopyWeapon').disabled = false;
+    }
+
+    // Event listeners
+    document.getElementById('btnApprove').addEventListener('click', generateWeaponLicense);
+    document.getElementById('btnDeny').addEventListener('click', denyApplication);
+    document.getElementById('btnCopyWeapon').addEventListener('click', async () => {
+      const txt = document.getElementById('weaponPreview').value;
+      try {
+        await navigator.clipboard.writeText(txt);
+        const btn = document.getElementById('btnCopyWeapon');
+        const old = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(()=> btn.textContent = old, 1200);
+      } catch(e){
+        alert('Copy failed. Select and copy manually.');
+      }
+    });
+
+    // Generate questions on page load
+    renderQuestions();
+
+    /* ----- CLASSIFIED ENTRY SEQUENCE ----- */
+    function typeText(element, text, speed = 100) {
+      return new Promise((resolve) => {
+        let i = 0;
+        const timer = setInterval(() => {
+          if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+          } else {
+            clearInterval(timer);
+            resolve();
+          }
+        }, speed);
+      });
+    }
+
+    function typePassword(element, password, speed = 150) {
+      return new Promise((resolve) => {
+        let i = 0;
+        const timer = setInterval(() => {
+          if (i < password.length) {
+            element.textContent += '*';
+            i++;
+          } else {
+            clearInterval(timer);
+            resolve();
+          }
+        }, speed);
+      });
+    }
+
+    async function runClassifiedSequence() {
+      const passwordDisplay = document.getElementById('passwordDisplay');
+      const verificationStatus = document.getElementById('verificationStatus');
+      const accessStatus = document.getElementById('accessStatus');
+      const welcomeMessage = document.getElementById('welcomeMessage');
+      
+    // Wait for initial lines to appear
+    await new Promise(resolve => setTimeout(resolve, 1500));
+      
+    // Type password
+    await typePassword(passwordDisplay, 'CLASSIFIED_ACCESS_2024', 60);
+    
+    // Add cursor effect
+    const cursor = document.createElement('span');
+    cursor.className = 'typing-cursor';
+    passwordDisplay.appendChild(cursor);
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Remove cursor and show verification
+    cursor.remove();
+    await typeText(verificationStatus, 'BIOMETRIC SCAN COMPLETE', 40);
+    
+    await new Promise(resolve => setTimeout(resolve, 250));
+    
+    // Show access status
+    await typeText(accessStatus, 'PERMISSION GRANTED', 50);
+    
+    await new Promise(resolve => setTimeout(resolve, 250));
+    
+    // Show welcome message
+    await typeText(welcomeMessage, 'WELCOME AGENT', 60);
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Fade out classified screen and show main content
+      const classifiedEntry = document.getElementById('classifiedEntry');
+      const mainContent = document.getElementById('mainContent');
+      
+      classifiedEntry.style.opacity = '0';
+      classifiedEntry.style.transition = 'opacity 1.5s ease-out';
+      
+      setTimeout(() => {
+        classifiedEntry.style.display = 'none';
+        mainContent.style.display = 'block';
+        mainContent.style.opacity = '0';
+        mainContent.style.transition = 'opacity 1s ease-in';
+        setTimeout(() => {
+          mainContent.style.opacity = '1';
+        }, 100);
+      }, 1500);
+    }
+
+    // Handle toolbar collapse/expand
+    document.addEventListener('DOMContentLoaded', () => {
+      const toolbar = document.getElementById('top');
+      const collapseBtn = document.getElementById('collapseBtn');
+      const collapseText = collapseBtn.querySelector('.collapse-text');
+      
+      collapseBtn.addEventListener('click', () => {
+        toolbar.classList.toggle('collapsed');
+        collapseText.textContent = toolbar.classList.contains('collapsed') ? 'Expand' : 'Collapse';
+      });
+
+      // Start the classified sequence
+      runClassifiedSequence();
+    });
+
+  /* ----- ROSTER INTEGRATION ----- */
+  let rosterData = [];
+  let rosterUpdateInterval;
+
+  // Function to fetch roster data from Google Sheets
+  async function fetchRosterData() {
+    try {
+      // Your specific Google Sheets CSV export URL with correct GID
+      const SHEET_URL = 'https://docs.google.com/spreadsheets/d/18YPIHPxr5ki5JUFpvEEAxx0sCOKKdgrsGaeO_1rOOMU/export?format=csv&gid=1266358180';
+      
+      console.log('Fetching roster from:', SHEET_URL);
+      console.log('Starting fetch request...');
+      
+      const response = await fetch(SHEET_URL, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Accept': 'text/csv',
+        }
+      });
+      
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+      }
+      
+      const csvText = await response.text();
+      console.log('CSV response length:', csvText.length);
+      console.log('CSV response preview:', csvText.substring(0, 500) + '...');
+      
+    // Parse CSV data
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    console.log('CSV lines found:', lines.length);
+    
+    if (lines.length === 0) {
+      throw new Error('No data found in CSV');
+    }
+    
+    // Find the actual header row (skip title rows)
+    let headerRowIndex = 0;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].toLowerCase();
+      if (line.includes('badge') && line.includes('name') && line.includes('rank')) {
+        headerRowIndex = i;
+        break;
+      }
+    }
+    
+    const headers = lines[headerRowIndex].split(',').map(h => h.trim().replace(/"/g, ''));
+    console.log('Headers found at row', headerRowIndex, ':', headers);
+    
+    // Use data starting from the row after headers
+    const dataLines = lines.slice(headerRowIndex + 1);
+      
+    rosterData = dataLines.map(line => {
+      const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+      const row = {};
+      headers.forEach((header, index) => {
+        row[header.toLowerCase()] = values[index] || '';
+      });
+      return row;
+    }).filter(row => {
+      // Check if any field has content (not just empty strings)
+      return Object.values(row).some(value => value && value.trim() !== '');
+    });
+      
+    console.log('Parsed roster data count:', rosterData.length);
+    console.log('Sample parsed data:', rosterData.slice(0, 3));
+    console.log('First agent keys:', Object.keys(rosterData[0] || {}));
+    console.log('First agent data:', rosterData[0]);
+    updateRosterDisplay();
+      
+    } catch (error) {
+      console.error('Error fetching roster:', error);
+      console.log('Error details:', error.message);
+      console.log('Using fallback data...');
+      
+      // Fallback to static data if fetch fails
+      rosterData = [
+        { name: 'John Doe', rank: 'Special Agent', status: 'Active', badge: '001', discord: 'johndoe#1234' },
+        { name: 'Jane Smith', rank: 'Senior Agent', status: 'Active', badge: '002', discord: 'janesmith#5678' },
+        { name: 'Mike Johnson', rank: 'Agent', status: 'Active', badge: '003', discord: 'mikejohnson#9012' }
+      ];
+      updateRosterDisplay();
+    }
+  }
+
+  // Function to update the roster display on the page
+  function updateRosterDisplay() {
+    const rosterContainer = document.getElementById('rosterContainer');
+    if (!rosterContainer) return;
+    
+    rosterContainer.innerHTML = '';
+    
+    if (rosterData.length === 0) {
+      rosterContainer.innerHTML = '<div class="roster-empty">No roster data available</div>';
+      return;
+    }
+    
+  // Filter and clean the data to show only the cool stuff
+  const cleanData = rosterData
+    .filter(agent => {
+      // Only show agents with names and valid data
+      const name = agent.name || '';
+      const rank = agent.rank || '';
+      return name.trim() !== '' && name.trim() !== 'N/A' && rank.trim() !== '';
+    })
+    .map(agent => ({
+      badge: agent['badge#'] || 'N/A',
+      name: agent.name || 'Unknown Agent',
+      rank: agent.rank || 'Agent',
+      status: agent.status || 'Active',
+      discord: agent['discord id'] || 'N/A',
+      comments: agent.comments || '',
+      division: agent.division || '',
+      timezone: agent.timezone || ''
+    }))
+      .sort((a, b) => {
+        // Sort by rank hierarchy, then by name
+        const rankOrder = {
+          'Director': 1,
+          'Deputy Director': 2,
+          'Special Agent': 3,
+          'Agent': 4,
+          'Recruit': 5,
+          'Trainee': 6
+        };
+        const aOrder = rankOrder[a.rank] || 99;
+        const bOrder = rankOrder[b.rank] || 99;
+        if (aOrder !== bOrder) return aOrder - bOrder;
+        return a.name.localeCompare(b.name);
+      });
+    
+    // Create roster table
+    const table = document.createElement('table');
+    table.className = 'roster-table';
+    
+  // Create header row with only essential columns
+  const thead = document.createElement('thead');
+  thead.innerHTML = `
+    <tr>
+      <th>Badge #</th>
+      <th>Agent Name</th>
+      <th>Division</th>
+      <th>Rank</th>
+      <th>Status</th>
+      <th>Discord</th>
+    </tr>
+  `;
+    table.appendChild(thead);
+    
+    // Create body rows
+    const tbody = document.createElement('tbody');
+    cleanData.forEach(agent => {
+      const row = document.createElement('tr');
+      
+      // Badge number
+      const badgeTd = document.createElement('td');
+      badgeTd.textContent = agent.badge;
+      badgeTd.className = 'badge-cell';
+      row.appendChild(badgeTd);
+      
+    // Agent name
+    const nameTd = document.createElement('td');
+    nameTd.textContent = agent.name;
+    nameTd.className = 'name-cell';
+    row.appendChild(nameTd);
+    
+    // Division
+    const divisionTd = document.createElement('td');
+    divisionTd.textContent = agent.division;
+    divisionTd.className = 'division-cell';
+    row.appendChild(divisionTd);
+    
+    // Rank
+    const rankTd = document.createElement('td');
+    rankTd.textContent = agent.rank;
+    rankTd.className = 'rank-cell';
+    row.appendChild(rankTd);
+      
+      // Status with badge
+      const statusTd = document.createElement('td');
+      const statusClass = agent.status.toLowerCase().includes('active') ? 'active' : 'inactive';
+      statusTd.innerHTML = `<span class="status-badge ${statusClass}">${agent.status}</span>`;
+      row.appendChild(statusTd);
+      
+      // Discord ID
+      const discordTd = document.createElement('td');
+      discordTd.textContent = agent.discord;
+      discordTd.className = 'discord-cell';
+      row.appendChild(discordTd);
+      
+      tbody.appendChild(row);
+    });
+    
+    table.appendChild(tbody);
+    rosterContainer.appendChild(table);
+  }
+
+  // Function to start live updates
+  function startRosterUpdates() {
+    // Fetch immediately
+    fetchRosterData();
+    
+    // Update every 5 minutes
+    rosterUpdateInterval = setInterval(fetchRosterData, 5 * 60 * 1000);
+  }
+
+  // Function to stop live updates
+  function stopRosterUpdates() {
+    if (rosterUpdateInterval) {
+      clearInterval(rosterUpdateInterval);
+    }
+  }
+
+  /* ----- Search & initial render ----- */
+  searchEl.addEventListener("input", render);
+  render();
+  renderCart();
+
+  // Test function to verify Google Sheets access
+  async function testGoogleSheetsAccess() {
+    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/18YPIHPxr5ki5JUFpvEEAxx0sCOKKdgrsGaeO_1rOOMU/export?format=csv&gid=1266358180';
+    
+    console.log('Testing Google Sheets access...');
+    console.log('URL:', SHEET_URL);
+    
+    try {
+      const response = await fetch(SHEET_URL);
+      console.log('Test response status:', response.status);
+      console.log('Test response headers:', [...response.headers.entries()]);
+      
+      if (response.ok) {
+        const text = await response.text();
+        console.log('Test CSV preview:', text.substring(0, 200));
+        console.log('✅ Google Sheets is accessible');
+      } else {
+        console.log('❌ Google Sheets returned error:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.log('❌ Google Sheets access failed:', error.message);
+      console.log('This might be due to CORS restrictions or network issues');
+    }
+  }
+
+  // Start roster updates when page loads
+  document.addEventListener('DOMContentLoaded', () => {
+    // Test access first
+    testGoogleSheetsAccess();
+    
+    // Then start normal updates
+    startRosterUpdates();
+  });
+    </script>
+    </body>
+    </html>
