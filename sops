@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FIB SOPS</title>
+    <link rel="icon" type="image/webp" href="https://kappa.lol/aDnGzF">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase -->
+    <script type="module">
+      // Initialize Firebase
+      async function initializeFirebase() {
+        try {
+          const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+          const { getDatabase, ref, set, onValue, update, get: fbGet } = 
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+          const { getAnalytics } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js");
+
+          const firebaseConfig = {
+            apiKey: "AIzaSyC8MXihU-0-FRkYwx0qrs_Sv4CKZCVgFUs",
+            authDomain: "fib-training-tracker.firebaseapp.com",
+            projectId: "fib-training-tracker",
+            storageBucket: "fib-training-tracker.appspot.com",
+            messagingSenderId: "1086248091161",
+            appId: "1:1086248091161:web:6e74e452d665123e88f488",
+            measurementId: "G-ZHPFZNV4WZ",
+            databaseURL: "https://fib-training-tracker-default-rtdb.firebaseio.com"
+          };
+
+          // Initialize Firebase
+          const app = initializeApp(firebaseConfig);
+          const database = getDatabase(app);
+
+          // Make functions available globally
+          window.fbDatabase = database;
+          window.fbRef = ref;
+          window.fbSet = set;
+          window.fbOnValue = onValue;
+          window.fbUpdate = update;
+          window.fbGet = fbGet;
+
+          // Initialize SOPs
+          if (!window.sops) {
+            window.sops = [];
+          }
+
+          // Load SOPs
+          await window.loadSOPs();
+
+          return true;
+        } catch (error) {
+          console.error('Firebase initialization error:', error);
+          showDatabaseError('Failed to initialize database. Please refresh the page.');
+          return false;
+        }
+      }
+
+      // Default SOPs structure
+      window.defaultSOPs = {
+        bureauGuidelines: {
+          id: 'bureauGuidelines',
+          title: 'BUREAU GUIDELINES',
+          sections: [
+            {
+              id: 'expectations',
+              title: 'EXPECTATIONS',
+              lead: '',
+              content: ''
+            },
+            {
+              id: 'presentation',
+              title: 'PRESENTATION',
+              lead: '',
+              content: ''
+            },
+            {
+              id: 'interdepartmentalRelations',
+              title: 'INTERDEPARTMENTAL RELATIONS',
+              lead: '',
+              content: ''
+            },
+            {
+              id: 'internalRelations',
+              title: 'INTERNAL RELATIONS',
+              lead: '',
+              content: ''
+            }
+          ]
+        },
+        divisionSOPs: {
+          id: 'divisionSOPs',
+          title: 'DIVISION SOPS',
+          sections: [
+            {
+              id: 'organisedCrime',
+              title: 'ORGANISED CRIME',
+              lead: '',
+              content: ''
+            },
+            {
+              id: 'criminalLaw',
+              title: 'CRIMINAL LAW',
+              lead: '',
+              content: ''
+            },
+            {
+              id: 'supernatural',
+              title: 'SUPERNATURAL',
+              lead: '',
+              content: ''
+            },
+            {
+              id: 'internalAffairs',
+              title: 'INTERNAL AFFAIRS',
+              lead: '',
+              content: ''
+            }
+          ]
+        },
+        specialityHandbooks: {
+          id: 'specialityHandbooks',
+          title: 'SPECIALITY HANDBOOKS',
+          sections: [
+            {
+              id: 'fieldAgent',
+              title: 'FIELD AGENT',
+              lead: '',
+              content: ''
+            },
+            {
+              id: 'investigator',
+              title: 'INVESTIGATOR',
+              lead: '',
+              content: ''
+            },
+            {
+              id: 'analyst',
+              title: 'ANALYST',
+              lead: '',
+              content: ''
+            },
+            {
+              id: 'supernaturalAgent',
+              title: 'SUPERNATURAL',
+              lead: '',
+              content: ''
+            }
+          ]
+        }
+      };
+
+      // Function to toggle sections
+      function toggleSection(sectionId) {
+        const content = document.getElementById(`section-content-${sectionId}`);
+        const header = document.getElementById(`section-${sectionId}`);
+        const icon = header.querySelector('.toggle-icon');
+        
+        if (content.style.display === 'none') {
+          content.style.display = 'block';
+          icon.style.transform = 'rotate(180deg)';
+        } else {
+          content.style.display = 'none';
+          icon.style.transform = 'rotate(0deg)';
+        }
+      }
+      window.toggleSection = toggleSection;
+
+      // Function to toggle groups
+      function toggleGroup(groupId) {
+        const container = document.getElementById(`${groupId}Container`);
+        const section = document.querySelector(`#${groupId}`);
+        const icon = section.querySelector('.toggle-icon');
+        
+        if (container.style.display === 'none') {
+          container.style.display = 'block';
+          section.classList.add('expanded');
+          icon.style.transform = 'rotate(180deg)';
+        } else {
+          container.style.display = 'none';
+          section.classList.remove('expanded');
+          icon.style.transform = 'rotate(0deg)';
+        }
+      }
+      window.toggleGroup = toggleGroup;
+
+      // Function to edit section
+      async function editSection(sectionId, groupId) {
+        const group = window.sops[groupId];
+        const section = group.sections.find(s => s.id === sectionId);
+        if (!section) return;
+
+        let lead = null;
+        if (groupId !== 'bureauGuidelines') {
+          const leadPrompt = groupId === 'specialityHandbooks' ? 'Enter Speciality Expert:' : 'Enter Division Lead:';
+          lead = prompt(leadPrompt, section.lead || '');
+          if (lead === null) return;
+        }
+
+        const content = prompt('Enter section content:', section.content || '');
+        if (content === null) return;
+
+        if (lead !== null) section.lead = lead;
+        section.content = content;
+
+        await saveSOPs();
+        await initializeSOPs();
+      }
+      window.editSection = editSection;
+
+      // Load SOPs from Firebase
+      window.loadSOPs = async function() {
+        try {
+          const snapshot = await window.fbGet(window.fbRef(window.fbDatabase, 'sops'));
+          if (snapshot.exists()) {
+            window.sops = snapshot.val();
+          } else {
+            window.sops = window.defaultSOPs;
+            await saveSOPs();
+          }
+          await initializeSOPs();
+        } catch (error) {
+          console.error('Error loading SOPs:', error);
+          window.sops = window.defaultSOPs;
+          await initializeSOPs();
+        }
+      };
+
+      // Save SOPs to Firebase
+      window.saveSOPs = async function() {
+        try {
+          await window.fbSet(window.fbRef(window.fbDatabase, 'sops'), window.sops);
+        } catch (error) {
+          console.error('Error saving SOPs:', error);
+          throw error;
+        }
+      };
+
+      // Initialize SOPs display
+      async function initializeSOPs() {
+        const groups = ['bureauGuidelines', 'divisionSOPs', 'specialityHandbooks'];
+        
+        groups.forEach(groupId => {
+          const container = document.getElementById(`${groupId}Container`);
+          if (!container) return;
+          
+          container.innerHTML = '';
+          const group = window.sops[groupId];
+          
+          group.sections.forEach(section => {
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = 'sop-section';
+            sectionDiv.id = `section-${section.id}`;
+            
+            const header = document.createElement('div');
+            header.className = 'sop-section-header';
+            header.onclick = () => toggleSection(section.id);
+            header.innerHTML = `
+              ${section.title}
+              <span class="toggle-icon">▼</span>
+            `;
+            
+            const content = document.createElement('div');
+            content.className = 'sop-section-content';
+            content.id = `section-content-${section.id}`;
+            content.style.display = 'none';
+            
+            // Edit button
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-section-btn';
+            editBtn.title = 'Edit Section';
+            editBtn.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            `;
+            editBtn.onclick = (e) => {
+              e.stopPropagation();
+              editSection(section.id, groupId);
+            };
+            
+            // Only create lead div for non-bureau guidelines sections
+            let leadDiv;
+            if (groupId !== 'bureauGuidelines') {
+              leadDiv = document.createElement('div');
+              leadDiv.className = 'section-lead';
+              const leadTitle = groupId === 'specialityHandbooks' ? 'Speciality Expert' : 'Division Lead';
+              leadDiv.innerHTML = `
+                <h4>${leadTitle}</h4>
+                <p>${section.lead || 'Not assigned'}</p>
+              `;
+            }
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'section-content';
+            contentDiv.innerHTML = section.content || 'No content available';
+            
+            content.appendChild(editBtn);
+            if (leadDiv) content.appendChild(leadDiv);
+            content.appendChild(contentDiv);
+            
+            sectionDiv.appendChild(header);
+            sectionDiv.appendChild(content);
+            container.appendChild(sectionDiv);
+          });
+        });
+      }
+
+      // Initialize Firebase when the page loads
+      window.addEventListener('load', initializeFirebase);
+    </script>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body { 
+        margin: 0; 
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+        background: #0b0b0f; 
+        color: #fff; 
+      }
+      
+      .wrap { 
+        max-width: 1400px; 
+        margin: 0 auto; 
+        padding: 24px; 
+      }
+
+      .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding: 10px 0 14px 0;
+        background: #0b0b0f;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+
+      .brand { 
+        display: flex; 
+        align-items: center; 
+        gap: 24px;
+        padding: 16px 0;
+      }
+
+      .brand img { 
+        height: 120px; 
+        width: auto; 
+        border-radius: 4px;
+        filter: drop-shadow(0 0 10px rgba(253,224,71,.2));
+      }
+
+      h1 { 
+        font-size: 48px; 
+        font-weight: 900; 
+        margin: 0; 
+        letter-spacing: 1px; 
+        color: #fde047; 
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace; 
+        text-shadow: 0 0 10px rgba(253,224,71,.3);
+        line-height: 1.2;
+      }
+
+      /* SOP Groups */
+      .sop-group {
+        background: rgba(255,255,255,.03);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+
+      .sop-group-header {
+        cursor: pointer;
+        user-select: none;
+        color: #22c55e;
+        border-bottom-color: #22c55e;
+        text-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 0 16px;
+        font-size: 18px;
+        font-weight: 700;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+        border-bottom: 2px solid #22c55e;
+        padding-bottom: 8px;
+      }
+
+      .toggle-icon {
+        font-size: 12px;
+        transition: transform 0.3s ease;
+      }
+
+      /* SOP Sections */
+      .sop-section {
+        background: rgba(34, 197, 94, 0.05);
+        border: 1px solid rgba(34, 197, 94, 0.1);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        overflow: hidden;
+      }
+
+      .sop-section-header {
+        padding: 12px;
+        cursor: pointer;
+        user-select: none;
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .sop-section-content {
+        padding: 16px;
+        position: relative;
+      }
+
+      .edit-section-btn {
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: 4px;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: absolute;
+        top: 12px;
+        right: 12px;
+      }
+
+      .edit-section-btn:hover {
+        background: rgba(34, 197, 94, 0.2);
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+        transform: scale(1.05);
+      }
+
+      .edit-section-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .section-lead {
+        margin-bottom: 16px;
+      }
+
+      .section-lead h4 {
+        color: #22c55e;
+        margin: 0 0 8px 0;
+        font-size: 14px;
+      }
+
+      .section-lead p {
+        margin: 0;
+        color: #fff;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .section-content {
+        color: #fff;
+        font-size: 13px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+      }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="toolbar">
+            <div class="brand">
+                <img src="https://kappa.lol/aDnGzF" alt="FIB Logo">
+                <h1>FEDERAL INVESTIGATION BUREAU<br>STANDARD OPERATING PROCEDURES</h1>
+            </div>
+        </div>
+
+        <!-- Bureau Guidelines -->
+        <div id="bureauGuidelines" class="sop-group">
+            <div class="sop-group-header" onclick="toggleGroup('bureauGuidelines')">
+                BUREAU GUIDELINES
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div id="bureauGuidelinesContainer" style="display: none;"></div>
+        </div>
+
+        <!-- Division SOPs -->
+        <div id="divisionSOPs" class="sop-group">
+            <div class="sop-group-header" onclick="toggleGroup('divisionSOPs')">
+                DIVISION SOPS
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div id="divisionSOPsContainer" style="display: none;"></div>
+        </div>
+
+        <!-- Speciality Handbooks -->
+        <div id="specialityHandbooks" class="sop-group">
+            <div class="sop-group-header" onclick="toggleGroup('specialityHandbooks')">
+                SPECIALITY HANDBOOKS
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div id="specialityHandbooksContainer" style="display: none;"></div>
+        </div>
+    </div>
+</body>
+</html>
