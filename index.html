@@ -3,18 +3,328 @@
     <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>FIB Training Tracker</title>
+    <title>FIB DATABASE</title>
+    <link rel="icon" type="image/webp" href="https://kappa.lol/aDnGzF">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <!-- Firebase -->
     <script type="module">
-      // Initialize Firebase immediately
-      let fbApp, fbDatabase, fbRef, fbSet, fbOnValue, fbUpdate;
+      // Function to toggle training procedures visibility
+      function toggleTrainingProcedures() {
+        const container = document.getElementById('trainingProceduresContainer');
+        const section = document.querySelector('.training-procedures');
+        const toggleIcon = section.querySelector('.toggle-icon');
+        
+        if (container.style.display === 'none') {
+          container.style.display = 'block';
+          section.classList.add('expanded');
+        } else {
+          container.style.display = 'none';
+          section.classList.remove('expanded');
+        }
+      }
+      window.toggleTrainingProcedures = toggleTrainingProcedures;
 
+      // Function to toggle individual training modules
+      function toggleTrainingModule(moduleId) {
+        const content = document.getElementById(`module-content-${moduleId}`);
+        const header = document.getElementById(`module-${moduleId}`);
+        const toggleIcon = header.querySelector('.toggle-icon');
+        
+        if (content.style.display === 'none') {
+          content.style.display = 'block';
+          header.classList.add('expanded');
+        } else {
+          content.style.display = 'none';
+          header.classList.remove('expanded');
+        }
+      }
+      window.toggleTrainingModule = toggleTrainingModule;
+
+      // Training modules data
+      window.trainingModules = [
+        {
+          id: '10codes',
+          title: '10 Codes',
+          content: {
+            goal: 'Learn and use radio codes.',
+            setup: 'Instructor calls out scenarios.',
+            pass: 'Quick, accurate code responses.',
+            tip: 'Start with common codes first.'
+          }
+        },
+        {
+          id: 'caselaws',
+          title: 'Case Laws',
+          content: {
+            goal: 'Understand key legal precedents.',
+            setup: 'Review major cases and discuss.',
+            pass: 'Can explain case impact on procedures.',
+            tip: 'Focus on practical applications.'
+          }
+        },
+        {
+          id: 'pursuit',
+          title: 'Pursuit',
+          content: {
+            goal: 'Evaluate control and radio during chase.',
+            setup: 'Instructor drives suspect car.',
+            pass: 'Clear comms, proper callouts, controlled turns.',
+            tip: 'Lose sight > lose safety, disengage smartly.'
+          }
+        },
+        {
+          id: 'hostage',
+          title: 'Hostage',
+          content: {
+            goal: 'Handle hostage negotiations.',
+            setup: 'Role-play with instructor as suspect.',
+            pass: 'De-escalates, protects hostages, resolves safely.',
+            tip: 'Time is on your side.'
+          }
+        },
+        {
+          id: 'trafficstop',
+          title: 'Traffic Stop',
+          content: {
+            goal: 'Conduct safe and lawful vehicle stop.',
+            setup: 'Random vehicle, unknown risk.',
+            pass: 'Proper positioning, approach, ID check, and closure.',
+            tip: 'Always call plate before approach.'
+          }
+        },
+        {
+          id: 'closequartersbreaching',
+          title: 'Close Quarters Breaching',
+          content: {
+            goal: 'Clear rooms and buildings safely.',
+            setup: 'Multi-room scenario with threats.',
+            pass: 'Methodical clearing, good angles, team coordination.',
+            tip: 'Slow is smooth, smooth is fast.'
+          }
+        },
+        {
+          id: 'openareabreaching',
+          title: 'Open Area Breaching',
+          content: {
+            goal: 'Secure large outdoor areas.',
+            setup: 'Open field with multiple structures.',
+            pass: 'Uses cover, maintains awareness, coordinates team.',
+            tip: 'Distance is your friend.'
+          }
+        },
+        {
+          id: 'scenecontrol',
+          title: 'Scene Control',
+          content: {
+            goal: 'Manage chaotic multi-unit scene.',
+            setup: 'Random civilians, media, multiple officers.',
+            pass: 'Establishes perimeter, delegates roles, stays calm.',
+            tip: 'Loud voice ≠ leadership — clarity does.'
+          }
+        },
+        {
+          id: 'comms',
+          title: 'COMMS',
+          content: {
+            goal: 'Clear radio communication.',
+            setup: 'High-stress scenario requiring updates.',
+            pass: 'Clear, concise, complete transmissions.',
+            tip: 'Think before you speak.'
+          }
+        },
+        {
+          id: 'useofforce',
+          title: 'Use of Force',
+          content: {
+            goal: 'Correct escalation/de-escalation.',
+            setup: 'Angry suspect escalating verbally.',
+            pass: 'Uses verbal, then less-lethal, then lethal only if justified.',
+            tip: 'Force must always be proportional.'
+          }
+        },
+        {
+          id: 'filingcharges',
+          title: 'Filing Charges',
+          content: {
+            goal: 'Proper charge selection and documentation.',
+            setup: 'Complex scenario with multiple violations.',
+            pass: 'Identifies correct charges, supports with evidence.',
+            tip: 'Quality over quantity.'
+          }
+        },
+        {
+          id: 'reports',
+          title: 'Reports',
+          content: {
+            goal: 'Professional, factual reporting.',
+            setup: 'Give scene notes; trainee writes a brief report.',
+            pass: 'Spelling, structure, and detail are accurate.',
+            tip: 'Write as if a judge will read it.'
+          }
+        },
+        {
+          id: 'gunfight',
+          title: 'Gunfight',
+          content: {
+            goal: 'Effective combat shooting.',
+            setup: 'Range drills and scenario training.',
+            pass: 'Accuracy, movement, cover usage.',
+            tip: 'Speed comes from smoothness.'
+          }
+        },
+        {
+          id: 'undercovertraining',
+          title: 'Undercover Training',
+          content: {
+            goal: 'Teach blending & intel gathering.',
+            setup: 'Simple buy-bust or infiltration scenario.',
+            pass: 'Keeps cover story, relays info quietly.',
+            tip: 'Never reveal real name or badge.'
+          }
+        },
+        {
+          id: 'helicopterlicense',
+          title: 'Helicopter License',
+          content: {
+            goal: 'Basic flight operations.',
+            setup: 'Training flights with instructor.',
+            pass: 'Safe takeoff, hovering, landing.',
+            tip: 'Always check weather conditions.'
+          }
+        },
+        {
+          id: 'ammunationscenecommand',
+          title: 'Ammunation Scene Command',
+          content: {
+            goal: 'Control active shooter scene.',
+            setup: 'Multiple threats in store layout.',
+            pass: 'Quick response, civilian safety, threat neutralization.',
+            tip: 'First 5 minutes are critical.'
+          }
+        },
+        {
+          id: 'bankheistscenecommand',
+          title: 'Bank Heist Scene Command',
+          content: {
+            goal: 'Manage complex robbery response.',
+            setup: 'Multiple suspects, hostages, entry points.',
+            pass: 'Perimeter control, negotiation, tactical resolution.',
+            tip: 'Control outer perimeter first.'
+          }
+        },
+        {
+          id: 'pitmaneuvertraining',
+          title: 'PIT Maneuver Training',
+          content: {
+            goal: 'Safe pursuit termination.',
+            setup: 'High-speed chase scenario.',
+            pass: 'Proper speed, angle, and execution.',
+            tip: 'Location and timing are everything.'
+          }
+        }
+      ];
+
+      // Function to populate training modules
+      function populateTrainingModules() {
+        const container = document.getElementById('trainingProceduresContainer');
+        if (!container) return;
+
+        trainingModules.forEach(module => {
+          const moduleDiv = document.createElement('div');
+          moduleDiv.className = 'training-module';
+          moduleDiv.id = `module-${module.id}`;
+          
+          const header = document.createElement('div');
+          header.className = 'training-module-header';
+          header.onclick = () => toggleTrainingModule(module.id);
+          header.innerHTML = `
+            ${module.title}
+            <span class="toggle-icon">▼</span>
+          `;
+          
+          const content = document.createElement('div');
+          content.className = 'training-module-content';
+          content.id = `module-content-${module.id}`;
+          content.style.display = 'none';
+          content.style.position = 'relative';
+
+          // Edit button container
+          const editBtnContainer = document.createElement('div');
+          editBtnContainer.style.position = 'absolute';
+          editBtnContainer.style.top = '12px';
+          editBtnContainer.style.right = '12px';
+          editBtnContainer.style.display = 'flex';
+          editBtnContainer.style.gap = '8px';
+
+          // Edit button
+          const editBtn = document.createElement('button');
+          editBtn.className = 'edit-module-btn';
+          editBtn.title = 'Edit Module';
+          editBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          `;
+          editBtn.onclick = (e) => {
+            e.stopPropagation();
+            editTrainingModule(module.id);
+          };
+          editBtnContainer.appendChild(editBtn);
+          content.appendChild(editBtnContainer);
+          
+          // Goal section
+          const goalSection = document.createElement('div');
+          goalSection.className = 'training-module-section';
+          goalSection.innerHTML = `
+            <h4>Goal</h4>
+            <p>${module.content.goal}</p>
+          `;
+          
+          // Setup section
+          const setupSection = document.createElement('div');
+          setupSection.className = 'training-module-section';
+          setupSection.innerHTML = `
+            <h4>Setup</h4>
+            <p>${module.content.setup}</p>
+          `;
+          
+          // Pass criteria section
+          const passSection = document.createElement('div');
+          passSection.className = 'training-module-section';
+          passSection.innerHTML = `
+            <h4>Pass if</h4>
+            <p>${module.content.pass}</p>
+          `;
+          
+          // Key tip section
+          const tipSection = document.createElement('div');
+          tipSection.className = 'training-module-section';
+          tipSection.innerHTML = `
+            <h4>Key tip</h4>
+            <p>${module.content.tip}</p>
+          `;
+          
+          content.appendChild(goalSection);
+          content.appendChild(setupSection);
+          content.appendChild(passSection);
+          content.appendChild(tipSection);
+          
+          moduleDiv.appendChild(header);
+          moduleDiv.appendChild(content);
+          container.appendChild(moduleDiv);
+        });
+      }
+
+      // Call populateTrainingModules after DOM is loaded
+      document.addEventListener('DOMContentLoaded', populateTrainingModules);
+
+      // Initialize Firebase immediately
       async function initializeFirebase() {
         try {
           const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
-          const { getDatabase, ref, set, onValue, update } = 
+          const { getDatabase, ref, set, onValue, update, get: fbGet } = 
             await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
           const { getAnalytics } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js");
 
@@ -30,19 +340,24 @@
           };
 
           // Initialize Firebase
-          fbApp = initializeApp(firebaseConfig);
-          fbDatabase = getDatabase(fbApp);
-          fbRef = ref;
-          fbSet = set;
-          fbOnValue = onValue;
-          fbUpdate = update;
+          const app = initializeApp(firebaseConfig);
+          const database = getDatabase(app);
 
           // Make functions available globally
-          window.fbDatabase = fbDatabase;
-          window.fbRef = fbRef;
-          window.fbSet = fbSet;
-          window.fbOnValue = fbOnValue;
-          window.fbUpdate = fbUpdate;
+          window.fbDatabase = database;
+          window.fbRef = ref;
+          window.fbSet = set;
+          window.fbOnValue = onValue;
+          window.fbUpdate = update;
+          window.fbGet = fbGet;
+
+          // Initialize training modules
+          if (!window.trainingModules) {
+            window.trainingModules = [];
+          }
+
+          // Load training modules
+          await window.loadTrainingModules();
 
           return true;
         } catch (error) {
@@ -52,34 +367,8 @@
         }
       }
 
-      // Initialize Firebase immediately and then start the app
-      document.addEventListener('DOMContentLoaded', async () => {
-        // Disable interface until we confirm connection
-        disableInterface();
-        
-        const initialized = await initializeFirebase();
-        if (!initialized) {
-          showDatabaseError('Database initialization failed. Please refresh the page.');
-          return;
-        }
-
-        // Set up connection monitoring
-        const connectedRef = fbRef(fbDatabase, '.info/connected');
-        fbOnValue(connectedRef, (snap) => {
-          const connected = snap.val() === true;
-          console.log('Connection state:', connected ? 'connected' : 'disconnected');
-          
-          if (connected) {
-            enableInterface();
-            loadTrainees(); // Load data when connected
-          } else {
-            showDatabaseError('Lost connection to database. Please check your internet connection.');
-          }
-        }, (error) => {
-          console.error('Connection monitoring error:', error);
-          showDatabaseError('Unable to monitor database connection. Please refresh the page.');
-        });
-      });
+      // Make initializeFirebase available globally
+      window.initializeFirebase = initializeFirebase;
     </script>
     <style>
       :root { color-scheme: dark; }
@@ -98,11 +387,14 @@
   .toolbar.collapsed {
     padding: 8px 0;
   }
+  .toolbar.collapsed .brand {
+    padding: 8px 0;
+  }
   .toolbar.collapsed .brand img {
-    height: 48px;
+    height: 64px;
   }
   .toolbar.collapsed h1 {
-    font-size: 24px;
+    font-size: 32px;
   }
   .collapse-btn {
     position: absolute;
@@ -126,9 +418,194 @@
     color: #fde047;
     border-color: #fde047;
   }
-  .brand { display:flex; align-items:center; gap:12px; }
-  .brand img { height: 128px; width:auto; border-radius:4px; }
-  h1 { font-size:42px; font-weight:800; margin:0; letter-spacing:.02em; color: #fde047; font-family: 'Courier New', 'Monaco', 'Menlo', monospace; text-shadow: 0 0 10px rgba(253,224,71,.3); }
+  .brand { 
+    display: flex; 
+    align-items: center; 
+    gap: 24px;
+    padding: 16px 0;
+  }
+  .brand img { 
+    height: 120px; 
+    width: auto; 
+    border-radius: 4px;
+    filter: drop-shadow(0 0 10px rgba(253,224,71,.2));
+  }
+  h1 { 
+    font-size: 48px; 
+    font-weight: 900; 
+    margin: 0; 
+    letter-spacing: 1px; 
+    color: #fde047; 
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace; 
+    text-shadow: 0 0 10px rgba(253,224,71,.3);
+    line-height: 1.2;
+  }
+
+  h1 br {
+    display: block;
+    content: "";
+    margin-top: 4px;
+  }
+
+  /* Training Procedures Section */
+  .training-procedures .training-procedures-header {
+    cursor: pointer;
+    user-select: none;
+    color: #22c55e;
+    border-bottom-color: #22c55e;
+    text-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    border-bottom: 2px solid #22c55e;
+    padding-bottom: 8px;
+  }
+
+  .training-procedures {
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .training-procedures .toggle-icon {
+    font-size: 12px;
+    transition: transform 0.3s ease;
+  }
+
+  .training-procedures.expanded .toggle-icon {
+    transform: rotate(180deg);
+  }
+
+  .training-module {
+    background: rgba(34, 197, 94, 0.05);
+    border: 1px solid rgba(34, 197, 94, 0.1);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .training-module-header {
+    padding: 12px;
+    cursor: pointer;
+    user-select: none;
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .training-module-content {
+    padding: 16px;
+    display: none;
+    position: relative;
+  }
+
+  .training-module-content.expanded {
+    display: block;
+  }
+
+  .edit-module-btn {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+  }
+
+  .edit-module-btn:hover {
+    background: rgba(34, 197, 94, 0.2);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+    transform: scale(1.05);
+  }
+
+  .edit-module-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .training-module-content {
+    position: relative !important;
+    padding: 16px !important;
+    padding-top: 24px !important;
+  }
+
+  .training-module-content {
+    position: relative;
+    padding: 16px;
+    padding-top: 24px;
+  }
+
+  .training-module-section {
+    margin-bottom: 12px;
+  }
+
+  .training-module-section h4 {
+    color: #22c55e;
+    margin: 0 0 8px 0;
+    font-size: 14px;
+  }
+
+  .training-module-section p {
+    margin: 0;
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* Hover Preview Styles */
+  .hover-preview {
+    display: none;
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100000;
+    background: rgba(0, 0, 0, 0.95);
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  td {
+    position: relative;
+  }
+
+  .trainee-row td:hover .hover-preview {
+    display: block !important;
+  }
+
+  .hover-preview img {
+    display: block;
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
 
   /* Training Table Styles */
   .training-section {
@@ -151,6 +628,117 @@
     text-shadow: 0 0 8px rgba(253,224,71,.2);
     border-bottom: 2px solid #fde047;
     padding-bottom: 8px;
+  }
+
+  /* Deleted Data Section */
+  .deleted-section .deleted-header {
+    cursor: pointer;
+    user-select: none;
+    color: #ef4444;
+    border-bottom-color: #ef4444;
+    text-shadow: 0 0 8px rgba(239,68,68,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .deleted-section .toggle-icon {
+    font-size: 12px;
+    transition: transform 0.3s ease;
+  }
+
+  .deleted-section.expanded .toggle-icon {
+    transform: rotate(180deg);
+  }
+
+  /* Promote Button */
+  .promote-btn {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    line-height: 1;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .promote-btn:hover {
+    background: rgba(34, 197, 94, 0.3);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+  }
+
+  /* Delete Dialog */
+  .delete-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #ef4444;
+    border-radius: 8px;
+    padding: 24px;
+    min-width: 300px;
+    z-index: 100001;
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
+  }
+
+  .delete-dialog-title {
+    color: #ef4444;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .delete-input {
+    width: 100%;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid #ef4444;
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: #ef4444;
+    font-size: 14px;
+    margin-bottom: 16px;
+    outline: none;
+  }
+
+  .delete-dialog-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .delete-dialog-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid #ef4444;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .delete-dialog-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+  }
+
+  .delete-dialog-btn.cancel {
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .delete-dialog-btn.cancel:hover {
+    background: rgba(0, 0, 0, 0.4);
   }
 
   .training-table {
@@ -236,10 +824,17 @@
     display: flex;
     gap: 16px;
     margin-bottom: 16px;
+    align-items: flex-end;
   }
 
   .form-group {
     flex: 1;
+  }
+
+  #addTraineeBtn {
+    margin-left: 16px;
+    height: 41px;
+    white-space: nowrap;
   }
 
   .form-group label {
@@ -389,6 +984,19 @@
         overflow: hidden;
       }
 
+      /* Z-index stack:
+       * Modal dialogs: 100001
+       * Access overlay: 99999
+       * Classified entry: 9999
+       * Regular modals: 9998
+       * Tooltips/dropdowns: 100
+       * Toolbar: 50
+       */
+
+      .classified-entry.fading {
+        pointer-events: none;
+      }
+
   .classified-watermark {
     position: absolute;
     top: 50%;
@@ -415,6 +1023,7 @@
     }
   }
 
+  /* Password Dialog */
   .password-dialog {
     display: none;
     position: fixed;
@@ -425,7 +1034,7 @@
     border: 2px solid #00ff00;
     border-radius: 10px;
     padding: 20px;
-    z-index: 10000;
+    z-index: 100001;
     box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
     text-align: center;
     min-width: 300px;
@@ -500,13 +1109,13 @@
   }
 
     .classified-logo {
-      font-size: 72px;
+      font-size: 96px;
       font-weight: 900;
       color: #00ff00;
       text-shadow: 0 0 20px #00ff00;
       font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
       letter-spacing: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
       animation: logoPulse 1.5s ease-in-out infinite;
       position: relative;
       z-index: 2;
@@ -518,20 +1127,21 @@
   }
 
       .classified-title {
-        font-size: 24px;
+        font-size: 36px;
         font-weight: 700;
         color: #ffffff;
         letter-spacing: 3px;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
       }
 
       .classified-subtitle {
-        font-size: 16px;
+        font-size: 28px;
         color: #00ff00;
         letter-spacing: 2px;
-        margin-bottom: 40px;
+        margin-bottom: 50px;
         font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+        font-weight: bold;
       }
 
       .access-sequence {
@@ -799,18 +1409,28 @@
       color: #fde047;
   }
 
-  .profile-close {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 24px;
+  .profile-close, .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid #ef4444;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.2s;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    z-index: 1000;
   }
 
-  .profile-close:hover {
-    opacity: 1;
+  .profile-close:hover, .close-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
   }
 
   .profile-picture-section {
@@ -1073,7 +1693,7 @@
 
   .dept-select-dropdown {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 4px);
     left: 0;
     z-index: 100;
     background: #0b0b0f;
@@ -1082,6 +1702,7 @@
     padding: 4px;
     min-width: 150px;
     display: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   .dept-select-container.open .dept-select-dropdown {
@@ -1108,10 +1729,10 @@
   }
 
   .dept-badges {
-    display: flex;
+    display: inline-flex;
     flex-wrap: wrap;
     gap: 4px;
-    margin-top: 8px;
+    align-items: center;
   }
 
   .dept-badge {
@@ -1123,12 +1744,170 @@
     font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
 
+  .dept-badge.add-dept {
+    background: rgba(34, 197, 94, 0.05);
+    border-style: dashed;
+  }
+
+  .dept-badge.add-dept:hover {
+    background: rgba(34, 197, 94, 0.1);
+  }
+
+  .dept-select-dialog {
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+    min-width: 200px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .dept-select-title {
+    color: #fde047;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .dept-select-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dept-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .dept-option:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .dept-option input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  .dept-option span {
+    color: #fff;
+    font-size: 13px;
+  }
+
+  /* Speciality badges */
   .dept-badge.fa { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
   .dept-badge.inv { background: rgba(234, 179, 8, 0.1); color: #eab308; border-color: rgba(234, 179, 8, 0.2); }
   .dept-badge.ana { background: rgba(147, 51, 234, 0.1); color: #9333ea; border-color: rgba(147, 51, 234, 0.2); }
-  .dept-badge.sup { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-color: rgba(59, 130, 246, 0.2); }
+  .dept-badge.sn { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-color: rgba(59, 130, 246, 0.2); }
+
+  /* Division Badges */
+  .div-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-right: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .div-badge.add-div {
+    background: rgba(253, 224, 71, 0.05);
+    border-style: dashed;
+    border-color: rgba(253, 224, 71, 0.2);
+    color: #fde047;
+  }
+
+  .div-badge.add-div:hover {
+    background: rgba(253, 224, 71, 0.1);
+  }
+  .div-badge.sn { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+  .div-badge.cl { background: rgba(249, 115, 22, 0.1); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
+  .div-badge.oc { background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.2); }
+  .div-badge.ia { background: rgba(234, 179, 8, 0.1); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.2); }
+
+  /* Tooltip Styles */
+  .badge-tooltip {
+    position: absolute;
+    bottom: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .badge-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 4px;
+    border-style: solid;
+  }
+
+  /* Rank badge tooltip */
+  .rank-badge .badge-tooltip {
+    background: rgba(148, 163, 184, 0.2);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+  }
+  .rank-badge .badge-tooltip::after {
+    border-color: #94a3b8 transparent transparent transparent;
+  }
+
+  /* Speciality badge tooltip */
+  .dept-badge .badge-tooltip {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+  }
+  .dept-badge .badge-tooltip::after {
+    border-color: #22c55e transparent transparent transparent;
+  }
+
+  /* Division badge tooltip */
+  .div-badge .badge-tooltip {
+    background: rgba(132, 204, 22, 0.1);
+    border: 1px solid rgba(132, 204, 22, 0.2);
+    color: #84cc16;
+  }
+  .div-badge .badge-tooltip::after {
+    border-color: #84cc16 transparent transparent transparent;
+  }
+
+  /* Show tooltip on hover */
+  .rank-badge:hover .badge-tooltip,
+  .dept-badge:hover .badge-tooltip,
+  .div-badge:hover .badge-tooltip {
+    opacity: 1;
+  }
+
+  /* Position relative for tooltip positioning */
+  .rank-badge,
+  .dept-badge,
+  .div-badge {
+    position: relative;
+  }
 
   /* Rank Styles */
   .rank-badge {
@@ -1300,6 +2079,8 @@
     opacity: 1;
   }
 
+
+
   #mainContent {
     display: none;
     opacity: 0;
@@ -1317,7 +2098,7 @@
       <div class="classified-content">
           <div class="classified-logo">FIB</div>
           <div class="classified-title">FEDERAL INVESTIGATION BUREAU</div>
-      <div class="classified-subtitle">TRAINING DATABASE ACCESS</div>
+      <div class="classified-subtitle">EMPLOYEE DATABASE</div>
           
           <div class="access-sequence">
             <div class="access-line">
@@ -1357,6 +2138,10 @@
           <div class="profile-section-title">Basic Information</div>
           <ul class="profile-info-list">
             <li class="profile-info-item">
+              <span class="profile-info-label">Name:</span>
+              <span class="profile-info-value" id="profileName2" style="cursor: pointer" onclick="editField(this, 'name')"></span>
+            </li>
+            <li class="profile-info-item">
               <span class="profile-info-label">Rank:</span>
               <span class="profile-info-value" id="profileRank"></span>
             </li>
@@ -1377,12 +2162,16 @@
               <span class="profile-info-value" id="profileJoinDate"></span>
             </li>
             <li class="profile-info-item">
+              <span class="profile-info-label">Speciality:</span>
+              <span class="profile-info-value" id="profileSpeciality"></span>
+            </li>
+            <li class="profile-info-item">
               <span class="profile-info-label">Division:</span>
               <span class="profile-info-value" id="profileDivision"></span>
             </li>
             <li class="profile-info-item">
               <span class="profile-info-label">FIB Handler:</span>
-              <span class="profile-info-value" id="profileHandler"></span>
+              <span class="profile-info-value" id="profileHandler" style="cursor: pointer" onclick="editField(this, 'handler')"></span>
             </li>
             <li class="profile-info-item">
               <span class="profile-info-label">Training Status:</span>
@@ -1400,7 +2189,7 @@
             <div class="profile-picture-container" id="profilePicture">
               <img src="https://kappa.lol/3qib3z" alt="Default Profile" class="profile-picture">
               <div class="profile-picture-upload">
-                <input type="text" id="pictureUrl" placeholder="Paste image URL here..." class="picture-url-input" onkeydown="if(event.key === 'Enter') handleProfilePictureUrl(this.value, currentTrainee)">
+                <input type="text" id="pictureUrl" placeholder="Paste image URL here..." class="picture-url-input" onkeydown="if(event.key === 'Enter') handleProfileImageUpload(currentTrainee)">
               </div>
             </div>
           </div>
@@ -1432,14 +2221,15 @@
         </div>
         </div>
         
+        
   <div class="wrap" id="mainContent">
     <div id="top" class="toolbar">
       <button id="collapseBtn" class="collapse-btn" type="button">
         <span class="collapse-text">Collapse</span>
       </button>
       <div class="brand">
-        <img src="https://kappa.lol/3qib3z" alt="FIB Logo" />
-        <h1>FIB TRAINING TRACKER</h1>
+        <img src="https://kappa.lol/aDnGzF" alt="FIB Logo" />
+        <h1>FEDERAL INVESTIGATION BUREAU<br>EMPLOYEE DATABASE</h1>
     </div>
   </div>
 
@@ -1451,22 +2241,29 @@
           <span class="status-text">Connecting...</span>
     </div>
   </div>
-      <div class="form-row">
+      <div class="form-row" style="align-items: flex-end;">
         <div class="form-group">
           <label for="traineeName">Trainee Name</label>
           <input type="text" id="traineeName" placeholder="Enter trainee name">
-          </div>
+        </div>
         <div class="form-group">
           <label for="traineeHandler">FIB Handler</label>
           <input type="text" id="traineeHandler" placeholder="Enter FIB handler">
+        </div>
+        <button type="button" class="save-btn" id="addTraineeBtn" style="margin-left: 16px; height: 41px;">Add Trainee</button>
+      </div>
           </div>
-          </div>
-      <div class="form-row" style="justify-content: space-between;">
-        <button type="button" class="save-btn" id="addTraineeBtn">Add Trainee</button>
-        <input type="file" id="loadBackup" accept=".json" style="display: none;">
-        <button type="button" class="save-btn" onclick="document.getElementById('loadBackup').click()">Load Backup</button>
-          </div>
-          </div>
+
+    <!-- Training Procedures Section -->
+    <div class="training-section training-procedures">
+      <h2 class="training-procedures-header" onclick="toggleTrainingProcedures()">
+        TRAINING PROCEDURES
+        <span class="toggle-icon">▼</span>
+      </h2>
+      <div id="trainingProceduresContainer" style="display: none;">
+        <!-- Training modules will be populated here -->
+      </div>
+    </div>
 
     <div class="training-section">
       <h2>Training Progress</h2>
@@ -1477,7 +2274,8 @@
               <th>#</th>
               <th>Rank</th>
               <th>Name</th>
-              <th>Department</th>
+              <th>Speciality</th>
+              <th>Division</th>
               <th>Code Name</th>
               <th>Alias</th>
               <th>FIB Handler</th>
@@ -1491,6 +2289,60 @@
           </div>
           </div>
 
+          <!-- FIB ROSTER Section -->
+          <div class="training-section">
+            <h2>FIB ROSTER</h2>
+            <div class="table-container">
+              <table class="training-table" id="rosterTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Speciality</th>
+                    <th>Division</th>
+                    <th>Code Name</th>
+                    <th>Alias</th>
+                    <th>FIB Handler</th>
+                    <th>Training Progress</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="rosterTableBody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- DELETED DATA Section -->
+          <div class="training-section deleted-section">
+            <h2 class="deleted-header" onclick="toggleDeletedSection()">
+              DELETED DATA
+              <span class="toggle-icon">▼</span>
+            </h2>
+            <div class="table-container" id="deletedContainer" style="display: none;">
+              <table class="training-table" id="deletedTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Speciality</th>
+                    <th>Division</th>
+                    <th>Code Name</th>
+                    <th>Alias</th>
+                    <th>FIB Handler</th>
+                    <th>Training Progress</th>
+                    <th>Deleted By</th>
+                    <th>Deleted On</th>
+                  </tr>
+                </thead>
+                <tbody id="deletedTableBody">
+          </tbody>
+        </table>
+          </div>
+          </div>
+
           </div>
 
     <script>
@@ -1499,9 +2351,10 @@
 
     // Close dropdowns and edit fields when clicking outside
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('.dept-select-container')) {
-        document.querySelectorAll('.dept-select-container').forEach(container => {
-          container.classList.remove('open');
+      // Close all dropdowns if clicking outside
+      if (!e.target.closest('.dept-select-container') || e.target.closest('.dept-badge') || e.target.closest('.div-badge')) {
+        document.querySelectorAll('.dept-select-dropdown').forEach(dropdown => {
+          dropdown.style.display = 'none';
         });
       }
       if (!e.target.closest('.rank-select')) {
@@ -1517,10 +2370,15 @@
     });
 
     // Initialize when DOM is ready
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
       // Get elements
       const mainContent = document.getElementById('mainContent');
       const classifiedEntry = document.getElementById('classifiedEntry');
+        const toolbar = document.getElementById('top');
+        const collapseBtn = document.getElementById('collapseBtn');
+        const collapseText = collapseBtn.querySelector('.collapse-text');
+        const addTraineeBtn = document.getElementById('addTraineeBtn');
 
       // Initial state
       mainContent.style.display = 'none';
@@ -1528,86 +2386,88 @@
       classifiedEntry.style.display = 'flex';
       classifiedEntry.style.opacity = '1';
 
-      // Simple animation sequence
+        // Hide classified entry screen after animation
       setTimeout(() => {
-        // Fade out entry screen
         classifiedEntry.style.transition = 'opacity 1.5s ease-out';
         classifiedEntry.style.opacity = '0';
-        
-        // Show main content
+          classifiedEntry.style.pointerEvents = 'none';
         setTimeout(() => {
           classifiedEntry.style.display = 'none';
+            
+            // Show main content and initialize
           mainContent.style.display = 'block';
-          mainContent.style.opacity = '0';
-          mainContent.style.transition = 'opacity 1s ease-in';
           requestAnimationFrame(() => {
             mainContent.style.opacity = '1';
           });
+
+            // Initialize Firebase
+            initializeFirebase().then(initialized => {
+              if (initialized) {
+                // Set up connection monitoring
+                const connectedRef = fbRef(fbDatabase, '.info/connected');
+                fbOnValue(connectedRef, (snap) => {
+                  try {
+                    const connected = snap.val() === true;
+                    console.log('Connection state:', connected ? 'connected' : 'disconnected');
+                    
+                    if (connected) {
+                      enableInterface();
+                      loadTrainees(); // Load data when connected
+                    } else {
+                      showDatabaseError('Lost connection to database. Please check your internet connection.');
+                    }
+                  } catch (error) {
+                    console.error('Error in connection handler:', error);
+                    showDatabaseError('Error handling connection state. Please refresh the page.');
+                  }
+                }, (error) => {
+                  console.error('Connection monitoring error:', error);
+                  showDatabaseError('Unable to monitor database connection. Please refresh the page.');
+                });
+              }
+            });
         }, 1500);
       }, 4000);
-    });
 
-    document.addEventListener('DOMContentLoaded', async () => {
       // Initialize toolbar
-      const toolbar = document.getElementById('top');
-      const collapseBtn = document.getElementById('collapseBtn');
-      const collapseText = collapseBtn.querySelector('.collapse-text');
-      
       collapseBtn.addEventListener('click', () => {
         toolbar.classList.toggle('collapsed');
         collapseText.textContent = toolbar.classList.contains('collapsed') ? 'Expand' : 'Collapse';
       });
 
-      // Load saved trainees
-      try {
-        // Try to load from Google Sheet first
-        await loadTrainees();
-      } catch (error) {
-        console.error('Failed to load from Google Sheet, trying localStorage:', error);
-        // Fall back to localStorage if Google Sheet fails
-        const savedTrainees = localStorage.getItem('trainees');
-        if (savedTrainees) {
-          trainees = JSON.parse(savedTrainees);
-          updateTrainingTable();
-        }
-      }
-
       // Set up add trainee button
-      const addTraineeBtn = document.getElementById('addTraineeBtn');
       if (addTraineeBtn) {
         addTraineeBtn.addEventListener('click', addNewTrainee);
       } else {
         console.error('Add trainee button not found!');
       }
 
-      // Set up backup file loading
-      const loadBackup = document.getElementById('loadBackup');
-      loadBackup.addEventListener('change', async (event) => {
-        try {
-          const file = event.target.files[0];
-          if (!file) return;
-          
-          const text = await file.text();
-          const data = JSON.parse(text);
-          
-          if (Array.isArray(data)) {
-            trainees = data;
-            saveTrainees();
-            updateTrainingTable();
-            alert('Backup loaded successfully!');
-          } else {
-            throw new Error('Invalid backup file format');
-          }
         } catch (error) {
-          console.error('Error loading backup:', error);
-          alert('Error loading backup file. Please make sure it is a valid backup file.');
+        console.error('Error in initialization:', error);
+        showDatabaseError('Error during initialization. Please refresh the page.');
         }
-        loadBackup.value = ''; // Reset file input
-      });
     });
 
     // Training data management
     let trainees = [];
+    let roster = [];
+    let deletedTrainees = [];
+    let currentAgentId = null; // Track current agent ID globally
+
+    // Available departments and divisions
+    const departments = [
+      { id: 'fa', name: 'Field Agent', abbr: 'FA' },
+      { id: 'inv', name: 'Investigator', abbr: 'INV' },
+      { id: 'ana', name: 'Analyst', abbr: 'ANA' },
+      { id: 'sn', name: 'Supernatural', abbr: 'SN' }
+    ];
+
+    const divisions = [
+      { id: 'oc', name: 'Organized Crime', abbr: 'OC' },
+      { id: 'cl', name: 'Criminal Law', abbr: 'CL' },
+      { id: 'sn', name: 'Supernatural', abbr: 'SN' },
+      { id: 'ia', name: 'Internal Affairs', abbr: 'IA' }
+    ];
 
     async function loadTrainees() {
       try {
@@ -1616,23 +2476,118 @@
           return;
         }
 
-        console.log('Loading trainees from database...');
-        const traineesRef = fbRef(fbDatabase, 'trainees');
+        console.log('Loading data from database...');
         
-        // Set up real-time listener
-        fbOnValue(traineesRef, (snapshot) => {
-          console.log('Received database update');
+        // Set up real-time listeners
+        fbOnValue(fbRef(fbDatabase, 'trainees'), (snapshot) => {
+          try {
+            console.log('Received trainees update');
           const raw = snapshot.val() || {};
-          
-          // Preserve IDs as keys when converting to array
-          trainees = Object.entries(raw).map(([id, t]) => ({ id, ...t }));
-          console.log('Loaded trainees:', trainees);
-          
-          updateTrainingTable();
+            trainees = Object.entries(raw).map(([id, data]) => {
+              // Ensure trainee has required fields
+              const trainee = {
+                id,
+                name: data.name || '',
+                handler: data.handler || '',
+                rank: data.rank || 'intern',
+                callsign: data.callsign || '',
+                codename: data.codename || '',
+                alias: data.alias || '',
+                ucAlias: data.ucAlias || '',
+                departments: data.departments || [],
+                divisions: data.divisions || [],
+                skills: data.skills || {},
+                strikes: data.strikes || [],
+                commendations: data.commendations || [],
+                timeline: data.timeline || [],
+                ...data
+              };
+              return ensureTraineeSkills(trainee);
+            });
+            console.log('Processed trainees:', trainees);
+            updateTrainingTable();
+          } catch (error) {
+            console.error('Error processing trainees update:', error);
+          }
         }, (error) => {
-          console.error('Database read error:', error);
-          showDatabaseError('Error reading from database. Please refresh the page.');
+          console.error('Trainees listener error:', error);
+          showDatabaseError('Error reading trainees. Please refresh the page.');
         });
+
+        fbOnValue(fbRef(fbDatabase, 'roster'), (snapshot) => {
+          try {
+            console.log('Received roster update');
+            const raw = snapshot.val() || {};
+            roster = Object.entries(raw).map(([id, data]) => {
+              // Ensure roster entry has required fields
+              const trainee = {
+                id,
+                name: data.name || '',
+                handler: data.handler || '',
+                rank: data.rank || 'intern',
+                callsign: data.callsign || '',
+                codename: data.codename || '',
+                alias: data.alias || '',
+                ucAlias: data.ucAlias || '',
+                departments: data.departments || [],
+                divisions: data.divisions || [],
+                skills: data.skills || {},
+                strikes: data.strikes || [],
+                commendations: data.commendations || [],
+                timeline: data.timeline || [],
+                promotedOn: data.promotedOn || null,
+                profilePicture: data.profilePicture || '',
+                ...data
+              };
+              return ensureTraineeSkills(trainee);
+            });
+            console.log('Processed roster:', roster);
+            updateRosterTable();
+          } catch (error) {
+            console.error('Error processing roster update:', error);
+          }
+        }, (error) => {
+          console.error('Roster listener error:', error);
+          showDatabaseError('Error reading roster. Please refresh the page.');
+        });
+
+        fbOnValue(fbRef(fbDatabase, 'deleted'), (snapshot) => {
+          try {
+            console.log('Received deleted update');
+            const raw = snapshot.val() || {};
+            deletedTrainees = Object.entries(raw).map(([id, data]) => {
+              // Ensure deleted entry has required fields
+              const trainee = {
+                id,
+                name: data.name || '',
+                handler: data.handler || '',
+                rank: data.rank || 'intern',
+                callsign: data.callsign || '',
+                codename: data.codename || '',
+                alias: data.alias || '',
+                ucAlias: data.ucAlias || '',
+                departments: data.departments || [],
+                divisions: data.divisions || [],
+                skills: data.skills || {},
+                strikes: data.strikes || [],
+                commendations: data.commendations || [],
+                timeline: data.timeline || [],
+                deletedBy: data.deletedBy || '',
+                deletedOn: data.deletedOn || new Date().toISOString(),
+                ...data
+              };
+              return ensureTraineeSkills(trainee);
+            });
+            console.log('Processed deleted:', deletedTrainees);
+            updateDeletedTable();
+          } catch (error) {
+            console.error('Error processing deleted update:', error);
+          }
+        }, (error) => {
+          console.error('Deleted listener error:', error);
+          showDatabaseError('Error reading deleted data. Please refresh the page.');
+        });
+
       } catch (error) {
         console.error('Error in loadTrainees:', error);
         showDatabaseError('Failed to load trainees. Please refresh the page.');
@@ -1725,57 +2680,232 @@
       });
     }
 
+      // Function to handle profile image upload
+      async function handleProfileImageUpload(trainee) {
+        // Use the input field's value instead of prompt
+        const imageUrl = document.getElementById('pictureUrl').value.trim();
+        if (!imageUrl) return;
+
+        try {
+          // Get the current trainee from the window object
+          trainee = window.currentTrainee;
+          if (!trainee) {
+            console.error('No trainee selected');
+            return;
+          }
+
+          // Determine which collection the trainee belongs to
+          let collection = 'trainees';
+          if (roster.find(t => t.id === trainee.id)) {
+            collection = 'roster';
+          } else if (deletedTrainees.find(t => t.id === trainee.id)) {
+            collection = 'deleted';
+          }
+
+          console.log('Saving profile picture for trainee:', trainee.id, 'in collection:', collection);
+
+          // Update the profile picture in the database
+          const updates = {};
+          updates[`/${collection}/${trainee.id}/profilePicture`] = imageUrl;
+
+          // Add to timeline
+          const timelineUpdate = {
+            date: new Date().toISOString(),
+            content: 'Profile picture updated',
+            instructor: 'System'
+          };
+
+          // Get current timeline
+          const snapshot = await fbGet(fbRef(fbDatabase, `/${collection}/${trainee.id}/timeline`));
+          const currentTimeline = snapshot.exists() ? snapshot.val() : [];
+          
+          // Update timeline in database
+          updates[`/${collection}/${trainee.id}/timeline`] = [...currentTimeline, timelineUpdate];
+
+          // Save to Firebase
+          await fbUpdate(fbRef(fbDatabase), updates);
+
+          // Update local data
+          if (collection === 'trainees') {
+            const index = trainees.findIndex(t => t.id === trainee.id);
+            if (index !== -1) {
+              trainees[index].profilePicture = imageUrl;
+              trainees[index].timeline = [...currentTimeline, timelineUpdate];
+            }
+          } else if (collection === 'roster') {
+            const index = roster.findIndex(t => t.id === trainee.id);
+            if (index !== -1) {
+              roster[index].profilePicture = imageUrl;
+              roster[index].timeline = [...currentTimeline, timelineUpdate];
+            }
+          } else {
+            const index = deletedTrainees.findIndex(t => t.id === trainee.id);
+            if (index !== -1) {
+              deletedTrainees[index].profilePicture = imageUrl;
+              deletedTrainees[index].timeline = [...currentTimeline, timelineUpdate];
+            }
+          }
+
+          // Update all tables to ensure the change is reflected everywhere
+          updateTrainingTable();
+          updateRosterTable();
+          updateDeletedTable();
+
+          // Refresh the profile view
+          showProfile({...trainee, profilePicture: imageUrl});
+
+          console.log('Successfully updated profile picture for trainee:', trainee.id);
+        } catch (error) {
+          console.error('Error saving profile image:', error);
+          alert('Failed to save profile image. Please try again.');
+        }
+      }
+
+      // Function to ensure trainee has all required skills
+      function ensureTraineeSkills(trainee) {
+      const requiredSkills = {
+        '10Codes': { completed: false, instructor: '', completedDate: null },
+        'CaseLaws': { completed: false, instructor: '', completedDate: null },
+        'Pursuit': { completed: false, instructor: '', completedDate: null },
+        'Hostage': { completed: false, instructor: '', completedDate: null },
+        'TrafficStop': { completed: false, instructor: '', completedDate: null },
+        'CloseQuartersBreaching': { completed: false, instructor: '', completedDate: null },
+        'OpenAreaBreaching': { completed: false, instructor: '', completedDate: null },
+        'SceneControl': { completed: false, instructor: '', completedDate: null },
+        'COMMS': { completed: false, instructor: '', completedDate: null },
+        'UseOfForce': { completed: false, instructor: '', completedDate: null },
+        'FilingCharges': { completed: false, instructor: '', completedDate: null },
+        'Reports': { completed: false, instructor: '', completedDate: null },
+        'Gunfight': { completed: false, instructor: '', completedDate: null },
+        'UndercoverTraining': { completed: false, instructor: '', completedDate: null },
+        'HelicopterLicense': { completed: false, instructor: '', completedDate: null },
+        'AmmunationSceneCommand': { completed: false, instructor: '', completedDate: null },
+        'BankHeistSceneCommand': { completed: false, instructor: '', completedDate: null },
+        'PITManeuverTraining': { completed: false, instructor: '', completedDate: null },
+        'Interrogation': { completed: false, instructor: '', completedDate: null },
+        'ShortTermInvestigations': { completed: false, instructor: '', completedDate: null },
+        'LongTermInvestigations': { completed: false, instructor: '', completedDate: null },
+        'Surveillance': { completed: false, instructor: '', completedDate: null },
+        'DeepUCWork': { completed: false, instructor: '', completedDate: null },
+        'CaseManagement': { completed: false, instructor: '', completedDate: null },
+        'StatementGaining': { completed: false, instructor: '', completedDate: null },
+        'EvidenceHandling': { completed: false, instructor: '', completedDate: null },
+        'WarrantWriting': { completed: false, instructor: '', completedDate: null }
+      };
+
+      if (!trainee.skills) {
+        trainee.skills = {};
+      }
+
+      // Add any missing skills while preserving existing ones
+      Object.entries(requiredSkills).forEach(([skill, defaultValue]) => {
+        if (!trainee.skills[skill]) {
+          trainee.skills[skill] = defaultValue;
+        }
+      });
+
+      return trainee;
+    }
+
     async function saveTrainees() {
       try {
         if (!window.fbRef || !window.fbDatabase) {
           throw new Error('Database not initialized');
         }
 
-        // Structure the data properly for Firebase
-        const traineesData = {};
-        trainees.forEach((trainee, index) => {
+        console.log('Saving to database...');
+        
+        // Create updates object for all collections
+        const updates = {};
+        
+        // Process trainees
+        trainees.forEach(trainee => {
           // Generate a unique ID if one doesn't exist
           const traineeId = trainee.id || `trainee_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
           trainee.id = traineeId;
           
-          // Ensure all required fields exist with default values
-          const structuredTrainee = {
+          // Ensure trainee has all required skills
+          trainee = ensureTraineeSkills(trainee);
+          
+          updates[`/trainees/${traineeId}`] = {
             id: traineeId,
             name: trainee.name || '',
             handler: trainee.handler || '',
             rank: trainee.rank || 'intern',
             callsign: trainee.callsign || '',
             codename: trainee.codename || '',
+            alias: trainee.alias || '',
             ucAlias: trainee.ucAlias || '',
             departments: trainee.departments || [],
-            joinDate: trainee.joinDate || new Date().toISOString(),
-            skills: trainee.skills || {
-              '10Codes': { completed: false, instructor: '', completedDate: null },
-              'CaseLaws': { completed: false, instructor: '', completedDate: null },
-              'Pursuit': { completed: false, instructor: '', completedDate: null },
-              'Hostage': { completed: false, instructor: '', completedDate: null },
-              'TrafficStop': { completed: false, instructor: '', completedDate: null },
-              'Breaching': { completed: false, instructor: '', completedDate: null },
-              'SceneControl': { completed: false, instructor: '', completedDate: null },
-              'COMMS': { completed: false, instructor: '', completedDate: null },
-              'UseOfForce': { completed: false, instructor: '', completedDate: null },
-              'FilingCharges': { completed: false, instructor: '', completedDate: null },
-              'Reports': { completed: false, instructor: '', completedDate: null },
-              'Gunfight': { completed: false, instructor: '', completedDate: null }
-            },
+            divisions: trainee.divisions || [],
+            skills: trainee.skills,
             strikes: trainee.strikes || [],
             commendations: trainee.commendations || [],
-            timeline: trainee.timeline || []
+            timeline: trainee.timeline || [],
+            profilePicture: trainee.profilePicture || ''
           };
-
-          traineesData[traineeId] = structuredTrainee;
         });
 
-        // Save to Firebase using set() to completely replace the data
-        const traineesRef = fbRef(fbDatabase, 'trainees');
-        await fbSet(traineesRef, traineesData);
+        // Process roster
+        roster.forEach(entry => {
+          const entryId = entry.id;
+          // Ensure arrays exist
+          if (!entry.departments) entry.departments = [];
+          if (!entry.divisions) entry.divisions = [];
+          
+          // Ensure entry has all required skills
+          entry = ensureTraineeSkills(entry);
+          
+          updates[`/roster/${entryId}`] = {
+            id: entryId,
+            name: entry.name || '',
+            handler: entry.handler || '',
+            rank: entry.rank || 'intern',
+            callsign: entry.callsign || '',
+            codename: entry.codename || '',
+            alias: entry.alias || '',
+            ucAlias: entry.ucAlias || '',
+            departments: entry.departments,
+            divisions: entry.divisions,
+            skills: entry.skills,
+            strikes: entry.strikes || [],
+            commendations: entry.commendations || [],
+            timeline: entry.timeline || [],
+            promotedOn: entry.promotedOn || new Date().toISOString(),
+            profilePicture: entry.profilePicture || ''
+          };
+        });
 
-        console.log('Successfully saved to database');
+        // Process deleted
+        deletedTrainees.forEach(entry => {
+          const entryId = entry.id;
+          // Ensure entry has all required skills
+          entry = ensureTraineeSkills(entry);
+          
+          updates[`/deleted/${entryId}`] = {
+            id: entryId,
+            name: entry.name || '',
+            handler: entry.handler || '',
+            rank: entry.rank || 'intern',
+            callsign: entry.callsign || '',
+            codename: entry.codename || '',
+            alias: entry.alias || '',
+            ucAlias: entry.ucAlias || '',
+            departments: entry.departments || [],
+            divisions: entry.divisions || [],
+            skills: entry.skills,
+            strikes: entry.strikes || [],
+            commendations: entry.commendations || [],
+            timeline: entry.timeline || [],
+            profilePicture: entry.profilePicture || '',
+            deletedBy: entry.deletedBy || '',
+            deletedOn: entry.deletedOn || new Date().toISOString()
+          };
+        });
+
+        // Save all updates in one transaction
+        await fbUpdate(fbRef(fbDatabase), updates);
+        console.log('Successfully saved all data to database');
         return true;
       } catch (error) {
         console.error('Error saving to database:', error);
@@ -1807,6 +2937,7 @@
           codename: '',
           ucAlias: '',
           departments: [],
+          divisions: [],
           joinDate: new Date().toISOString(),
           skills: {
             '10Codes': { completed: false, instructor: '', completedDate: null },
@@ -1814,13 +2945,28 @@
             'Pursuit': { completed: false, instructor: '', completedDate: null },
             'Hostage': { completed: false, instructor: '', completedDate: null },
             'TrafficStop': { completed: false, instructor: '', completedDate: null },
-            'Breaching': { completed: false, instructor: '', completedDate: null },
+            'CloseQuartersBreaching': { completed: false, instructor: '', completedDate: null },
+            'OpenAreaBreaching': { completed: false, instructor: '', completedDate: null },
             'SceneControl': { completed: false, instructor: '', completedDate: null },
             'COMMS': { completed: false, instructor: '', completedDate: null },
             'UseOfForce': { completed: false, instructor: '', completedDate: null },
             'FilingCharges': { completed: false, instructor: '', completedDate: null },
             'Reports': { completed: false, instructor: '', completedDate: null },
-            'Gunfight': { completed: false, instructor: '', completedDate: null }
+            'Gunfight': { completed: false, instructor: '', completedDate: null },
+            'UndercoverTraining': { completed: false, instructor: '', completedDate: null },
+            'HelicopterLicense': { completed: false, instructor: '', completedDate: null },
+            'AmmunationSceneCommand': { completed: false, instructor: '', completedDate: null },
+            'BankHeistSceneCommand': { completed: false, instructor: '', completedDate: null },
+            'PITManeuverTraining': { completed: false, instructor: '', completedDate: null },
+            'Interrogation': { completed: false, instructor: '', completedDate: null },
+            'ShortTermInvestigations': { completed: false, instructor: '', completedDate: null },
+            'LongTermInvestigations': { completed: false, instructor: '', completedDate: null },
+            'Surveillance': { completed: false, instructor: '', completedDate: null },
+            'DeepUCWork': { completed: false, instructor: '', completedDate: null },
+            'CaseManagement': { completed: false, instructor: '', completedDate: null },
+            'StatementGaining': { completed: false, instructor: '', completedDate: null },
+            'EvidenceHandling': { completed: false, instructor: '', completedDate: null },
+            'WarrantWriting': { completed: false, instructor: '', completedDate: null }
           },
           strikes: [],
           commendations: [],
@@ -1847,21 +2993,732 @@
       }
     }
 
-    async function deleteTrainee(traineeId) {
-      try {
-        if (!traineeId) return;
+    function toggleDeletedSection() {
+      const section = document.querySelector('.deleted-section');
+      const container = document.getElementById('deletedContainer');
+      const icon = document.querySelector('.toggle-icon');
+      
+      section.classList.toggle('expanded');
+      container.style.display = container.style.display === 'none' ? 'block' : 'none';
+      icon.style.transform = container.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+
+    function updateRosterTable() {
+      const tbody = document.getElementById('rosterTableBody');
+      tbody.innerHTML = '';
+      
+      roster.forEach(trainee => {
+        try {
+          const row = document.createElement('tr');
+          row.className = 'trainee-row';
+          row.onclick = () => showProfile(trainee);
+          
+          // # (Callsign) cell
+          const callsignCell = createEditableCell(trainee, 'callsign', 'callsign');
+          row.appendChild(callsignCell);
+
+          // Rank cell
+          const rankCell = document.createElement('td');
+          const rankSelect = document.createElement('div');
+          rankSelect.className = 'rank-select';
+          
+          const rankBtn = document.createElement('button');
+          rankBtn.className = 'rank-select-btn';
+          const currentRank = RANKS.find(r => r.id === trainee.rank) || RANKS[0];
+          rankBtn.innerHTML = `<span class="rank-badge ${currentRank.id}"><span class="badge-tooltip">${currentRank.name}</span>${currentRank.abbr}</span>`;
+          rankBtn.onclick = (e) => {
+            e.stopPropagation();
+            rankSelect.classList.toggle('open');
+          };
+          rankSelect.appendChild(rankBtn);
+
+          const rankDropdown = document.createElement('div');
+          rankDropdown.className = 'rank-select-dropdown';
+          RANKS.forEach(rank => {
+            const option = document.createElement('div');
+            option.className = `rank-option${rank.id === trainee.rank ? ' selected' : ''}`;
+            option.innerHTML = `<span class="rank-badge ${rank.id}">${rank.abbr}</span> ${rank.name}`;
+            option.onclick = (e) => {
+              e.stopPropagation();
+              trainee.rank = rank.id;
+              trainee.timeline.push({
+                date: new Date().toISOString(),
+                content: `Rank updated to ${rank.name}`,
+                instructor: 'System'
+              });
+              saveTrainees();
+              updateRosterTable();
+              rankSelect.classList.remove('open');
+            };
+            rankDropdown.appendChild(option);
+          });
+          rankSelect.appendChild(rankDropdown);
+          rankCell.appendChild(rankSelect);
+          row.appendChild(rankCell);
+
+          // Name cell with hover effect
+          const nameCell = document.createElement('td');
+          nameCell.textContent = trainee.name || '-';
+          nameCell.style.position = 'relative';
+          
+          // Add hover effect for profile picture
+          if (trainee.profilePicture) {
+            const hoverPreview = document.createElement('div');
+            hoverPreview.className = 'hover-preview';
+            hoverPreview.style.display = 'none';
+            hoverPreview.style.position = 'absolute';
+            hoverPreview.style.top = '100%';
+            hoverPreview.style.left = '50%';
+            hoverPreview.style.transform = 'translateX(-50%)';
+            hoverPreview.style.zIndex = '1000';
+            hoverPreview.style.background = '#000';
+            hoverPreview.style.padding = '4px';
+            hoverPreview.style.borderRadius = '4px';
+            hoverPreview.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+            
+            const img = document.createElement('img');
+            img.src = trainee.profilePicture;
+            img.alt = trainee.name;
+            img.style.maxWidth = '150px';
+            img.style.maxHeight = '150px';
+            img.style.borderRadius = '2px';
+            hoverPreview.appendChild(img);
+            nameCell.appendChild(hoverPreview);
+            
+            nameCell.addEventListener('mouseenter', () => {
+              hoverPreview.style.display = 'block';
+            });
+            
+            nameCell.addEventListener('mouseleave', () => {
+              hoverPreview.style.display = 'none';
+            });
+          }
+          
+          row.appendChild(nameCell);
+
+          // Speciality cell
+          const deptCell = document.createElement('td');
+          const deptContainer = document.createElement('div');
+          deptContainer.className = 'dept-select-container';
+          deptCell.appendChild(deptContainer);
+
+          // Create badges container
+          const badgesContainer = document.createElement('div');
+          badgesContainer.className = 'dept-badges';
+          badgesContainer.style.display = 'inline-flex';
+          badgesContainer.style.flexWrap = 'wrap';
+          badgesContainer.style.gap = '4px';
+
+          // Add department badges or Add button
+          if (trainee.departments && trainee.departments.length > 0) {
+            // Add existing badges
+            trainee.departments.forEach(deptId => {
+              const dept = departments.find(d => d.id === deptId);
+              if (dept) {
+                const badge = document.createElement('div');
+                badge.className = `dept-badge ${deptId}`;
+                badge.innerHTML = `<span class="badge-tooltip">${dept.name}</span>${dept.abbr}`;
+                badge.style.cursor = 'pointer';
+                badge.onclick = (e) => {
+                  e.stopPropagation();
+                  showDeptSelectDialog(trainee, e.target);
+                };
+                badgesContainer.appendChild(badge);
+              }
+            });
+            deptCell.appendChild(badgesContainer);
+          } else {
+            // Add "Add Spec" button
+            const addDeptBtn = document.createElement('div');
+            addDeptBtn.className = 'dept-badge add-dept';
+            addDeptBtn.textContent = 'Add Spec';
+            addDeptBtn.style.cursor = 'pointer';
+          addDeptBtn.onclick = (e) => {
+            e.stopPropagation();
+            showDeptSelectDialog(trainee, e.target);
+          };
+            badgesContainer.appendChild(addDeptBtn);
+            deptCell.appendChild(badgesContainer);
+          }
+
+          row.appendChild(deptCell);
+
+          // Division cell
+          const divisionCell = document.createElement('td');
+          const divisionContainer = document.createElement('div');
+          divisionContainer.className = 'dept-select-container';
+          divisionCell.appendChild(divisionContainer);
+
+          // Create badges container
+          const divBadgesContainer = document.createElement('div');
+          divBadgesContainer.className = 'dept-badges';
+          divBadgesContainer.style.display = 'inline-flex';
+          divBadgesContainer.style.flexWrap = 'wrap';
+          divBadgesContainer.style.gap = '4px';
+
+          // Add division badges if any divisions are selected
+          if (trainee.divisions && trainee.divisions.length > 0) {
+
+            trainee.divisions.forEach(divId => {
+              const div = divisions.find(d => d.id === divId);
+              if (div) {
+                const badge = document.createElement('div');
+                badge.className = `div-badge ${divId}`;
+                badge.innerHTML = `<span class="badge-tooltip">${div.name}</span>${div.abbr}`;
+                badge.style.cursor = 'pointer';
+                badge.onclick = (e) => {
+                  e.stopPropagation();
+                  showDivSelectDialog(trainee, e.target);
+                };
+                divBadgesContainer.appendChild(badge);
+              }
+            });
+            divisionCell.appendChild(divBadgesContainer);
+          } else {
+            // Add "Add Division" button
+            const addDivBtn = document.createElement('div');
+            addDivBtn.className = 'div-badge add-div';
+            addDivBtn.textContent = 'Add Division';
+            addDivBtn.style.cursor = 'pointer';
+          addDivBtn.onclick = (e) => {
+            e.stopPropagation();
+            showDivSelectDialog(trainee, e.target);
+          };
+            divBadgesContainer.appendChild(addDivBtn);
+            divisionCell.appendChild(divBadgesContainer);
+          }
+
+          row.appendChild(divisionCell);
+
+          // Code Name cell
+          const codenameCell = createEditableCell(trainee, 'codename', 'codename');
+          row.appendChild(codenameCell);
+
+          // Alias cell
+          const aliasCell = document.createElement('td');
+          aliasCell.textContent = trainee.ucAlias || trainee.alias || '-';
+          aliasCell.className = 'uc-name';
+          aliasCell.style.cursor = 'pointer';
+          aliasCell.onclick = (e) => {
+            e.stopPropagation();
+            const newAlias = prompt('Enter new alias:', trainee.ucAlias || trainee.alias || '');
+            if (newAlias !== null) {
+              trainee.ucAlias = newAlias;
+              trainee.timeline.push({
+                date: new Date().toISOString(),
+                content: `Alias updated to: ${newAlias}`,
+                instructor: 'System'
+              });
+              saveTrainees();
+              updateRosterTable();
+            }
+          };
+          row.appendChild(aliasCell);
+
+          // FIB Handler cell
+          const handlerCell = document.createElement('td');
+          handlerCell.textContent = trainee.handler || '-';
+          row.appendChild(handlerCell);
+
+          // Training Progress cell
+          const progressCell = document.createElement('td');
+          progressCell.className = 'progress-cell';
+
+          const progressBar = document.createElement('div');
+          progressBar.className = 'progress-bar';
+          progressBar.onclick = (e) => {
+            e.stopPropagation();
+            showSkillsDialog(trainee, Object.keys(trainee.skills));
+          };
+
+          // Calculate progress
+          const totalSkills = Object.keys(trainee.skills).length;
+          const completedSkills = Object.values(trainee.skills).filter(skill => skill.completed).length;
+          const progress = Math.round((completedSkills / totalSkills) * 100);
+
+          const progressFill = document.createElement('div');
+          progressFill.className = 'progress-fill';
+          progressFill.style.width = `${progress}%`;
+
+          const progressText = document.createElement('div');
+          progressText.className = 'progress-text';
+          progressText.textContent = `${progress}% Complete`;
+
+          // Add hover details
+          const progressDetails = document.createElement('div');
+          progressDetails.className = 'progress-details';
+          const skillsList = document.createElement('ul');
+          
+          Object.entries(trainee.skills).forEach(([skill, data]) => {
+            const item = document.createElement('li');
+            item.className = data.completed ? 'completed' : 'pending';
+            item.innerHTML = `${skill.replace(/([A-Z])/g, ' $1').trim()}${data.completed ? ` (${data.instructor})` : ''}`;
+            skillsList.appendChild(item);
+          });
+          
+          progressDetails.appendChild(skillsList);
+          progressCell.appendChild(progressDetails);
+
+          progressBar.appendChild(progressFill);
+          progressBar.appendChild(progressText);
+          progressCell.appendChild(progressBar);
+          row.appendChild(progressCell);
+
+          // Delete button cell
+          const actionCell = document.createElement('td');
+          actionCell.style.width = '40px';
+          actionCell.style.textAlign = 'center';
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'delete-btn';
+          deleteButton.innerHTML = '&times;';
+          deleteButton.onclick = (e) => {
+            e.stopPropagation();
+            showDeleteDialog(trainee);
+          };
+          actionCell.appendChild(deleteButton);
+          row.appendChild(actionCell);
+
+          tbody.appendChild(row);
+        } catch (error) {
+          console.error('Error creating row for roster trainee:', trainee, error);
+        }
+      });
+    }
+
+    function showDeptSkillsDialog(trainee, dept) {
+      // Show a dialog with department-specific skills
+      const skills = Object.entries(trainee.skills)
+        .filter(([skill]) => skill.startsWith(dept.name.replace(/\s+/g, '')))
+        .map(([skill, data]) => ({ skill, ...data }));
+
+      showSkillsDialog(trainee, skills.map(s => s.skill));
+    }
+
+    function showDivSkillsDialog(trainee, div) {
+      // Show a dialog with division-specific skills
+      const skills = Object.entries(trainee.skills)
+        .filter(([skill]) => skill.startsWith(div.name.replace(/\s+/g, '')))
+        .map(([skill, data]) => ({ skill, ...data }));
+
+      showSkillsDialog(trainee, skills.map(s => s.skill));
+    }
+
+    function showDeptSelectDialog(trainee, sourceElement = null) {
+      const dialog = document.createElement('div');
+      dialog.className = 'dept-select-dialog';
+      dialog.style.zIndex = '100001';
+
+      const title = document.createElement('div');
+      title.className = 'dept-select-title';
+      title.textContent = 'Select Speciality';
+      dialog.appendChild(title);
+
+      const content = document.createElement('div');
+      content.className = 'dept-select-content';
+
+      departments.forEach(dept => {
+        const option = document.createElement('div');
+        option.className = 'dept-option';
         
-        if (confirm('Are you sure you want to delete this trainee?')) {
-          // Use update to set the specific trainee to null
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = trainee.departments?.includes(dept.id) || false;
+        checkbox.onchange = async () => {
+          if (!trainee.departments) trainee.departments = [];
+          if (checkbox.checked) {
+            if (!trainee.departments.includes(dept.id)) {
+              trainee.departments.push(dept.id);
+              trainee.timeline.push({
+                date: new Date().toISOString(),
+                content: `Added to ${dept.name} speciality`,
+                instructor: 'System'
+              });
+            }
+          } else {
+            const index = trainee.departments.indexOf(dept.id);
+            if (index > -1) {
+              trainee.departments.splice(index, 1);
+              trainee.timeline.push({
+                date: new Date().toISOString(),
+                content: `Removed from ${dept.name} speciality`,
+                instructor: 'System'
+              });
+            }
+          }
+          // If all departments are removed, make sure the array exists but is empty
+          if (trainee.departments.length === 0) {
+            trainee.departments = [];
+          }
+          // Save changes and update UI
+          await saveTrainees();
+          // Update both tables since entries can move between them
+          updateTrainingTable();
+          updateRosterTable();
+          // Close the dialog after selection
+          dialog.remove();
+        };
+        option.appendChild(checkbox);
+
+        const label = document.createElement('span');
+        label.textContent = dept.name;
+        option.appendChild(label);
+
+        content.appendChild(option);
+      });
+
+      dialog.appendChild(content);
+
+      // Position the dialog near the source element if provided
+      if (sourceElement) {
+        const rect = sourceElement.getBoundingClientRect();
+        dialog.style.position = 'fixed';
+        dialog.style.top = rect.bottom + 'px';
+        dialog.style.left = rect.left + 'px';
+      }
+
+      document.body.appendChild(dialog);
+
+      // Close when clicking outside
+      document.addEventListener('click', function closeDialog(e) {
+        if (!dialog.contains(e.target) && e.target !== sourceElement) {
+          dialog.remove();
+          document.removeEventListener('click', closeDialog);
+        }
+      });
+    }
+
+    function showDivSelectDialog(trainee, sourceElement = null) {
+      const dialog = document.createElement('div');
+      dialog.className = 'dept-select-dialog';
+      dialog.style.zIndex = '100001';
+
+      const title = document.createElement('div');
+      title.className = 'dept-select-title';
+      title.textContent = 'Select Division';
+      dialog.appendChild(title);
+
+      const content = document.createElement('div');
+      content.className = 'dept-select-content';
+
+      divisions.forEach(div => {
+        const option = document.createElement('div');
+        option.className = 'dept-option';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = trainee.divisions?.includes(div.id) || false;
+        checkbox.onchange = async () => {
+          if (!trainee.divisions) trainee.divisions = [];
+          if (checkbox.checked) {
+            if (!trainee.divisions.includes(div.id)) {
+              trainee.divisions.push(div.id);
+              trainee.timeline.push({
+                date: new Date().toISOString(),
+                content: `Added to ${div.name} division`,
+                instructor: 'System'
+              });
+            }
+          } else {
+            const index = trainee.divisions.indexOf(div.id);
+            if (index > -1) {
+              trainee.divisions.splice(index, 1);
+              trainee.timeline.push({
+                date: new Date().toISOString(),
+                content: `Removed from ${div.name} division`,
+                instructor: 'System'
+              });
+            }
+          }
+          // If all divisions are removed, make sure the array exists but is empty
+          if (trainee.divisions.length === 0) {
+            trainee.divisions = [];
+          }
+          // Save changes and update UI
+          await saveTrainees();
+          // Update both tables since entries can move between them
+          updateTrainingTable();
+          updateRosterTable();
+          // Close the dialog after selection
+          dialog.remove();
+        };
+        option.appendChild(checkbox);
+
+        const label = document.createElement('span');
+        label.textContent = div.name;
+        option.appendChild(label);
+
+        content.appendChild(option);
+      });
+
+      dialog.appendChild(content);
+
+      // Position the dialog near the source element if provided
+      if (sourceElement) {
+        const rect = sourceElement.getBoundingClientRect();
+        dialog.style.position = 'fixed';
+        dialog.style.top = rect.bottom + 'px';
+        dialog.style.left = rect.left + 'px';
+      }
+
+      document.body.appendChild(dialog);
+
+      // Close when clicking outside
+      document.addEventListener('click', function closeDialog(e) {
+        if (!dialog.contains(e.target) && e.target !== sourceElement) {
+          dialog.remove();
+          document.removeEventListener('click', closeDialog);
+        }
+      });
+    }
+
+    function updateDeletedTable() {
+      const tbody = document.getElementById('deletedTableBody');
+      tbody.innerHTML = '';
+      
+      deletedTrainees.forEach(trainee => {
+        try {
+          const row = document.createElement('tr');
+          row.className = 'trainee-row';
+          row.onclick = () => showProfile(trainee, true); // true indicates it's a deleted trainee
+          
+          // # (Callsign) cell
+          const callsignCell = createEditableCell(trainee, 'callsign', 'callsign');
+          row.appendChild(callsignCell);
+
+          // Rank cell with badge
+          const rankCell = document.createElement('td');
+          const currentRank = RANKS.find(r => r.id === trainee.rank) || RANKS[0];
+          rankCell.innerHTML = `<span class="rank-badge ${currentRank.id}"><span class="badge-tooltip">${currentRank.name}</span>${currentRank.abbr}</span>`;
+          row.appendChild(rankCell);
+
+          // Name cell
+          const nameCell = document.createElement('td');
+          nameCell.textContent = trainee.name || '-';
+          row.appendChild(nameCell);
+
+          // Speciality cell
+          const deptCell = document.createElement('td');
+          const deptContainer = document.createElement('div');
+          deptContainer.className = 'dept-select-container';
+          if (trainee.departments && trainee.departments.length > 0) {
+            const badgesContainer = document.createElement('div');
+            badgesContainer.className = 'dept-badges';
+            badgesContainer.style.display = 'inline-flex';
+            badgesContainer.style.flexWrap = 'wrap';
+            badgesContainer.style.gap = '4px';
+            trainee.departments.forEach(deptId => {
+              const dept = departments.find(d => d.id === deptId);
+              if (dept) {
+                const badge = document.createElement('div');
+                badge.className = `dept-badge ${deptId}`;
+                badge.innerHTML = `<span class="badge-tooltip">${dept.name}</span>${dept.abbr}`;
+                badgesContainer.appendChild(badge);
+              }
+            });
+            deptContainer.appendChild(badgesContainer);
+          } else {
+            deptContainer.textContent = 'N/A';
+          }
+          deptCell.appendChild(deptContainer);
+          row.appendChild(deptCell);
+
+          // Division cell
+          const divisionCell = document.createElement('td');
+          const divisionContainer = document.createElement('div');
+          divisionContainer.className = 'dept-select-container';
+          if (trainee.divisions && trainee.divisions.length > 0) {
+            const divBadgesContainer = document.createElement('div');
+            divBadgesContainer.className = 'dept-badges';
+            divBadgesContainer.style.display = 'inline-flex';
+            divBadgesContainer.style.flexWrap = 'wrap';
+            divBadgesContainer.style.gap = '4px';
+            trainee.divisions.forEach(divId => {
+              const div = divisions.find(d => d.id === divId);
+              if (div) {
+                const badge = document.createElement('div');
+                badge.className = `div-badge ${divId}`;
+                badge.innerHTML = `<span class="badge-tooltip">${div.name}</span>${div.abbr}`;
+                divBadgesContainer.appendChild(badge);
+              }
+            });
+            divisionContainer.appendChild(divBadgesContainer);
+          } else {
+            divisionContainer.textContent = 'N/A';
+          }
+          divisionCell.appendChild(divisionContainer);
+          row.appendChild(divisionCell);
+
+          // Code Name cell
+          const codenameCell = createEditableCell(trainee, 'codename', 'codename');
+          row.appendChild(codenameCell);
+
+          // Alias cell
+          const aliasCell = document.createElement('td');
+          aliasCell.textContent = trainee.ucAlias || trainee.alias || '-';
+          aliasCell.className = 'uc-name';
+          row.appendChild(aliasCell);
+
+          // FIB Handler cell
+          const handlerCell = document.createElement('td');
+          handlerCell.textContent = trainee.handler || '-';
+          row.appendChild(handlerCell);
+
+          // Training Progress cell
+          const progressCell = document.createElement('td');
+          progressCell.className = 'progress-cell';
+          const progressBar = document.createElement('div');
+          progressBar.className = 'progress-bar';
+          const totalSkills = Object.keys(trainee.skills || {}).length;
+          const completedSkills = Object.values(trainee.skills || {}).filter(skill => skill.completed).length;
+          const progress = totalSkills > 0 ? Math.round((completedSkills / totalSkills) * 100) : 0;
+          const progressFill = document.createElement('div');
+          progressFill.className = 'progress-fill';
+          progressFill.style.width = `${progress}%`;
+          
+          const progressText = document.createElement('div');
+          progressText.className = 'progress-text';
+          progressText.textContent = `${progress}% Complete`;
+          
+          progressBar.appendChild(progressFill);
+          progressBar.appendChild(progressText);
+          progressCell.appendChild(progressBar);
+          row.appendChild(progressCell);
+
+          // Deleted By cell
+          const deletedByCell = document.createElement('td');
+          deletedByCell.textContent = trainee.deletedBy || '-';
+          row.appendChild(deletedByCell);
+
+          // Deleted On cell
+          const deletedOnCell = document.createElement('td');
+          deletedOnCell.textContent = trainee.deletedOn ? new Date(trainee.deletedOn).toLocaleString() : '-';
+          row.appendChild(deletedOnCell);
+          
+          tbody.appendChild(row);
+        } catch (error) {
+          console.error('Error creating row for deleted trainee:', trainee, error);
+        }
+      });
+    }
+
+    // Helper function to create badges HTML
+    function createBadgesHTML(items, type) {
+      if (!items || !items.length) return 'N/A';
+      
+      const config = type === 'dept' ? departments : divisions;
+      
+      return `<div class="${type}-badges">` + items.map(itemId => {
+        const item = config.find(c => c.id === itemId);
+        return item ? `<div class="${type}-badge ${itemId}"><span class="badge-tooltip">${item.name}</span>${item.abbr}</div>` : '';
+      }).join('') + '</div>';
+    }
+
+    function showDeleteDialog(trainee) {
+      const dialog = document.createElement('div');
+      dialog.className = 'delete-dialog';
+      dialog.innerHTML = `
+        <div class="delete-dialog-title">DELETE TRAINEE</div>
+        <input type="text" class="delete-input" placeholder="Enter your name to confirm deletion" />
+        <div class="delete-dialog-buttons">
+          <button class="delete-dialog-btn" onclick="confirmDelete(this, '${trainee.id}')">DELETE</button>
+          <button class="delete-dialog-btn cancel" onclick="this.closest('.delete-dialog').remove()">CANCEL</button>
+        </div>
+      `;
+      document.body.appendChild(dialog);
+    }
+
+    async function confirmDelete(button, traineeId) {
+      const dialog = button.closest('.delete-dialog');
+      const input = dialog.querySelector('.delete-input');
+      const deletedBy = input.value.trim();
+      
+      if (!deletedBy) {
+        alert('Please enter your name to confirm deletion');
+        return;
+      }
+
+      try {
+        // Check both trainees and roster arrays
+        const trainee = trainees.find(t => t.id === traineeId) || roster.find(t => t.id === traineeId);
+        if (!trainee) {
+          console.error('Trainee not found:', traineeId);
+          return;
+        }
+
+        // Move trainee to deleted collection
+        const deletedTrainee = {
+          ...trainee,
+          deletedBy,
+          deletedOn: new Date().toISOString()
+        };
+
           const updates = {};
+        // Remove from appropriate collection
+        if (trainees.find(t => t.id === traineeId)) {
           updates[`/trainees/${traineeId}`] = null;
+        } else {
+          updates[`/roster/${traineeId}`] = null;
+        }
+        updates[`/deleted/${traineeId}`] = deletedTrainee;
           
           await fbUpdate(fbRef(fbDatabase), updates);
-          console.log('Successfully deleted trainee:', traineeId);
-        }
+        console.log('Successfully moved trainee to deleted:', traineeId);
+        dialog.remove();
       } catch (error) {
         console.error('Error deleting trainee:', error);
         showDatabaseError('Failed to delete trainee. Please try again.');
+      }
+    }
+
+    async function promoteTrainee(traineeId) {
+      try {
+        const trainee = trainees.find(t => t.id === traineeId);
+        if (!trainee) return;
+
+        // Create a complete copy of the trainee data
+        const promotedTrainee = {
+          id: trainee.id,
+          name: trainee.name || '',
+          handler: trainee.handler || '',
+          rank: trainee.rank || 'intern',
+          callsign: trainee.callsign || '',
+          codename: trainee.codename || '',
+          alias: trainee.alias || '',
+          ucAlias: trainee.ucAlias || '',
+          departments: trainee.departments || [],
+          divisions: trainee.divisions || [],
+          skills: trainee.skills || {
+            'CloseQuartersBreaching': { completed: false, instructor: '', completedDate: null },
+            'OpenAreaBreaching': { completed: false, instructor: '', completedDate: null },
+            'SceneControl': { completed: false, instructor: '', completedDate: null },
+            'COMMS': { completed: false, instructor: '', completedDate: null },
+            'UseOfForce': { completed: false, instructor: '', completedDate: null },
+            'FilingCharges': { completed: false, instructor: '', completedDate: null },
+            'Reports': { completed: false, instructor: '', completedDate: null },
+            'Gunfight': { completed: false, instructor: '', completedDate: null },
+            'UndercoverTraining': { completed: false, instructor: '', completedDate: null },
+            'HelicopterLicense': { completed: false, instructor: '', completedDate: null }
+          },
+          strikes: trainee.strikes || [],
+          commendations: trainee.commendations || [],
+          timeline: [...(trainee.timeline || []), {
+            date: new Date().toISOString(),
+            content: 'Promoted to FIB Roster',
+            instructor: 'System'
+          }],
+          promotedOn: new Date().toISOString()
+        };
+
+        // Move trainee to roster collection
+        const updates = {};
+        updates[`/trainees/${traineeId}`] = null;
+        updates[`/roster/${traineeId}`] = promotedTrainee;
+        
+        await fbUpdate(fbRef(fbDatabase), updates);
+        console.log('Successfully promoted trainee:', traineeId);
+      } catch (error) {
+        console.error('Error promoting trainee:', error);
+        showDatabaseError('Failed to promote trainee. Please try again.');
       }
     }
 
@@ -1923,9 +3780,7 @@
           const row = document.createElement('tr');
 
           // # (Callsign) cell
-          const callsignCell = document.createElement('td');
-          callsignCell.textContent = trainee.callsign || '-';
-          callsignCell.className = 'callsign';
+          const callsignCell = createEditableCell(trainee, 'callsign', 'callsign');
           row.appendChild(callsignCell);
 
           // Rank cell
@@ -1936,7 +3791,7 @@
           const rankBtn = document.createElement('button');
           rankBtn.className = 'rank-select-btn';
           const currentRank = RANKS.find(r => r.id === trainee.rank) || RANKS[0];
-          rankBtn.innerHTML = `<span class="rank-badge ${currentRank.id}">${currentRank.abbr}</span>`;
+          rankBtn.innerHTML = `<span class="rank-badge ${currentRank.id}"><span class="badge-tooltip">${currentRank.name}</span>${currentRank.abbr}</span>`;
           rankBtn.onclick = (e) => {
             e.stopPropagation();
             rankSelect.classList.toggle('open');
@@ -2007,11 +3862,18 @@
 
           const deptButton = document.createElement('button');
           deptButton.className = 'dept-select-btn';
-          deptButton.textContent = trainee.departments && trainee.departments.length > 0 ? 'Edit Depts' : 'Add Depts';
+          deptButton.style.display = trainee.departments && trainee.departments.length > 0 ? 'none' : 'block';
+          deptButton.textContent = 'Add Spec';
           deptButton.onclick = (e) => {
             e.stopPropagation();
-            const container = e.target.closest('.dept-select-container');
-            container.classList.toggle('open');
+            const dropdown = e.target.closest('.dept-select-container').querySelector('.dept-select-dropdown');
+            const wasOpen = dropdown.style.display === 'block';
+            // Close all dropdowns first
+            document.querySelectorAll('.dept-select-dropdown').forEach(d => {
+              d.style.display = 'none';
+            });
+            // Toggle this dropdown
+            dropdown.style.display = wasOpen ? 'none' : 'block';
           };
           deptContainer.appendChild(deptButton);
 
@@ -2073,7 +3935,21 @@
               if (dept) {
                 const badge = document.createElement('div');
                 badge.className = `dept-badge ${deptId}`;
-                badge.textContent = dept.abbr;
+                badge.innerHTML = `<span class="badge-tooltip">${dept.name}</span>${dept.abbr}`;
+                badge.style.cursor = 'pointer';
+                badge.onclick = (e) => {
+                  e.stopPropagation();
+                  const container = e.target.closest('td').querySelector('.dept-select-dropdown');
+                  if (container) {
+                    const wasOpen = container.style.display === 'block';
+                    // Close all other dropdowns first
+                    document.querySelectorAll('.dept-select-dropdown').forEach(dropdown => {
+                      dropdown.style.display = 'none';
+                    });
+                    // Toggle this dropdown
+                    container.style.display = wasOpen ? 'none' : 'block';
+                  }
+                };
                 badgesContainer.appendChild(badge);
               }
             });
@@ -2083,10 +3959,126 @@
 
           row.appendChild(deptCell);
 
+          // Division cell
+          const divisionCell = document.createElement('td');
+          const divisionContainer = document.createElement('div');
+          divisionContainer.className = 'dept-select-container';
+
+          const divisionButton = document.createElement('button');
+          divisionButton.className = 'dept-select-btn';
+          divisionButton.style.display = trainee.divisions && trainee.divisions.length > 0 ? 'none' : 'block';
+          divisionButton.textContent = 'Add Div';
+          divisionButton.onclick = (e) => {
+            e.stopPropagation();
+            const dropdown = e.target.closest('.dept-select-container').querySelector('.dept-select-dropdown');
+            const wasOpen = dropdown.style.display === 'block';
+            // Close all dropdowns first
+            document.querySelectorAll('.dept-select-dropdown').forEach(d => {
+              d.style.display = 'none';
+            });
+            // Toggle this dropdown
+            dropdown.style.display = wasOpen ? 'none' : 'block';
+          };
+          divisionContainer.appendChild(divisionButton);
+
+          const divisionDropdown = document.createElement('div');
+          divisionDropdown.className = 'dept-select-dropdown';
+
+          const divisions = [
+            { id: 'sup', name: 'Supernatural', abbr: 'SUP' },
+            { id: 'cl', name: 'Criminal Law', abbr: 'CL' },
+            { id: 'oc', name: 'Organised Crime', abbr: 'OC' },
+            { id: 'ia', name: 'Internal Affairs', abbr: 'IA' }
+          ];
+
+          divisions.forEach(div => {
+            const option = document.createElement('label');
+            option.className = 'dept-option';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = trainee.divisions && trainee.divisions.includes(div.id);
+            checkbox.onchange = (e) => {
+              e.stopPropagation();
+              if (!trainee.divisions) trainee.divisions = [];
+              
+              if (e.target.checked) {
+                trainee.divisions.push(div.id);
+                trainee.timeline.push({
+                  date: new Date().toISOString(),
+                  content: `Added to ${div.name} Division`,
+                  instructor: 'System'
+                });
+              } else {
+                trainee.divisions = trainee.divisions.filter(d => d !== div.id);
+                trainee.timeline.push({
+                  date: new Date().toISOString(),
+                  content: `Removed from ${div.name} Division`,
+                  instructor: 'System'
+                });
+              }
+              
+              // Update specific fields in Firebase
+              const updates = {};
+              updates[`/trainees/${trainee.id}/divisions`] = trainee.divisions;
+              updates[`/trainees/${trainee.id}/timeline`] = trainee.timeline;
+              
+              fbUpdate(fbRef(fbDatabase), updates).then(() => {
+                console.log('Successfully updated divisions for trainee:', trainee.id);
+                updateTrainingTable();
+              }).catch(error => {
+                console.error('Error updating divisions:', error);
+                alert('Failed to update divisions. Please try again.');
+              });
+            };
+
+            option.appendChild(checkbox);
+            option.appendChild(document.createTextNode(div.name));
+            divisionDropdown.appendChild(option);
+          });
+
+          divisionContainer.appendChild(divisionDropdown);
+          divisionCell.appendChild(divisionContainer);
+
+          // Add division badges if any divisions are selected
+          if (trainee.divisions && trainee.divisions.length > 0) {
+            const badgesContainer = document.createElement('div');
+            badgesContainer.className = 'dept-badges';
+            badgesContainer.style.display = 'inline-flex';
+            badgesContainer.style.flexWrap = 'wrap';
+            badgesContainer.style.gap = '4px';
+
+            trainee.divisions.forEach(divId => {
+              const div = divisions.find(d => d.id === divId);
+              if (div) {
+                const badge = document.createElement('div');
+                badge.className = `div-badge ${divId}`;
+                badge.innerHTML = `<span class="badge-tooltip">${div.name}</span>${div.abbr}`;
+                badge.style.cursor = 'pointer';
+                badge.onclick = (e) => {
+                  e.stopPropagation();
+                  const container = e.target.closest('td').querySelector('.dept-select-dropdown');
+                  if (container) {
+                    const wasOpen = container.style.display === 'block';
+                    // Close all other dropdowns first
+                    document.querySelectorAll('.dept-select-dropdown').forEach(dropdown => {
+                      dropdown.style.display = 'none';
+                    });
+                    // Toggle this dropdown
+                    container.style.display = wasOpen ? 'none' : 'block';
+                  }
+                };
+                badgesContainer.appendChild(badge);
+              }
+            });
+
+            divisionCell.appendChild(badgesContainer);
+          }
+
+          row.appendChild(divisionCell);
+
           // Code Name cell
-          const codenameCell = document.createElement('td');
-          codenameCell.textContent = trainee.codename || '-';
-          codenameCell.className = 'codename';
+          const codenameCell = createEditableCell(trainee, 'codename', 'codename');
           row.appendChild(codenameCell);
 
           // Alias cell
@@ -2094,19 +4086,7 @@
           aliasCell.textContent = trainee.ucAlias || trainee.alias || '-';
           aliasCell.className = 'uc-name';
           aliasCell.style.cursor = 'pointer';
-          aliasCell.onclick = () => {
-            const newAlias = prompt('Enter new alias:', trainee.ucAlias || trainee.alias || '');
-            if (newAlias !== null) {
-              trainee.ucAlias = newAlias;
-              trainee.timeline.push({
-                date: new Date().toISOString(),
-                content: `Alias updated to: ${newAlias}`,
-                instructor: 'System'
-              });
-              saveTrainees();
-              updateTrainingTable();
-            }
-          };
+          aliasCell.onclick = () => makeFieldEditable(aliasCell, trainee, 'ucAlias');
           row.appendChild(aliasCell);
 
           // FIB Handler cell
@@ -2155,21 +4135,17 @@
           progressCell.appendChild(progressBar);
           row.appendChild(progressCell);
 
-          // Delete button cell
-          const deleteCell = document.createElement('td');
-          deleteCell.style.width = '40px';
-          deleteCell.style.textAlign = 'center';
-          const deleteButton = document.createElement('button');
-          deleteButton.className = 'delete-btn';
-          deleteButton.innerHTML = '&times;';
-          deleteButton.style.width = '24px';
-          deleteButton.style.height = '24px';
-          deleteButton.style.padding = '0';
-          deleteButton.style.lineHeight = '1';
-          deleteButton.style.fontSize = '18px';
-          deleteButton.onclick = () => deleteTrainee(trainee.id);
-          deleteCell.appendChild(deleteButton);
-          row.appendChild(deleteCell);
+          // Action button cell
+          const actionCell = document.createElement('td');
+          actionCell.style.width = '40px';
+          actionCell.style.textAlign = 'center';
+          const actionButton = document.createElement('button');
+          actionButton.className = 'promote-btn';
+          actionButton.innerHTML = '+';
+          actionButton.title = 'Promote to FIB Roster';
+          actionButton.onclick = () => promoteTrainee(trainee.id);
+          actionCell.appendChild(actionButton);
+          row.appendChild(actionCell);
 
           // Add row to table
           tbody.appendChild(row);
@@ -2427,37 +4403,60 @@
       document.body.appendChild(dialog);
     }
 
-    function editField(element, field) {
-      const currentValue = element.textContent;
+    function createEditableCell(trainee, field, className = '') {
+      const cell = document.createElement('td');
+      cell.textContent = trainee[field] || '-';
+      if (className) cell.className = className;
+      cell.style.cursor = 'pointer';
+      cell.onclick = () => makeFieldEditable(cell, trainee, field);
+      return cell;
+    }
+
+    function makeFieldEditable(element, trainee, field, onSave) {
       const input = document.createElement('input');
       input.type = 'text';
-      input.value = currentValue;
-      input.className = 'password-input';
-      input.style.margin = '0';
-      input.style.padding = '2px 4px';
+      input.value = element.textContent === '-' ? '' : element.textContent;
+      input.style.width = '100%';
+      input.style.background = 'rgba(255,255,255,.05)';
+      input.style.border = '1px solid rgba(255,255,255,.1)';
+      input.style.borderRadius = '4px';
+      input.style.padding = '4px 8px';
+      input.style.color = '#fff';
       input.style.fontSize = '13px';
 
       const save = () => {
         const newValue = input.value.trim();
-        const traineeIndex = trainees.findIndex(t => t.id === currentTrainee.id);
-        if (traineeIndex !== -1) {
-          trainees[traineeIndex][field] = newValue;
+        if (newValue !== trainee[field]) {
+          trainee[field] = newValue;
+          trainee.timeline.push({
+            date: new Date().toISOString(),
+            content: `${field.charAt(0).toUpperCase() + field.slice(1)} updated to: ${newValue}`,
+            instructor: 'System'
+          });
           saveTrainees();
           updateTrainingTable();
-          showProfile(trainees[traineeIndex]);
+          if (onSave) onSave(newValue);
         }
+        element.textContent = newValue || '-';
       };
 
       input.onblur = save;
-      input.onkeypress = (e) => {
+      input.onkeydown = (e) => {
         if (e.key === 'Enter') {
+          e.preventDefault();
           save();
+          input.blur();
+        }
+        if (e.key === 'Escape') {
+          element.textContent = trainee[field] || '-';
+          input.blur();
         }
       };
 
-      element.innerHTML = '';
+      element.textContent = '';
       element.appendChild(input);
       input.focus();
+      input.select();
     }
 
     const RANKS = [
@@ -2470,7 +4469,56 @@
 
     let currentTrainee = null;
 
-    function showProfile(trainee) {
+    function showSecureDeleteDialog(trainee) {
+      const dialog = document.createElement('div');
+      dialog.className = 'password-dialog';
+      dialog.style.display = 'block';
+
+      const title = document.createElement('div');
+      title.className = 'password-dialog-title';
+      title.textContent = 'SECURE DELETE';
+      dialog.appendChild(title);
+
+      const form = document.createElement('div');
+      form.style.marginBottom = '20px';
+
+      const passwordInput = document.createElement('input');
+      passwordInput.type = 'password';
+      passwordInput.className = 'password-input';
+      passwordInput.placeholder = 'Enter password';
+      passwordInput.style.marginBottom = '16px';
+      form.appendChild(passwordInput);
+
+      dialog.appendChild(form);
+
+      const buttonContainer = document.createElement('div');
+      buttonContainer.className = 'password-dialog-buttons';
+      
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'password-dialog-btn';
+      deleteBtn.style.background = '#ef4444';
+      deleteBtn.textContent = 'DELETE';
+      deleteBtn.onclick = () => {
+        if (passwordInput.value === 'FIBDELETE') {
+          showDeleteDialog(trainee);
+          dialog.remove();
+        } else {
+          alert('Incorrect password');
+        }
+      };
+      buttonContainer.appendChild(deleteBtn);
+      
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'password-dialog-btn';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.onclick = () => dialog.remove();
+      buttonContainer.appendChild(cancelBtn);
+      
+      dialog.appendChild(buttonContainer);
+      document.body.appendChild(dialog);
+    }
+
+    function showProfile(trainee, isDeleted = false) {
       if (!trainee) {
         console.error('No trainee data provided to showProfile');
         return;
@@ -2478,40 +4526,77 @@
 
       try {
         console.log('Showing profile for trainee:', trainee);
-        currentTrainee = trainee;
+        window.currentTrainee = trainee;
         const modal = document.getElementById('profileModal');
         if (!modal) {
           console.error('Profile modal element not found');
           return;
         }
         
+        // Clear any existing deleted trainee alerts
+        const existingAlerts = document.querySelectorAll('.profile-content > div[style*="background: rgba(239, 68, 68, 0.1)"]');
+        existingAlerts.forEach(alert => alert.remove());
+
         // Set basic info
         const currentRank = RANKS.find(r => r.id === trainee.rank) || RANKS[0];
+
+        // Add close button if it doesn't exist
+        let closeBtn = document.querySelector('.close-btn');
+        if (!closeBtn) {
+            closeBtn = document.createElement('button');
+            closeBtn.className = 'close-btn';
+            closeBtn.innerHTML = '×';
+            closeBtn.onclick = closeProfile;
+            document.querySelector('.profile-content').appendChild(closeBtn);
+        }
 
         // Set profile picture
         const profilePicture = document.querySelector('.profile-picture');
         if (profilePicture) {
           profilePicture.src = trainee.profilePicture || 'https://kappa.lol/3qib3z';
           profilePicture.setAttribute('data-trainee-id', trainee.id);
+          if (isDeleted) {
+            profilePicture.style.cursor = 'default';
+            profilePicture.onclick = null;
+          }
+        }
+
+        // If deleted, add a notice at the top
+        if (isDeleted) {
+          const deleteInfo = document.createElement('div');
+          deleteInfo.style.background = 'rgba(239, 68, 68, 0.1)';
+          deleteInfo.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+          deleteInfo.style.color = '#ef4444';
+          deleteInfo.style.padding = '12px';
+          deleteInfo.style.borderRadius = '8px';
+          deleteInfo.style.marginBottom = '16px';
+          deleteInfo.style.fontSize = '14px';
+          deleteInfo.innerHTML = `
+            <strong>DELETED TRAINEE</strong><br>
+            Deleted by: ${trainee.deletedBy}<br>
+            Deleted on: ${new Date(trainee.deletedOn).toLocaleString()}
+          `;
+          document.querySelector('.profile-content').insertBefore(deleteInfo, document.querySelector('.profile-content').firstChild);
         }
 
         // Set notes
         const notesTextarea = document.getElementById('profileNotes');
         if (notesTextarea) {
           notesTextarea.value = trainee.notes || '';
+          if (isDeleted) {
+            notesTextarea.disabled = true;
+            notesTextarea.style.opacity = '0.7';
+          }
         }
         
         // Safely set each element, checking for existence first
         const elements = {
           'profileName': `<span class="rank-badge ${currentRank.id}">${currentRank.abbr}</span> FEDERAL INVESTIGATION BUREAU<br><span style="font-size: 16px; opacity: 0.8; font-weight: normal;">${currentRank.name === 'SPECIAL AGENT' ? 'Special Agent' : currentRank.name === 'AGENT' ? 'Agent' : currentRank.name}</span> ${trainee.name}`,
-          'profileRank': currentRank.name,
-          'profileCallsign': trainee.callsign || 'Not Set',
-          'profileCodename': trainee.codename || 'Not Set',
-          'profileUC': trainee.ucAlias || 'Not Set',
-          'profileJoinDate': trainee.joinDate ? new Date(trainee.joinDate).toLocaleDateString() : 'Not Set',
-          'profileHandler': trainee.handler || 'Not Assigned'
+          'profileName2': trainee.name || 'Not Set',
+          'profileRank': currentRank.name
         };
 
+        // Set non-editable elements
         Object.entries(elements).forEach(([id, value]) => {
           const element = document.getElementById(id);
           if (element) {
@@ -2521,35 +4606,78 @@
           }
         });
 
-        // Show departments as badges
-        const deptDiv = document.getElementById('profileDivision');
-        if (deptDiv) {
-          deptDiv.innerHTML = '';
+        // Set editable elements
+        const editableElements = {
+          'profileCallsign': { field: 'callsign', value: trainee.callsign || 'Not Set' },
+          'profileCodename': { field: 'codename', value: trainee.codename || 'Not Set' },
+          'profileUC': { field: 'ucAlias', value: trainee.ucAlias || 'Not Set' },
+          'profileHandler': { field: 'handler', value: trainee.handler || 'Not Assigned' },
+          'profileJoinDate': { field: 'joinDate', value: trainee.joinDate ? new Date(trainee.joinDate).toLocaleDateString() : new Date().toLocaleDateString() }
+        };
+
+        Object.entries(editableElements).forEach(([id, { field, value }]) => {
+          const element = document.getElementById(id);
+          if (element) {
+            element.textContent = value;
+            if (!isDeleted) {
+              element.style.cursor = 'pointer';
+              element.onclick = () => makeFieldEditable(element, trainee, field);
+            }
+          } else {
+            console.warn(`Element ${id} not found`);
+          }
+        });
+
+        // Show specialities as badges
+        const specDiv = document.getElementById('profileSpeciality');
+        if (specDiv) {
+          specDiv.innerHTML = '';
           if (trainee.departments && trainee.departments.length > 0) {
-            const deptBadges = document.createElement('div');
-            deptBadges.className = 'dept-badges';
+            const specBadges = document.createElement('div');
+            specBadges.className = 'dept-badges';
             trainee.departments.forEach(deptId => {
               const badge = document.createElement('div');
               badge.className = `dept-badge ${deptId}`;
-              badge.textContent = {
-                'fa': 'FA',
-                'inv': 'INV',
-                'ana': 'ANA',
-                'sup': 'SUP'
-              }[deptId] || deptId.toUpperCase();
-              deptBadges.appendChild(badge);
+              const dept = departments.find(d => d.id === deptId);
+              badge.textContent = dept ? dept.abbr : deptId.toUpperCase();
+              specBadges.appendChild(badge);
             });
-            deptDiv.appendChild(deptBadges);
+            specDiv.appendChild(specBadges);
           } else {
-            deptDiv.textContent = 'Not Assigned';
+            specDiv.textContent = 'Not Assigned';
+          }
+        }
+
+        // Show divisions as badges
+        const divDiv = document.getElementById('profileDivision');
+        if (divDiv) {
+          divDiv.innerHTML = '';
+          if (trainee.divisions && trainee.divisions.length > 0) {
+            const divBadges = document.createElement('div');
+            divBadges.className = 'dept-badges';
+            divBadges.style.display = 'flex';
+            divBadges.style.flexWrap = 'wrap';
+            divBadges.style.gap = '4px';
+            divBadges.style.marginTop = '4px';
+            trainee.divisions.forEach(divId => {
+              const badge = document.createElement('div');
+              badge.className = `div-badge ${divId}`;
+              const div = divisions.find(d => d.id === divId);
+              badge.textContent = div ? div.abbr : divId.toUpperCase();
+              divBadges.appendChild(badge);
+            });
+            divDiv.appendChild(divBadges);
+          } else {
+            divDiv.textContent = 'Not Assigned';
           }
         }
 
         // Calculate and show training status
         const skills = [
           '10Codes', 'CaseLaws', 'Pursuit', 'Hostage', 'TrafficStop', 
-          'Breaching', 'SceneControl', 'COMMS', 'UseOfForce', 
-          'FilingCharges', 'Reports', 'Gunfight'
+          'CloseQuartersBreaching', 'OpenAreaBreaching', 'SceneControl', 'COMMS', 'UseOfForce', 
+          'FilingCharges', 'Reports', 'Gunfight', 'UndercoverTraining', 'HelicopterLicense',
+          'AmmunationSceneCommand', 'BankHeistSceneCommand', 'PITManeuverTraining'
         ];
 
         if (trainee.skills) {
@@ -2580,6 +4708,21 @@
                 certificates.appendChild(badge);
               }
             });
+          }
+        }
+
+        // Make all fields non-editable for deleted trainees
+        if (isDeleted) {
+          // Only disable click handlers inside the profile content, not the close button
+          document.querySelectorAll('.profile-content [onclick]:not(.close-btn)').forEach(el => {
+            el.onclick = null;
+            el.style.cursor = 'default';
+          });
+          
+          // Ensure close button works for deleted trainees
+          const closeBtn = document.querySelector('.close-btn');
+          if (closeBtn) {
+            closeBtn.onclick = closeProfile;
           }
         }
 
@@ -2705,6 +4848,30 @@
           });
         }
 
+        // Remove any existing delete buttons
+        const existingDeleteSections = document.querySelectorAll('.profile-content > div[style*="margin-top: 32px"]');
+        existingDeleteSections.forEach(section => section.remove());
+
+        // Add delete button at the bottom of the profile (only for non-deleted trainees)
+        if (!isDeleted) {
+          const deleteSection = document.createElement('div');
+          deleteSection.style.marginTop = '32px';
+          deleteSection.style.borderTop = '1px solid rgba(255, 255, 255, 0.1)';
+          deleteSection.style.paddingTop = '16px';
+          deleteSection.style.textAlign = 'center';
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'password-dialog-btn';
+          deleteBtn.style.background = '#ef4444';
+          deleteBtn.style.color = '#fff';
+          deleteBtn.style.padding = '8px 16px';
+          deleteBtn.textContent = 'DELETE TRAINEE';
+          deleteBtn.onclick = () => showSecureDeleteDialog(trainee);
+          
+          deleteSection.appendChild(deleteBtn);
+          document.querySelector('.profile-content').appendChild(deleteSection);
+        }
+
         modal.style.display = 'block';
       } catch (error) {
         console.error('Error showing profile:', error);
@@ -2828,7 +4995,7 @@
     function showDeptSkillsDialog(trainee, skills) {
       const skillsList = skills.map(skill => {
         const data = trainee.skills[skill];
-        return `${skill} Division: ${data.completed ? '✓' : '✗'}${data.completed ? ` (${data.instructor})` : ''}`;
+        return `${skill} Speciality: ${data.completed ? '✓' : '✗'}${data.completed ? ` (${data.instructor})` : ''}`;
       }).join('\n');
 
       const selectedSkill = prompt(`Select a department to toggle for ${trainee.name}:\n\n${skillsList}\n\nType the department name exactly as shown (e.g. "Supernatural"):`);
@@ -2842,14 +5009,14 @@
       }
       
       if (trainee.skills[skill].completed) {
-        if (confirm(`Remove ${skill} Division assignment?`)) {
+        if (confirm(`Remove ${skill} Speciality assignment?`)) {
           trainee.skills[skill].completed = false;
           trainee.skills[skill].instructor = '';
               saveTrainees();
               updateTrainingTable();
         }
       } else {
-        const instructor = prompt(`Enter instructor name for ${skill} Division assignment:`);
+        const instructor = prompt(`Enter instructor name for ${skill} Speciality assignment:`);
         if (instructor) {
           trainee.skills[skill].completed = true;
           trainee.skills[skill].instructor = instructor;
@@ -2858,6 +5025,782 @@
         }
       }
     }
+    // Training Procedures Functions
+      async function initializeTrainingProcedures() {
+      const container = document.getElementById('trainingProceduresContainer');
+      if (!container) return;
+      
+      container.innerHTML = ''; // Clear existing content
+      
+      if (!window.trainingModules) {
+        await window.initializeModules();
+      }
+      
+      // Create the module elements
+      window.trainingModules.forEach(module => {
+        const moduleDiv = document.createElement('div');
+        moduleDiv.className = 'training-module';
+        moduleDiv.id = `module-${module.id}`;
+        
+        const header = document.createElement('div');
+        header.className = 'training-module-header';
+        header.onclick = () => toggleTrainingModule(module.id);
+        header.innerHTML = `
+          ${module.title}
+          <span class="toggle-icon">▼</span>
+        `;
+        
+        const content = document.createElement('div');
+        content.className = 'training-module-content';
+        content.id = `module-content-${module.id}`;
+        content.style.display = 'none';
+        content.style.position = 'relative';
+
+        // Edit button
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-module-btn';
+        editBtn.title = 'Edit Module';
+        editBtn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        `;
+        editBtn.style.position = 'absolute';
+        editBtn.style.top = '12px';
+        editBtn.style.right = '12px';
+        editBtn.onclick = (e) => {
+          e.stopPropagation();
+          window.editTrainingModule(module.id);
+        };
+        content.appendChild(editBtn);
+        
+        // Goal section
+        const goalSection = document.createElement('div');
+        goalSection.className = 'training-module-section';
+        goalSection.innerHTML = `
+          <h4>Goal</h4>
+          <p>${module.content.goal}</p>
+        `;
+        
+        // Setup section
+        const setupSection = document.createElement('div');
+        setupSection.className = 'training-module-section';
+        setupSection.innerHTML = `
+          <h4>Setup</h4>
+          <p>${module.content.setup}</p>
+        `;
+        
+        // Pass criteria section
+        const passSection = document.createElement('div');
+        passSection.className = 'training-module-section';
+        passSection.innerHTML = `
+          <h4>Pass if</h4>
+          <p>${module.content.pass}</p>
+        `;
+        
+        // Key tip section
+        const tipSection = document.createElement('div');
+        tipSection.className = 'training-module-section';
+        tipSection.innerHTML = `
+          <h4>Key tip</h4>
+          <p>${module.content.tip}</p>
+        `;
+        
+        content.appendChild(goalSection);
+        content.appendChild(setupSection);
+        content.appendChild(passSection);
+        content.appendChild(tipSection);
+        
+        moduleDiv.appendChild(header);
+        moduleDiv.appendChild(content);
+        container.appendChild(moduleDiv);
+      });
+    }
+
+    async function toggleTrainingProcedures() {
+      const section = document.querySelector('.training-procedures');
+      const container = document.getElementById('trainingProceduresContainer');
+      const icon = section.querySelector('.toggle-icon');
+      
+      if (container.style.display === 'none') {
+        container.style.display = 'block';
+        section.classList.add('expanded');
+        icon.style.transform = 'rotate(180deg)';
+        
+        // Initialize content if it's empty
+        if (container.children.length === 0) {
+          await initializeTrainingProcedures();
+        }
+      } else {
+        container.style.display = 'none';
+        section.classList.remove('expanded');
+        icon.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function toggleTrainingModule(moduleId) {
+      const content = document.getElementById(`module-content-${moduleId}`);
+      const icon = document.querySelector(`#module-${moduleId} .toggle-icon`);
+      
+      if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.style.transform = 'rotate(180deg)';
+      } else {
+        content.style.display = 'none';
+        icon.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // Load training modules from Firebase
+    window.loadTrainingModules = async function() {
+      try {
+        // Always start with default modules to ensure all required modules exist
+        window.trainingModules = [...window.defaultModules];
+
+        const snapshot = await window.fbGet(window.fbRef(window.fbDatabase, 'trainingModules'));
+        if (snapshot.exists()) {
+          // Merge existing modules with defaults to ensure all new modules are included
+          const existingModules = Object.values(snapshot.val());
+          existingModules.forEach(existingModule => {
+            const index = window.trainingModules.findIndex(m => m.id === existingModule.id);
+            if (index !== -1) {
+              window.trainingModules[index] = existingModule;
+            }
+          });
+        }
+        
+        // Save the merged modules back to Firebase
+        await saveTrainingModules();
+        
+        // Initialize the procedures display
+        await initializeTrainingProcedures();
+      } catch (error) {
+        console.error('Error loading training modules:', error);
+        // Fallback to default modules if there's an error
+        window.trainingModules = [...window.defaultModules];
+        await initializeTrainingProcedures();
+      }
+    }
+
+    // Save training modules to Firebase
+    window.saveTrainingModules = async function() {
+      try {
+        if (!window.trainingModules || !Array.isArray(window.trainingModules)) {
+          console.error('Invalid training modules data');
+          return;
+        }
+
+        const updates = {};
+        window.trainingModules.forEach(module => {
+          if (module && module.id) {
+            updates[`/trainingModules/${module.id}`] = module;
+          }
+        });
+
+        if (Object.keys(updates).length > 0) {
+          await window.fbUpdate(window.fbRef(window.fbDatabase), updates);
+          console.log('Training modules saved successfully');
+        }
+      } catch (error) {
+        console.error('Error saving training modules:', error);
+        throw error; // Re-throw to handle in calling function
+      }
+    }
+
+    // Edit training module
+    window.editTrainingModule = async function(moduleId) {
+      const module = window.trainingModules.find(m => m.id === moduleId);
+      if (!module) return;
+
+      const title = prompt('Enter new title:', module.title);
+      if (!title) return;
+
+      const goal = prompt('Enter new goal:', module.content.goal);
+      if (!goal) return;
+
+      const setup = prompt('Enter new setup:', module.content.setup);
+      if (!setup) return;
+
+      const pass = prompt('Enter new pass criteria:', module.content.pass);
+      if (!pass) return;
+
+      const tip = prompt('Enter new tip:', module.content.tip);
+      if (!tip) return;
+
+      module.title = title;
+      module.content = {
+        goal,
+        setup,
+        pass,
+        tip
+      };
+
+      await saveTrainingModules();
+      await initializeTrainingProcedures();
+    }
+
+    // Define default modules globally
+    window.defaultModules = [
+        {
+          id: '10codes',
+          title: '10 Codes',
+          content: {
+            goal: 'Learn and use radio codes.',
+            setup: 'Instructor calls out scenarios.',
+            pass: 'Quick, accurate code responses.',
+            tip: 'Start with common codes first.'
+          }
+        },
+        {
+          id: 'ammunation',
+          title: 'Ammunation Scene Command',
+          content: {
+            goal: 'Control active shooter scene.',
+            setup: 'Multiple threats in store layout.',
+            pass: 'Quick response, civilian safety, threat neutralization.',
+            tip: 'First 5 minutes are critical.'
+          }
+        },
+        {
+          id: 'bankheist',
+          title: 'Bank Heist Scene Command',
+          content: {
+            goal: 'Manage complex robbery response.',
+            setup: 'Multiple suspects, hostages, entry points.',
+            pass: 'Perimeter control, negotiation, tactical resolution.',
+            tip: 'Control outer perimeter first.'
+          }
+        },
+        {
+          id: 'caselaws',
+          title: 'Case Laws',
+          content: {
+            goal: 'Understand key legal precedents.',
+            setup: 'Review major cases and discuss.',
+            pass: 'Can explain case impact on procedures.',
+            tip: 'Focus on practical applications.'
+          }
+        },
+        {
+          id: 'casemanagement',
+          title: 'Case Management',
+          content: {
+            goal: 'Structure and maintain active investigations professionally.',
+            setup: 'Provide a half-complete case file.',
+            pass: 'The case file is clear, chronological, and labeled. They add next actionable step.',
+            tip: 'If someone else opens your case tomorrow, they should instantly understand it.'
+          }
+        },
+        {
+          id: 'closequarters',
+          title: 'Close Quarters Breaching',
+          content: {
+            goal: 'Clear rooms and buildings safely.',
+            setup: 'Multi-room scenario with threats.',
+            pass: 'Methodical clearing, good angles, team coordination.',
+            tip: 'Slow is smooth, smooth is fast.'
+          }
+        },
+        {
+          id: 'comms',
+          title: 'COMMS',
+          content: {
+            goal: 'Clear radio communication.',
+            setup: 'High-stress scenario requiring updates.',
+            pass: 'Clear, concise, complete transmissions.',
+            tip: 'Think before you speak.'
+          }
+        },
+        {
+          id: 'deepuc',
+          title: 'Deep UC Work',
+          content: {
+            goal: 'Long-term undercover operation management.',
+            setup: 'Build cover story and maintain over time.',
+            pass: 'Keeps character consistent, manages stress, relays intel safely.',
+            tip: 'Your cover story is your shield.'
+          }
+        },
+        {
+          id: 'evidence',
+          title: 'Evidence Handling',
+          content: {
+            goal: 'Proper evidence collection and chain of custody.',
+            setup: 'Process complex scene with multiple evidence types.',
+            pass: 'Correct collection, packaging, and documentation.',
+            tip: 'If in doubt, document more.'
+          }
+        },
+        {
+          id: 'filing',
+          title: 'Filing Charges',
+          content: {
+            goal: 'Correctly input and justify charges.',
+            setup: 'Give an arrest scenario with 3-4 offenses.',
+            pass: 'Each charge matches evidence and is formatted properly.',
+            tip: 'Overcharging = fail.'
+          }
+        },
+        {
+          id: 'gunfight',
+          title: 'Gunfight',
+          content: {
+            goal: 'Proper cover, crossfire, and comms.',
+            setup: 'Simulate an ambush with 2 hostiles.',
+            pass: 'Takes cover, returns fire, communicates locations.',
+            tip: 'Don\'t peek twice from same angle.'
+          }
+        },
+        {
+          id: 'helicopter',
+          title: 'Helicopter License',
+          content: {
+            goal: 'Basic flight and pursuit tracking.',
+            setup: 'Fly from base to city, hover above target, track a vehicle.',
+            pass: 'Maintains smooth flight, steady altitude, and stable camera tracking.',
+            tip: 'Altitude + distance = safety.'
+          }
+        },
+        {
+          id: 'hostage',
+          title: 'Hostage',
+          content: {
+            goal: 'Negotiation under pressure.',
+            setup: '1 hostage taker, 1 hostage. Trainee negotiates 3 demands.',
+            pass: 'Maintains calm tone, stalls for time, keeps control.',
+            tip: 'Never trade lives for money.'
+          }
+        },
+        {
+          id: 'interrogation',
+          title: 'Interrogation Questioning',
+          content: {
+            goal: 'Train controlled, structured suspect interviews.',
+            setup: 'Give the trainee a mock suspect (trainer plays the role). Scenario Example: A suspect denies being at a robbery scene.',
+            pass: 'Trainee uses open questions, not leading ones. Maintains calm tone and documents responses. Detects inconsistencies without aggression.',
+            tip: 'Don\'t fill silence. Let the suspect talk themselves into mistakes.'
+          }
+        },
+        {
+          id: 'longinvestigations',
+          title: 'Long Term Investigations',
+          content: {
+            goal: 'Learn sustained intelligence and evidence management.',
+            setup: 'Present a criminal organization with recurring activity.',
+            pass: 'They create a solid investigation outline (3 suspects minimum). Knows when to escalate to warrant stage.',
+            tip: 'Never burn an investigation early for small arrests.'
+          }
+        },
+        {
+          id: 'openarea',
+          title: 'Open Area Breaching',
+          content: {
+            goal: 'Tactical approach on large compound.',
+            setup: 'Multi-angle team movement on open site.',
+            pass: 'Good spacing, callouts, use of cover.',
+            tip: 'Don\'t group — move like chess pieces.'
+          }
+        },
+        {
+          id: 'pit',
+          title: 'PIT Maneuver Training',
+          content: {
+            goal: 'Teach safe PIT execution.',
+            setup: 'Controlled pursuit at 60–80 km/h.',
+            pass: 'Executes PIT correctly, calls it in before performing.',
+            tip: 'No blind PITs — always have clearance.'
+          }
+        },
+        {
+          id: 'pursuit',
+          title: 'Pursuit',
+          content: {
+            goal: 'Evaluate control and radio during chase.',
+            setup: 'Instructor drives suspect car.',
+            pass: 'Clear comms, proper callouts, controlled turns.',
+            tip: 'Lose sight > lose safety, disengage smartly.'
+          }
+        },
+        {
+          id: 'reports',
+          title: 'Reports',
+          content: {
+            goal: 'Professional, factual reporting.',
+            setup: 'Give scene notes; trainee writes a brief report.',
+            pass: 'Spelling, structure, and detail are accurate.',
+            tip: 'Write as if a judge will read it.'
+          }
+        },
+        {
+          id: 'scenecontrol',
+          title: 'Scene Control',
+          content: {
+            goal: 'Manage chaotic multi-unit scene.',
+            setup: 'Random civilians, media, multiple officers.',
+            pass: 'Establishes perimeter, delegates roles, stays calm.',
+            tip: 'Loud voice ≠ leadership — clarity does.'
+          }
+        },
+        {
+          id: 'shortinvestigations',
+          title: 'Short Term Investigations',
+          content: {
+            goal: 'Teach quick turnaround intel work for active crimes.',
+            setup: 'Provide 3 clues (vehicle plate, CCTV, description).',
+            pass: 'Logical order of investigation steps. Clear communication of findings.',
+            tip: 'Always verify info before broadcasting it.'
+          }
+        },
+        {
+          id: 'statements',
+          title: 'Statement Gaining',
+          content: {
+            goal: 'Train how to extract clear and admissible statements.',
+            setup: 'Civillian or officer involved in a crime as a witness.',
+            pass: 'Statement includes time, location, actions, ID details. Language is quoted accurately.',
+            tip: 'Write exactly what they said — don\'t interpret it.'
+          }
+        },
+        {
+          id: 'surveillance',
+          title: 'Surveillance',
+          content: {
+            goal: 'Teach silent observation and data logging.',
+            setup: 'One suspect vehicle or location under watch.',
+            pass: 'No tail exposure or unnecessary radio chatter. Logs times, movements, and persons.',
+            tip: 'Distance and patience win — not proximity.'
+          }
+        },
+        {
+          id: 'traffic',
+          title: 'Traffic Stop',
+          content: {
+            goal: 'Conduct safe and lawful vehicle stop.',
+            setup: 'Random vehicle, unknown risk.',
+            pass: 'Proper positioning, approach, ID check, and closure.',
+            tip: 'Always call plate before approach.'
+          }
+        },
+        {
+          id: 'undercover',
+          title: 'Deep Undercover Work',
+          content: {
+            goal: 'Teach full immersion and identity discipline.',
+            setup: 'Provide undercover alias, fake backstory, and a meet with a "criminal contact."',
+            pass: 'Trainee stays in character and recalls their alias details. Keeps radio use subtle or non-verbal.',
+            tip: 'Think like a criminal, report like an agent.'
+          }
+        },
+        {
+          id: 'useofforce',
+          title: 'Use of Force',
+          content: {
+            goal: 'Correct escalation/de-escalation.',
+            setup: 'Angry suspect escalating verbally.',
+            pass: 'Uses verbal, then less-lethal, then lethal only if justified.',
+            tip: 'Force must always be proportional.'
+          }
+        },
+        {
+          id: 'warrants',
+          title: 'Warrant Writing',
+          content: {
+            goal: 'Teach professional and legally sound warrant preparation.',
+            setup: 'Give trainee probable cause info (intel, statements, CCTV).',
+            pass: 'Justification is clear, concise, and lawful. Spelling, layout, and reasoning meet FIB standards.',
+            tip: 'Judges approve confidence, not chaos — write like you already have proof.'
+          }
+        },
+        {
+          id: 'ammunation',
+          title: 'Ammunation Scene Command',
+          content: {
+            goal: 'Simulate armed suspect inside Ammunation.',
+            setup: 'Trainee leads perimeter setup, negotiates or plans breach.',
+            pass: 'Communicates roles clearly and ensures civilian safety.',
+            tip: 'Use LEO voice, don\'t rush breach.'
+          }
+        },
+        {
+          id: 'bankheist',
+          title: 'Bank Heist Scene Command',
+          content: {
+            goal: 'Test large-scale coordination.',
+            setup: '4 suspects, 2 hostages. Trainee acts as scene commander.',
+            pass: 'They issue clear radio updates, form outer/inner cordon, and keep control.',
+            tip: 'Prioritize hostage life, not kills.'
+          }
+        },
+        {
+          id: 'comms',
+          title: 'COMMS',
+          content: {
+            goal: 'Master clear, concise radio structure.',
+            setup: 'Run 3 short pursuit updates or code-6 checks.',
+            pass: 'Uses proper call signs, keeps radio short & factual.',
+            tip: 'No "uh" or "yeah" — use confirmations.'
+          }
+        },
+        {
+          id: 'caselaws',
+          title: 'Case Laws',
+          content: {
+            goal: 'Confirm understanding of legal rights.',
+            setup: 'Ask 5 random quickfire questions ("Can you detain for suspicion?" etc).',
+            pass: 'Answers confidently & gives amendment or reasoning.',
+            tip: 'They should know why, not just what.'
+          }
+        },
+        {
+          id: 'cqb',
+          title: 'Close Quarters Breaching',
+          content: {
+            goal: 'Teach safe team entry & comms.',
+            setup: '2-3 rooms with suspects. Use sim-rounds or verbal roleplay.',
+            pass: 'Stack formed, callouts ("Left clear") used, no friendly fire.',
+            tip: 'Slice the pie, don\'t rush corners.'
+          }
+        },
+        {
+          id: 'filing',
+          title: 'Filing Charges',
+          content: {
+            goal: 'Correctly input and justify charges.',
+            setup: 'Give an arrest scenario with 3-4 offenses.',
+            pass: 'Each charge matches evidence and is formatted properly.',
+            tip: 'Overcharging = fail.'
+          }
+        },
+        {
+          id: 'gunfight',
+          title: 'Gunfight',
+          content: {
+            goal: 'Proper cover, crossfire, and comms.',
+            setup: 'Simulate an ambush with 2 hostiles.',
+            pass: 'Takes cover, returns fire, communicates locations.',
+            tip: 'Don\'t peek twice from same angle.'
+          }
+        },
+        {
+          id: 'helicopter',
+          title: 'Helicopter License',
+          content: {
+            goal: 'Basic flight and pursuit tracking.',
+            setup: 'Fly from base to city, hover above target, track a vehicle.',
+            pass: 'Maintains smooth flight, steady altitude, and stable camera tracking.',
+            tip: 'Altitude + distance = safety.'
+          }
+        },
+        {
+          id: 'hostage',
+          title: 'Hostage',
+          content: {
+            goal: 'Negotiation under pressure.',
+            setup: '1 hostage taker, 1 hostage. Trainee negotiates 3 demands.',
+            pass: 'Maintains calm tone, stalls for time, keeps control.',
+            tip: 'Never trade lives for money.'
+          }
+        },
+        {
+          id: 'openarea',
+          title: 'Open Area Breaching',
+          content: {
+            goal: 'Tactical approach on large compound.',
+            setup: 'Multi-angle team movement on open site.',
+            pass: 'Good spacing, callouts, use of cover.',
+            tip: 'Don\'t group — move like chess pieces.'
+          }
+        },
+        {
+          id: 'pit',
+          title: 'PIT Maneuver Training',
+          content: {
+            goal: 'Teach safe PIT execution.',
+            setup: 'Controlled pursuit at 60–80 km/h.',
+            pass: 'Executes PIT correctly, calls it in before performing.',
+            tip: 'No blind PITs — always have clearance.'
+          }
+        },
+        {
+          id: 'pursuit',
+          title: 'Pursuit',
+          content: {
+            goal: 'Evaluate control and radio during chase.',
+            setup: 'Instructor drives suspect car.',
+            pass: 'Clear comms, proper callouts, controlled turns.',
+            tip: 'Lose sight > lose safety, disengage smartly.'
+          }
+        },
+        {
+          id: 'reports',
+          title: 'Reports',
+          content: {
+            goal: 'Professional, factual reporting.',
+            setup: 'Give scene notes; trainee writes a brief report.',
+            pass: 'Spelling, structure, and detail are accurate.',
+            tip: 'Write as if a judge will read it.'
+          }
+        },
+        {
+          id: 'scenecontrol',
+          title: 'Scene Control',
+          content: {
+            goal: 'Manage chaotic multi-unit scene.',
+            setup: 'Random civilians, media, multiple officers.',
+            pass: 'Establishes perimeter, delegates roles, stays calm.',
+            tip: 'Loud voice ≠ leadership — clarity does.'
+          }
+        },
+        {
+          id: 'traffic',
+          title: 'Traffic Stop',
+          content: {
+            goal: 'Conduct safe and lawful vehicle stop.',
+            setup: 'Random vehicle, unknown risk.',
+            pass: 'Proper positioning, approach, ID check, and closure.',
+            tip: 'Always call plate before approach.'
+          }
+        },
+        {
+          id: 'undercover',
+          title: 'Undercover Training',
+          content: {
+            goal: 'Teach blending & intel gathering.',
+            setup: 'Simple buy-bust or infiltration scenario.',
+            pass: 'Keeps cover story, relays info quietly.',
+            tip: 'Never reveal real name or badge.'
+          }
+        },
+        {
+          id: 'useofforce',
+          title: 'Use of Force',
+          content: {
+            goal: 'Correct escalation/de-escalation.',
+            setup: 'Angry suspect escalating verbally.',
+            pass: 'Uses verbal, then less-lethal, then lethal only if justified.',
+            tip: 'Force must always be proportional.'
+          }
+        },
+        {
+          id: 'interrogation',
+          title: 'Interrogation',
+          content: {
+            goal: 'Master interview techniques and suspect psychology.',
+            setup: 'Role-play interrogation with complex suspect story.',
+            pass: 'Gets truthful information without coercion, documents properly.',
+            tip: 'Watch for body language, control the room.'
+          }
+        },
+        {
+          id: 'shortinvestigations',
+          title: 'Short Term Investigations',
+          content: {
+            goal: 'Handle immediate follow-up investigations.',
+            setup: 'Process active crime scene and develop leads.',
+            pass: 'Proper evidence collection, witness statements, quick follow-up.',
+            tip: 'First 48 hours are critical.'
+          }
+        },
+        {
+          id: 'longinvestigations',
+          title: 'Long Term Investigations',
+          content: {
+            goal: 'Manage complex, multi-week investigations.',
+            setup: 'Build case file on ongoing criminal enterprise.',
+            pass: 'Maintains organized timeline, connects evidence threads.',
+            tip: 'Document everything - memory fades.'
+          }
+        },
+        {
+          id: 'surveillance',
+          title: 'Surveillance',
+          content: {
+            goal: 'Conduct covert observation without detection.',
+            setup: 'Track target through city without being made.',
+            pass: 'Maintains visual while staying undetected.',
+            tip: 'Blend in, look boring.'
+          }
+        },
+        {
+          id: 'deepuc',
+          title: 'Deep UC Work',
+          content: {
+            goal: 'Long-term undercover operation management.',
+            setup: 'Build cover story and maintain over time.',
+            pass: 'Keeps character consistent, manages stress, relays intel safely.',
+            tip: 'Your cover story is your shield.'
+          }
+        },
+        {
+          id: 'casemanagement',
+          title: 'Case Management',
+          content: {
+            goal: 'Organize and track multiple active cases.',
+            setup: 'Handle 3+ simultaneous investigations.',
+            pass: 'Maintains clear files, meets deadlines, proper handoffs.',
+            tip: 'System beats memory every time.'
+          }
+        },
+        {
+          id: 'statements',
+          title: 'Statement Gaining',
+          content: {
+            goal: 'Obtain detailed witness/victim statements.',
+            setup: 'Interview traumatized/reluctant witness.',
+            pass: 'Gets key details while maintaining witness comfort.',
+            tip: 'Listen more than you talk.'
+          }
+        },
+        {
+          id: 'evidence',
+          title: 'Evidence Handling',
+          content: {
+            goal: 'Proper evidence collection and chain of custody.',
+            setup: 'Process complex scene with multiple evidence types.',
+            pass: 'Correct collection, packaging, and documentation.',
+            tip: 'If in doubt, document more.'
+          }
+        },
+        {
+          id: 'warrants',
+          title: 'Warrant Writing',
+          content: {
+            goal: 'Draft clear, legally sound warrants.',
+            setup: 'Write search warrant for complex location.',
+            pass: 'Clear probable cause, specific scope, proper format.',
+            tip: 'Be specific but comprehensive.'
+          }
+        }
+      ];
+
+      // Initialize modules from Firebase or defaults
+      window.initializeModules = async function() {
+        try {
+          const modulesSnapshot = await window.fbGet(window.fbRef(window.fbDatabase, 'trainingModules'));
+          if (modulesSnapshot.exists()) {
+            window.trainingModules = Object.values(modulesSnapshot.val());
+          } else {
+            window.trainingModules = [...window.defaultModules];
+            // Save default modules to Firebase
+            const updates = {};
+            window.defaultModules.forEach(module => {
+              updates[`/trainingModules/${module.id}`] = module;
+            });
+            await window.fbUpdate(window.fbRef(window.fbDatabase), updates);
+          }
+        } catch (error) {
+          console.error('Error loading training modules:', error);
+          window.trainingModules = [...window.defaultModules];
+        }
+      };
+
+      // Initialize Firebase when the page loads
+      window.addEventListener('load', async () => {
+        await initializeFirebase();
+        await window.initializeModules();
+      });
+
     </script>
 
     <!-- Embedded trainee data -->
