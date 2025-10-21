@@ -1,1 +1,4779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FIB CASE DATABASE</title>
+    <link rel="icon" type="image/webp" href="https://kappa.lol/aDnGzF">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase -->
+    <script type="module">
 
+      // Initialize Firebase immediately
+      let app;
+      let database;
+      let initialized = false;
+      
+      // Helper function to close the new case dialog
+      window.closeNewCaseDialog = function() {
+        const overlay = document.querySelector('.case-dialog-overlay');
+        const dialog = document.querySelector('.case-dialog');
+        if (overlay) overlay.remove();
+        if (dialog) dialog.remove();
+      };
+
+      // Make showNewCaseForm available globally
+      window.showNewCaseForm = function() {
+        // Remove any existing dialogs first
+        const existingOverlay = document.querySelector('.case-dialog-overlay');
+        const existingDialog = document.querySelector('.case-dialog');
+        if (existingOverlay) existingOverlay.remove();
+        if (existingDialog) existingDialog.remove();
+
+        // Create overlay with backdrop blur
+        const overlay = document.createElement('div');
+        overlay.className = 'case-dialog-overlay';
+        document.body.appendChild(overlay);
+
+        // Create dialog
+        const dialog = document.createElement('div');
+        dialog.className = 'case-dialog';
+        document.body.appendChild(dialog);
+
+        // Force browser to process the new elements before animation
+        void overlay.offsetHeight;
+        void dialog.offsetHeight;
+
+        // Add visible class to trigger animations
+        setTimeout(() => {
+          overlay.classList.add('visible');
+          dialog.classList.add('visible');
+        }, 10);
+        
+        dialog.innerHTML = `
+          <div class="case-dialog-content">
+            <div class="case-dialog-header">
+              <div class="case-dialog-title">NEW CASE</div>
+              <div class="case-dialog-buttons">
+                <button class="case-dialog-btn" onclick="window.createNewCase()">CREATE CASE</button>
+                <button class="case-dialog-btn cancel" onclick="closeNewCaseDialog()">CANCEL</button>
+              </div>
+            </div>
+            <div class="case-form">
+              <div class="form-group">
+                <label>Lead Agent</label>
+                <div id="leadAgentList" class="agent-checkbox-grid"></div>
+              </div>
+              <div class="form-group compact">
+                <div class="form-row">
+                  <div class="form-group third">
+                    <label>Report Number (Optional)</label>
+                    <input type="text" id="reportNumber" class="case-input optional" placeholder="Leave empty for '-'">
+                  </div>
+                  <div class="form-group third">
+                    <label>Case Number (Optional)</label>
+                    <input type="text" id="caseNumber" class="case-input optional" placeholder="Leave empty for '-'">
+                  </div>
+                  <div class="form-group third">
+                    <label>Investigation Name</label>
+                    <input type="text" id="investigationName" class="case-input" placeholder="Enter Investigation Name">
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Involved Agents</label>
+                <div id="involvedAgentsList" class="agent-checkbox-grid"></div>
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <div id="statusList" class="status-checkbox-grid">
+                  ${Object.entries(CASE_STATUSES).map(([key, status]) => `
+                    <label class="status-checkbox-label" data-description="${status.description}">
+                      <input type="radio" name="caseStatus" value="${key}">
+                      <span>${status.label}</span>
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(dialog);
+
+        // Populate agent dropdowns
+        populateAgentDropdowns();
+      };
+
+      async function initializeFirebase() {
+        if (initialized) return true;
+        
+        try {
+            const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+            const { getDatabase, ref, set, onValue, update, get: fbGet } = 
+              await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+
+          const firebaseConfig = {
+            apiKey: "AIzaSyC8MXihU-0-FRkYwx0qrs_Sv4CKZCVgFUs",
+            authDomain: "fib-training-tracker.firebaseapp.com",
+            projectId: "fib-training-tracker",
+            storageBucket: "fib-training-tracker.appspot.com",
+            messagingSenderId: "1086248091161",
+            appId: "1:1086248091161:web:6e74e452d665123e88f488",
+            measurementId: "G-ZHPFZNV4WZ",
+            databaseURL: "https://fib-training-tracker-default-rtdb.firebaseio.com"
+          };
+
+          // Initialize Firebase
+          app = initializeApp(firebaseConfig);
+          database = getDatabase(app);
+
+          // Make functions available globally
+          window.fbDatabase = database;
+          window.fbRef = ref;
+          window.fbSet = set;
+          window.fbOnValue = onValue;
+          window.fbUpdate = update;
+          window.fbGet = fbGet;
+
+          // Initialize database structure if it doesn't exist
+          const dbRef = ref(database);
+          const snapshot = await fbGet(dbRef);
+          const data = snapshot.val() || {};
+
+          // Ensure all required paths exist
+          const requiredPaths = ['cases', 'roster', 'trainees', 'sops', 'other_agents'];
+          const updates = {};
+          
+          requiredPaths.forEach(path => {
+            if (!data[path]) {
+              updates[path] = {};
+            }
+          });
+
+          // Apply updates if needed
+          if (Object.keys(updates).length > 0) {
+            await fbUpdate(dbRef, updates);
+            console.log('Database structure initialized');
+          }
+
+          // Initialize cases array
+          if (!window.cases) {
+            window.cases = [];
+          }
+
+          // Set up connection monitoring
+          const connectedRef = ref(database, '.info/connected');
+          onValue(connectedRef, (snap) => {
+            const connected = snap.val() === true;
+            console.log('Connection state:', connected ? 'connected' : 'disconnected');
+            
+            if (connected) {
+              enableInterface();
+              initialized = true;
+              // Load initial data
+              Promise.all([
+                loadAgents(),
+                loadCases()
+              ]).catch(error => {
+                console.error('Error loading initial data:', error);
+                showDatabaseError('Error loading data. Please refresh the page.');
+              });
+            } else {
+              showDatabaseError('Lost connection to database. Please check your internet connection.');
+            }
+          }, (error) => {
+            console.error('Connection monitoring error:', error);
+            showDatabaseError('Unable to monitor database connection. Please refresh the page.');
+          });
+
+          return true;
+        } catch (error) {
+          console.error('Firebase initialization error:', error);
+          showDatabaseError('Failed to initialize database. Please refresh the page.');
+          return false;
+        }
+      }
+
+      function showDatabaseError(message) {
+        // Create error notice
+        const notice = document.createElement('div');
+        notice.style.background = 'rgba(239, 68, 68, 0.1)';
+        notice.style.border = '1px solid #ef4444';
+        notice.style.borderRadius = '8px';
+        notice.style.padding = '12px';
+        notice.style.marginBottom = '16px';
+        notice.style.color = '#ef4444';
+        notice.style.fontSize = '14px';
+        notice.innerHTML = `<strong>⚠️ Database Error:</strong> ${message}`;
+        
+        // Show error notice above the form
+        const addCaseForm = document.querySelector('.add-case-form');
+        if (addCaseForm) {
+          // Remove any existing notices
+          const existingNotice = addCaseForm.previousElementSibling;
+          if (existingNotice && existingNotice.style.background.includes('rgba')) {
+            existingNotice.remove();
+          }
+          addCaseForm.parentNode.insertBefore(notice, addCaseForm);
+        }
+        
+        // Disable form inputs
+        disableInterface();
+      }
+
+      function enableInterface() {
+        // Enable all inputs except collapse button
+        const inputs = document.querySelectorAll('input, button, select');
+        inputs.forEach(input => {
+          input.disabled = false;
+        });
+      }
+
+      function disableInterface() {
+        // Disable all inputs except collapse button
+        const inputs = document.querySelectorAll('input, button, select');
+        inputs.forEach(input => {
+          input.disabled = true;
+        });
+      }
+
+      // Case status definitions
+      const CASE_STATUSES = {
+        'COLD_CASE': {
+          label: 'COLD CASE',
+          description: 'Inactive, no leads'
+        },
+        'WARM_CASE': {
+          label: 'WARM CASE',
+          description: 'Reopened, new intel emerging'
+        },
+        'HOT_CASE': {
+          label: 'HOT CASE',
+          description: 'Active investigation, priority target'
+        },
+        'LIVE_CASE': {
+          label: 'LIVE CASE',
+          description: 'Currently unfolding or in progress'
+        },
+        'CLOSED': {
+          label: 'CLOSED',
+          description: 'Resolved and filed'
+        },
+        'DORMANT': {
+          label: 'DORMANT',
+          description: 'Suspended, waiting on external action'
+        },
+        'PENDING_REVIEW': {
+          label: 'PENDING REVIEW',
+          description: 'Awaiting supervisory sign-off'
+        },
+        'UNDER_ANALYSIS': {
+          label: 'UNDER ANALYSIS',
+          description: 'Data or intel being reviewed'
+        },
+        'CLASSIFIED_HOLD': {
+          label: 'CLASSIFIED HOLD',
+          description: 'Paused for security clearance reasons'
+        }
+      };
+
+
+      // Function to populate agent dropdowns
+      async function populateAgentDropdowns() {
+        try {
+          const leadAgentList = document.getElementById('leadAgentList');
+          const involvedAgentsList = document.getElementById('involvedAgentsList');
+          
+          if (!leadAgentList || !involvedAgentsList) {
+            console.error('Agent lists not found in DOM');
+            return;
+          }
+
+          // Clear existing options
+          leadAgentList.innerHTML = '';
+          involvedAgentsList.innerHTML = '';
+
+          // Add search input to both lists
+          [leadAgentList, involvedAgentsList].forEach(list => {
+            const searchContainer = document.createElement('div');
+            searchContainer.className = 'agent-search-container';
+            
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.className = 'agent-search-input';
+            searchInput.placeholder = 'Search agents...';
+            
+            const searchIcon = document.createElement('div');
+            searchIcon.className = 'agent-search-icon';
+            searchIcon.innerHTML = '🔍';
+            
+            searchContainer.appendChild(searchIcon);
+            searchContainer.appendChild(searchInput);
+            list.appendChild(searchContainer);
+
+            // Add search functionality
+            searchInput.addEventListener('input', (e) => {
+              const searchTerm = e.target.value.toLowerCase();
+              list.querySelectorAll('.agent-checkbox-label:not(.other-option)').forEach(label => {
+                const agentName = label.querySelector('span').textContent.toLowerCase();
+                const matches = agentName.includes(searchTerm);
+                label.style.display = matches ? 'flex' : 'none';
+              });
+            });
+          });
+
+          // Get agents from both roster and trainees
+          const [rosterSnapshot, traineesSnapshot] = await Promise.all([
+            fbGet(fbRef(fbDatabase, 'roster')),
+            fbGet(fbRef(fbDatabase, 'trainees'))
+          ]);
+
+          const agents = [];
+
+          // Add roster agents
+          if (rosterSnapshot.exists()) {
+            const rosterAgents = Object.entries(rosterSnapshot.val()).map(([id, data]) => ({
+              id,
+              ...data,
+              source: 'roster'
+            }));
+            agents.push(...rosterAgents);
+          }
+
+          // Add trainee agents
+          if (traineesSnapshot.exists()) {
+            const traineeAgents = Object.entries(traineesSnapshot.val()).map(([id, data]) => ({
+              id,
+              ...data,
+              source: 'trainees'
+            }));
+            agents.push(...traineeAgents);
+          }
+
+          // Sort agents by name
+          agents.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+          if (agents.length === 0) {
+            console.warn('No agents found in database');
+            return;
+          }
+
+          console.log('Populating agents:', agents);
+            
+          // Create agent checkbox elements
+          agents.forEach((agent) => {
+            if (!agent.name) {
+              console.warn('Agent missing name:', agent);
+              return;
+            }
+
+            const agentName = `${agent.name} (${agent.callsign || 'No Callsign'})`;
+            const agentValue = `${agent.source}/${agent.id}`;
+            
+            // Lead agent radio button
+            const leadLabel = document.createElement('label');
+            leadLabel.className = 'agent-checkbox-label';
+            leadLabel.innerHTML = `
+              <input type="radio" name="leadAgent" value="${agentValue}">
+              <span>${agentName}</span>
+            `;
+            leadAgentList.appendChild(leadLabel);
+
+            // Involved agents checkbox
+            const involvedLabel = document.createElement('label');
+            involvedLabel.className = 'agent-checkbox-label';
+            involvedLabel.innerHTML = `
+              <input type="checkbox" name="involvedAgents" value="${agentValue}">
+              <span>${agentName}</span>
+            `;
+            involvedAgentsList.appendChild(involvedLabel);
+          });
+
+          // Add "Other" option to both lists
+          [
+            { list: leadAgentList, type: 'radio', name: 'leadAgent' },
+            { list: involvedAgentsList, type: 'checkbox', name: 'involvedAgents' }
+          ].forEach(({ list, type, name }) => {
+            const otherSection = document.createElement('div');
+            otherSection.className = 'agent-other-option';
+            
+            const otherTitle = document.createElement('div');
+            otherTitle.className = 'section-title';
+            otherTitle.textContent = type === 'checkbox' ? 'Other Agents' : 'Other Agent';
+            otherSection.appendChild(otherTitle);
+
+            if (type === 'checkbox') {
+              // For involved agents, add a text input for multiple names
+              const otherNameInput = document.createElement('input');
+              otherNameInput.type = 'text';
+              otherNameInput.className = 'agent-other-input involved-other-input';
+              otherNameInput.placeholder = 'Enter agent names (comma-separated)...';
+              otherSection.appendChild(otherNameInput);
+            } else {
+              // For lead agent, keep single selection
+              const otherLabel = document.createElement('label');
+              otherLabel.className = 'agent-checkbox-label other-option';
+              
+              const otherInput = document.createElement('input');
+              otherInput.type = type;
+              otherInput.name = name;
+              otherInput.className = 'other-agent-input';
+              
+              const otherNameInput = document.createElement('input');
+              otherNameInput.type = 'text';
+              otherNameInput.className = 'agent-other-input';
+              otherNameInput.placeholder = 'Enter agent name...';
+              
+              otherLabel.appendChild(otherInput);
+              otherLabel.appendChild(otherNameInput);
+              otherSection.appendChild(otherLabel);
+
+              // Handle "Other" option selection for lead agent
+              otherInput.addEventListener('change', () => {
+                if (otherInput.checked) {
+                  otherNameInput.focus();
+                  list.querySelectorAll('label').forEach(l => l.classList.remove('selected'));
+                  otherLabel.classList.add('selected');
+                } else {
+                  otherLabel.classList.remove('selected');
+                }
+              });
+            }
+            
+            list.appendChild(otherSection);
+          });
+
+          console.log('Successfully populated agent dropdowns');
+        } catch (error) {
+          console.error('Error populating agent dropdowns:', error);
+          showDatabaseError('Failed to load agents. Please try again.');
+        }
+      }
+
+      // Function to create new case
+      window.createNewCase = async function() {
+        try {
+          console.log('Starting case creation...');
+          
+          // Get lead agent from radio buttons
+          const leadAgentRadio = document.querySelector('input[name="leadAgent"]:checked');
+          if (!leadAgentRadio) {
+            alert('Please select a Lead Agent');
+            return;
+          }
+
+          let leadAgent;
+          try {
+            if (leadAgentRadio.classList.contains('other-agent-input')) {
+              const name = leadAgentRadio.parentElement.querySelector('.agent-other-input').value.trim();
+              if (!name) {
+                alert('Please enter a name for the Other Lead Agent');
+                return;
+              }
+              const agentId = `other_${Date.now()}`;
+              // Save the other agent to the database first
+              const otherAgent = {
+                id: agentId,
+                source: 'other',
+                name: name,
+                callsign: 'External'
+              };
+              await fbSet(fbRef(fbDatabase, `other_agents/${agentId}`), otherAgent);
+              leadAgent = otherAgent;
+            } else {
+              const value = leadAgentRadio.value;
+              if (!value) {
+                alert('Invalid lead agent selection');
+                return;
+              }
+              const [source, id] = value.split('/');
+              if (!source || !id) {
+                alert('Invalid lead agent format');
+                return;
+              }
+              console.log('Lead agent source:', source, 'id:', id);
+              leadAgent = await getAgentDetails(`${source}/${id}`);
+              if (!leadAgent) {
+                alert('Lead agent not found');
+                return;
+              }
+            }
+            console.log('Selected lead agent:', leadAgent);
+          } catch (error) {
+            console.error('Error processing lead agent:', error);
+            alert('Error processing lead agent selection');
+            return;
+          }
+          
+          // Get form values
+          const reportNumber = document.getElementById('reportNumber').value.trim();
+          const caseNumber = document.getElementById('caseNumber').value.trim();
+          const investigationName = document.getElementById('investigationName').value.trim();
+          
+          // Get involved agents from checkboxes and other inputs
+          const checkedAgents = Array.from(document.querySelectorAll('input[name="involvedAgents"]:checked'));
+          const otherAgentInput = document.querySelector('.involved-other-input');
+          
+          // Process regular agent selections
+          const regularAgents = checkedAgents
+            .filter(cb => !cb.classList.contains('other-agent-input'))
+            .map(cb => {
+              const [source, id] = cb.value.split('/');
+              // Get the agent's name and callsign from the checkbox label
+              const label = cb.closest('label');
+              const nameText = label.querySelector('span').textContent;
+              const match = nameText.match(/(.*?)\s*\((.*?)\)/);
+              if (match) {
+                return {
+                  id,
+                  source,
+                  name: match[1].trim(),
+                  callsign: match[2].trim()
+                };
+              }
+              return null;
+            })
+            .filter(Boolean);
+
+          // Process other agents if any are entered
+          const otherAgentNames = otherAgentInput.value
+            .split(',')
+            .map(name => name.trim())
+            .filter(name => name.length > 0);
+
+          // Create other agents and save them to database
+          const otherAgents = await Promise.all(
+            otherAgentNames.map(async name => {
+              try {
+                const agentId = `other_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                const otherAgent = {
+                  id: agentId,
+                  source: 'other',
+                  name: name,
+                  callsign: 'External' // Only "Other" agents get "External" callsign
+                };
+                
+                // Save to other_agents collection
+                await fbSet(fbRef(fbDatabase, `other_agents/${agentId}`), otherAgent);
+                console.log('Created other agent:', otherAgent);
+                return otherAgent;
+              } catch (error) {
+                console.error('Error creating other agent:', error);
+                return null;
+              }
+            })
+          );
+
+          // Combine regular and other agents
+          const involvedAgents = [...regularAgents, ...otherAgents].filter(Boolean);
+          
+          console.log('Final involved agents:', involvedAgents);
+          
+          // Get status from radio buttons
+          const statusRadio = document.querySelector('input[name="caseStatus"]:checked');
+          if (!statusRadio) {
+            alert('Please select a Status');
+            return;
+          }
+          const status = statusRadio.value;
+          if (!CASE_STATUSES[status]) {
+            console.error('Invalid status selected:', status);
+            alert('Invalid status selected');
+            return;
+          }
+          console.log('Selected status:', status, CASE_STATUSES[status]);
+
+          if (!leadAgent || !investigationName || !status) {
+            alert('Please fill in all required fields (Lead Agent, Investigation Name, and Status)');
+            return;
+          }
+
+          // Set default values for optional fields
+          let finalReportNumber = reportNumber || '-';  // Dash if not provided
+          let finalCaseNumber = caseNumber || '-';
+
+          // Only check for duplicate case number if one was provided and not a dash
+          if (finalCaseNumber && finalCaseNumber !== '-') {
+            const existingCases = await fbGet(fbRef(fbDatabase, 'cases'));
+            if (existingCases.exists()) {
+              const cases = Object.values(existingCases.val());
+              if (cases.some(c => c.caseNumber === caseNumber)) {
+                alert('A case with this case number already exists');
+                return;
+              }
+            }
+          }
+
+          // We already have the lead agent details from earlier
+          console.log('Using lead agent:', leadAgent);
+
+          // We already have the full agent details in involvedAgents
+          console.log('Using involved agents:', involvedAgents);
+
+          const caseId = `case_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          const timestamp = new Date().toISOString();
+          const newCase = {
+            id: caseId,
+            leadAgent: {
+              id: leadAgent.id,
+              source: leadAgent.source,
+              name: leadAgent.name,
+              callsign: leadAgent.callsign || 'No Callsign'
+            },
+            reportNumber: finalReportNumber,
+            caseNumber: finalCaseNumber,
+            investigationName,
+            involvedAgents: involvedAgents,
+            status: status,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+            timeline: [{
+              date: timestamp,
+              content: 'Case created',
+              agent: leadAgent.name
+            }]
+          };
+
+          // Save to Firebase
+          const updates = {};
+          updates[`/cases/${caseId}`] = newCase;
+          await fbUpdate(fbRef(fbDatabase), updates);
+
+          // Close dialog and overlay
+          closeNewCaseDialog();
+        } catch (error) {
+          console.error('Error creating case:', error);
+          showDatabaseError('Failed to create case. Please try again.');
+        }
+      }
+
+      // Load agents from Firebase
+      async function loadAgents() {
+        try {
+          // Load both roster and trainees
+          const [rosterSnapshot, traineesSnapshot] = await Promise.all([
+            fbGet(fbRef(fbDatabase, 'roster')),
+            fbGet(fbRef(fbDatabase, 'trainees'))
+          ]);
+
+          // Combine roster and trainees
+          const rosterAgents = rosterSnapshot.exists() ? Object.values(rosterSnapshot.val()) : [];
+          const traineeAgents = traineesSnapshot.exists() ? Object.values(traineesSnapshot.val()) : [];
+          
+          window.agents = [...rosterAgents, ...traineeAgents];
+          
+          // Sort by name
+          window.agents.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        } catch (error) {
+          console.error('Error loading agents:', error);
+          showDatabaseError('Failed to load agents. Please refresh the page.');
+        }
+      }
+
+      // Load cases from Firebase with real-time updates
+      window.loadCases = async function() {
+        try {
+          console.log('Setting up real-time case listener...');
+          
+          // Remove any existing listener
+          const casesRef = fbRef(fbDatabase, 'cases');
+          fbOnValue(casesRef, (snapshot) => {
+            try {
+              console.log('Received cases update');
+              if (snapshot.exists()) {
+          // Convert object to array and ensure each case has an id
+          window.cases = Object.entries(snapshot.val()).map(([id, data]) => ({
+            id,
+            ...data
+          }));
+          
+          console.log('Loaded cases from database:', window.cases);
+                
+                console.log('Updated cases:', window.cases);
+              } else {
+                window.cases = [];
+                console.log('No cases found in database');
+              }
+              
+              updateCaseTable();
+              updateGroupList(); // Update group displays whenever cases update
+            } catch (error) {
+              console.error('Error processing cases update:', error);
+              showDatabaseError('Error processing cases update. Please refresh the page.');
+            }
+          }, (error) => {
+            console.error('Cases listener error:', error);
+            showDatabaseError('Error monitoring cases. Please refresh the page.');
+          });
+          
+        } catch (error) {
+          console.error('Error setting up cases listener:', error);
+          showDatabaseError('Failed to load cases. Please try again.');
+        }
+      };
+
+      // Global sort state
+      let currentSort = {
+        column: 'createdAt',
+        direction: 'desc'
+      };
+
+      // Function to sort cases
+      window.sortCases = function(cases, column, direction) {
+        console.log('Sorting cases by:', column, 'direction:', direction);
+        console.log('Cases before sort:', cases);
+        
+        const sorted = [...cases].sort((a, b) => {
+          try {
+            let aVal, bVal;
+            
+            // Special handling for nested properties
+            if (column.includes('.')) {
+              aVal = column.split('.').reduce((obj, key) => obj?.[key], a) || '';
+              bVal = column.split('.').reduce((obj, key) => obj?.[key], b) || '';
+            } else {
+              aVal = a[column] || '';
+              bVal = b[column] || '';
+            }
+            
+            // Handle dates
+            if (column === 'updatedAt' || column === 'createdAt') {
+              return direction === 'asc' 
+                ? new Date(aVal) - new Date(bVal)
+                : new Date(bVal) - new Date(aVal);
+            }
+            
+            // Handle strings
+            aVal = String(aVal).toLowerCase();
+            bVal = String(bVal).toLowerCase();
+            
+            return direction === 'asc'
+              ? aVal.localeCompare(bVal)
+              : bVal.localeCompare(aVal);
+              
+          } catch (error) {
+            console.error('Error comparing values:', error);
+            return 0;
+          }
+        });
+        
+        console.log('Cases after sort:', sorted);
+        return sorted;
+      }
+
+      // Function to handle column header clicks
+      window.handleSort = function(column) {
+        console.log('Sorting by column:', column);
+        
+        const headers = document.querySelectorAll('.case-table th');
+        headers.forEach(header => {
+          header.classList.remove('sort-asc', 'sort-desc');
+        });
+
+        if (currentSort.column === column) {
+          currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+          currentSort.column = column;
+          currentSort.direction = 'asc';
+        }
+
+        console.log('Current sort:', currentSort);
+
+        const header = document.querySelector(`th[data-sort="${column}"]`);
+        if (header) {
+          header.classList.add(`sort-${currentSort.direction}`);
+        }
+
+        updateCaseTable();
+      }
+
+      // Function to update case table
+      async function updateCaseTable() {
+        const tbody = document.getElementById('caseTableBody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        
+        if (!window.cases || window.cases.length === 0) {
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.colSpan = 8;
+          cell.style.textAlign = 'center';
+          cell.style.padding = '20px';
+          cell.textContent = 'No cases added yet';
+          row.appendChild(cell);
+          tbody.appendChild(row);
+          return;
+        }
+
+        // Get all cases as array, we don't want to deduplicate here
+        const casesArray = [...window.cases];
+        console.log('Cases before sorting:', casesArray);
+        
+        // Sort cases
+        const sortedCases = window.sortCases(casesArray, currentSort.column, currentSort.direction);
+        console.log('Cases after sorting:', sortedCases);
+
+        // Use sortedCases for display
+        for (const caseData of sortedCases) {
+          try {
+            const row = document.createElement('tr');
+            
+            // Helper function to create editable cell
+            function createEditableCell(value, field, type = 'text') {
+              const cell = document.createElement('td');
+              cell.textContent = value;
+              cell.onclick = (e) => {
+                e.stopPropagation();
+                makeEditable(cell, caseData, field, type);
+              };
+              return cell;
+            }
+
+            // Case Number
+            row.appendChild(createEditableCell(caseData.caseNumber, 'caseNumber'));
+
+            // Report Number
+            row.appendChild(createEditableCell(caseData.reportNumber, 'reportNumber'));
+
+            // Investigation Name
+            const investigationCell = document.createElement('td');
+            investigationCell.textContent = caseData.investigationName;
+            investigationCell.style.cursor = 'pointer';
+            investigationCell.style.fontWeight = 'bold';
+            investigationCell.style.textDecoration = 'underline';
+            investigationCell.onclick = (e) => {
+              e.stopPropagation();
+              showInvestigationCard(caseData);
+            };
+            row.appendChild(investigationCell);
+
+            // Lead Agent
+            const leadAgentCell = document.createElement('td');
+            const leadAgentText = document.createElement('div');
+            leadAgentText.className = 'agent-cell-text';
+            leadAgentText.textContent = caseData.leadAgent && caseData.leadAgent.name 
+              ? `${caseData.leadAgent.name} (${caseData.leadAgent.callsign || 'No Callsign'})`
+              : 'Unknown';
+            leadAgentCell.appendChild(leadAgentText);
+
+            // Add hover card functionality
+
+            leadAgentCell.onmouseenter = async (e) => {
+              clearTimeout(hoverTimeout);
+              
+              if (!caseData.leadAgent) return;
+
+              try {
+                // Get full agent details from database
+                const source = caseData.leadAgent.source;
+                const id = caseData.leadAgent.id;
+                const snapshot = await fbGet(fbRef(fbDatabase, `${source}/${id}`));
+                const agentData = snapshot.exists() ? snapshot.val() : null;
+
+                if (!agentData) return;
+
+                // Remove any existing hover cards
+                const existingCard = document.querySelector('.agent-hover-card');
+                if (existingCard) existingCard.remove();
+
+                // Create hover card
+                const card = document.createElement('div');
+                card.className = 'popup-base agent-hover-card';
+                currentCard = card;
+                
+                card.innerHTML = `
+                  <div class="agent-name">${agentData.name || '-'}</div>
+                  <div class="agent-callsign">${agentData.callsign || 'No Callsign'}</div>
+                  <div class="agent-details">
+                    <div class="detail-label">Rank:</div>
+                    <div class="detail-value">${agentData.rank || ''}</div>
+                    <div class="detail-label">Handler:</div>
+                    <div class="detail-value">${agentData.handler || ''}</div>
+                    <div class="detail-label">Codename:</div>
+                    <div class="detail-value">${agentData.codename || ''}</div>
+                    <div class="detail-label">Alias:</div>
+                    <div class="detail-value">${agentData.alias || ''}</div>
+                    <div class="detail-label">Divisions:</div>
+                    <div class="detail-value">${agentData.divisions || ''}</div>
+                  </div>
+                `;
+
+                // Position the card
+                const rect = leadAgentCell.getBoundingClientRect();
+                card.style.top = `${rect.bottom + window.scrollY + 10}px`;
+                card.style.left = `${rect.left + window.scrollX}px`;
+
+                // Add mouse events to the card itself
+                card.onmouseenter = () => {
+                  clearTimeout(hoverTimeout);
+                };
+
+                card.onmouseleave = () => {
+                  clearTimeout(hoverTimeout);
+                  hoverTimeout = setTimeout(() => {
+                    if (card === currentCard) {
+                      card.classList.add('fade-out');
+                      card.classList.remove('visible');
+                      setTimeout(() => card.remove(), 200);
+                      currentCard = null;
+                    }
+                  }, 100);
+                };
+
+                // Add to document and show with animation
+                document.body.appendChild(card);
+                requestAnimationFrame(() => card.classList.add('visible'));
+              } catch (error) {
+                console.error('Error showing agent hover card:', error);
+              }
+            };
+
+            leadAgentCell.onmouseleave = () => {
+              clearTimeout(hoverTimeout);
+              hoverTimeout = setTimeout(() => {
+                if (currentCard && currentCard.parentNode) {
+                  currentCard.classList.add('fade-out');
+                  currentCard.classList.remove('visible');
+                  setTimeout(() => {
+                    if (currentCard && currentCard.parentNode) {
+                      currentCard.remove();
+                    }
+                  }, 200);
+                  currentCard = null;
+                }
+              }, 100);
+            };
+
+            row.appendChild(leadAgentCell);
+
+            // Involved Agents
+            const involvedAgentsCell = document.createElement('td');
+            const involvedAgentsText = document.createElement('div');
+            involvedAgentsText.className = 'agent-cell-text';
+            involvedAgentsText.textContent = caseData.involvedAgents && caseData.involvedAgents.length > 0
+              ? caseData.involvedAgents.map(agent => `${agent.name} (${agent.callsign || 'No Callsign'})`).join(', ')
+              : 'None';
+            involvedAgentsCell.appendChild(involvedAgentsText);
+
+            // Add hover card functionality for involved agents
+
+            involvedAgentsCell.onmouseenter = async (e) => {
+              clearTimeout(hoverTimeout);
+
+              if (!caseData.involvedAgents || caseData.involvedAgents.length === 0) return;
+
+              try {
+                // Get full agent details for all involved agents
+                const agentDetailsPromises = caseData.involvedAgents.map(async agent => {
+                  if (!agent.source || !agent.id) return null;
+                  const snapshot = await fbGet(fbRef(fbDatabase, `${agent.source}/${agent.id}`));
+                  return snapshot.exists() ? { ...snapshot.val(), source: agent.source, id: agent.id } : null;
+                });
+
+                const agentDetails = (await Promise.all(agentDetailsPromises)).filter(Boolean);
+                if (agentDetails.length === 0) return;
+
+                // Remove any existing hover cards
+                const existingCard = document.querySelector('.agent-hover-card');
+                if (existingCard) existingCard.remove();
+
+                // Create hover card
+                const card = document.createElement('div');
+                card.className = 'popup-base agent-hover-card multi-agent';
+                currentCard = card;
+                
+                // Create agent cards
+                card.innerHTML = agentDetails.map(agent => `
+                  <div class="agent-card">
+                    <div class="agent-name">${agent.name || '-'}</div>
+                    <div class="agent-callsign">${agent.callsign || 'No Callsign'}</div>
+                    <div class="agent-details">
+                      <div class="detail-label">Rank:</div>
+                      <div class="detail-value">${agent.rank || ''}</div>
+                      <div class="detail-label">Handler:</div>
+                      <div class="detail-value">${agent.handler || ''}</div>
+                      <div class="detail-label">Codename:</div>
+                      <div class="detail-value">${agent.codename || ''}</div>
+                      <div class="detail-label">Alias:</div>
+                      <div class="detail-value">${agent.alias || ''}</div>
+                      <div class="detail-label">Divisions:</div>
+                      <div class="detail-value">${agent.divisions || ''}</div>
+                    </div>
+                  </div>
+                `).join('');
+
+                // Position the card
+                const cellRect = involvedAgentsCell.getBoundingClientRect();
+                card.style.top = `${cellRect.bottom + window.scrollY + 10}px`;
+                card.style.left = `${cellRect.left + window.scrollX}px`;
+
+                // Adjust position if it would go off screen
+                const cardDimensions = {
+                  width: Math.min(800, agentDetails.length * 280),
+                  height: Math.min(window.innerHeight - 100, 400)
+                };
+
+                if (cellRect.left + cardDimensions.width > window.innerWidth) {
+                  card.style.left = `${window.innerWidth - cardDimensions.width - 20}px`;
+                }
+
+                // Add mouse events to the card itself
+                card.onmouseenter = () => {
+                  clearTimeout(hoverTimeout);
+                };
+
+                card.onmouseleave = () => {
+                  clearTimeout(hoverTimeout);
+                  hoverTimeout = setTimeout(() => {
+                    if (card === currentCard) {
+                      card.classList.add('fade-out');
+                      card.classList.remove('visible');
+                      setTimeout(() => card.remove(), 200);
+                      currentCard = null;
+                    }
+                  }, 100);
+                };
+
+                // Add to document and show with animation
+                document.body.appendChild(card);
+                requestAnimationFrame(() => card.classList.add('visible'));
+              } catch (error) {
+                console.error('Error showing involved agents hover card:', error);
+              }
+            };
+
+            involvedAgentsCell.onmouseleave = () => {
+              clearTimeout(hoverTimeout);
+              hoverTimeout = setTimeout(() => {
+                if (currentCard && currentCard.parentNode) {
+                  currentCard.classList.add('fade-out');
+                  currentCard.classList.remove('visible');
+                  setTimeout(() => {
+                    if (currentCard && currentCard.parentNode) {
+                      currentCard.remove();
+                    }
+                  }, 200);
+                  currentCard = null;
+                }
+              }, 100);
+            };
+
+            row.appendChild(involvedAgentsCell);
+
+            // Status
+            const statusCell = document.createElement('td');
+            const statusBadge = document.createElement('div');
+            statusBadge.className = 'status-badge';
+            statusBadge.setAttribute('data-status', caseData.status);
+            statusBadge.textContent = CASE_STATUSES[caseData.status].label;
+            
+            // Add click handler for status menu
+            statusCell.onclick = (e) => {
+              e.stopPropagation();
+              showStatusMenu(caseData, statusCell);
+            };
+            const statusTooltip = document.createElement('div');
+            statusTooltip.className = 'status-tooltip';
+            statusTooltip.textContent = CASE_STATUSES[caseData.status].description;
+            statusBadge.appendChild(statusTooltip);
+            statusCell.appendChild(statusBadge);
+            row.appendChild(statusCell);
+            
+            // Add status to row for background color
+            row.setAttribute('data-status', caseData.status);
+
+            // Date Created
+            const createdCell = document.createElement('td');
+            createdCell.textContent = new Date(caseData.createdAt).toLocaleString();
+            createdCell.onclick = (e) => {
+              e.stopPropagation();
+              makeEditable(createdCell, caseData, 'createdAt', 'datetime-local');
+            };
+            row.appendChild(createdCell);
+
+            // Last Updated
+            const updatedCell = document.createElement('td');
+            updatedCell.textContent = new Date(caseData.updatedAt).toLocaleString();
+            row.appendChild(updatedCell);
+
+            tbody.appendChild(row);
+          } catch (error) {
+            console.error('Error creating row for case:', caseData, error);
+          }
+        }
+      }
+
+      // Function to get agent details from roster or trainees
+      async function getAgentDetails(agentPath) {
+        try {
+          if (!agentPath) {
+            console.warn('No agent path provided');
+            return null;
+          }
+
+          // If agentPath includes source info (e.g. "roster/agentId")
+          if (typeof agentPath === 'string' && agentPath.includes('/')) {
+            const [source, id] = agentPath.split('/');
+            console.log('Looking up agent in', source, 'with id:', id);
+            
+            const snapshot = await fbGet(fbRef(fbDatabase, `${source}/${id}`));
+            if (snapshot.exists()) {
+              const agent = snapshot.val();
+              return {
+                ...agent,
+                source,
+                id
+              };
+            }
+          }
+          
+          // If no source info or not found, try both collections
+          const [rosterSnapshot, traineesSnapshot] = await Promise.all([
+            fbGet(fbRef(fbDatabase, 'roster')),
+            fbGet(fbRef(fbDatabase, 'trainees'))
+          ]);
+          
+          const allAgents = [
+            ...(rosterSnapshot.exists() ? Object.entries(rosterSnapshot.val()).map(([id, data]) => ({
+              ...data,
+              id,
+              source: 'roster'
+            })) : []),
+            ...(traineesSnapshot.exists() ? Object.entries(traineesSnapshot.val()).map(([id, data]) => ({
+              ...data,
+              id,
+              source: 'trainees'
+            })) : [])
+          ];
+          
+          // Try to find agent by name or ID
+          const agentByName = allAgents.find(agent => 
+            agent.id === agentPath || 
+            agent.name === agentPath || 
+            `${agent.name} (${agent.callsign || 'No Callsign'})` === agentPath
+          );
+          
+          return agentByName || null;
+        } catch (error) {
+          console.error('Error getting agent details:', error, 'for path:', agentPath);
+          return null;
+        }
+      }
+
+      // Function to show status menu
+      function showStatusMenu(caseData, statusCell) {
+        try {
+          // Remove any existing menus and hover cards
+          const existingMenus = document.querySelectorAll('.status-menu, .agent-hover-card');
+          existingMenus.forEach(el => el && el.remove());
+          clearTimeout(hoverTimeout);
+          currentCard = null;
+
+          // Create menu
+          const menu = document.createElement('div');
+          menu.className = 'popup-base status-menu';
+          menu.style.display = 'none'; // Hide initially for measurement
+
+          // Add status options
+          Object.entries(CASE_STATUSES).forEach(([key, status]) => {
+            const option = document.createElement('div');
+            option.className = 'status-menu-option';
+            
+            const badge = document.createElement('div');
+            badge.className = 'status-badge';
+            badge.setAttribute('data-status', key);
+            badge.textContent = status.label;
+            
+            const description = document.createElement('div');
+            description.className = 'status-description';
+            description.textContent = status.description;
+            
+            option.appendChild(badge);
+            option.appendChild(description);
+            
+            option.onclick = async (e) => {
+              e.stopPropagation();
+              try {
+                // Update case status
+                const updates = {};
+                updates[`/cases/${caseData.id}/status`] = key;
+                updates[`/cases/${caseData.id}/updatedAt`] = new Date().toISOString();
+                
+                await fbUpdate(fbRef(fbDatabase), updates);
+                menu.remove();
+              } catch (error) {
+                console.error('Error updating status:', error);
+                showDatabaseError('Failed to update status. Please try again.');
+              }
+            };
+            
+            menu.appendChild(option);
+          });
+
+          // Add to document to measure size
+          document.body.appendChild(menu);
+          menu.style.display = 'block';
+
+          // Position menu
+          const rect = statusCell.getBoundingClientRect();
+          const menuRect = menu.getBoundingClientRect();
+
+          // Calculate position
+          let top = rect.bottom + window.scrollY + 5;
+          let left = rect.left + window.scrollX;
+
+          // Adjust if would go off screen
+          if (left + menuRect.width > window.innerWidth) {
+            left = window.innerWidth - menuRect.width - 20;
+          }
+
+          menu.style.top = `${top}px`;
+          menu.style.left = `${left}px`;
+
+          // Show with animation
+          requestAnimationFrame(() => menu.classList.add('visible'));
+
+          // Close menu when clicking outside
+          const closeMenu = (e) => {
+            if (!menu.contains(e.target) && !statusCell.contains(e.target)) {
+              menu.classList.add('fade-out');
+              menu.classList.remove('visible');
+              setTimeout(() => menu.remove(), 200);
+              document.removeEventListener('click', closeMenu);
+            }
+          };
+          document.addEventListener('click', closeMenu);
+        } catch (error) {
+          console.error('Error showing status menu:', error);
+        }
+      }
+
+      // Function to make a cell editable
+      function makeEditable(cell, caseData, field, type = 'text') {
+        // Save current content
+        const currentContent = cell.textContent;
+        cell.classList.add('editing');
+        
+        // Create input
+        const input = document.createElement('input');
+        input.type = type;
+        
+        if (type === 'datetime-local') {
+          // Format date for datetime-local input
+          const date = new Date(caseData[field]);
+          input.value = date.toISOString().slice(0, 16); // Format: YYYY-MM-DDThh:mm
+        } else {
+          input.value = currentContent;
+        }
+        
+        // Replace cell content with input
+        cell.textContent = '';
+        cell.appendChild(input);
+        input.focus();
+        
+        // Handle save on enter or blur
+        async function saveChanges() {
+          try {
+            let newValue = input.value;
+            
+            if (type === 'datetime-local') {
+              newValue = new Date(input.value).toISOString();
+            }
+            
+            // Update Firebase
+            const updates = {};
+            updates[`/cases/${caseData.id}/${field}`] = newValue;
+            updates[`/cases/${caseData.id}/updatedAt`] = new Date().toISOString();
+            
+            await fbUpdate(fbRef(fbDatabase), updates);
+            
+            // Restore cell
+            cell.classList.remove('editing');
+            if (type === 'datetime-local') {
+              cell.textContent = new Date(newValue).toLocaleString();
+            } else {
+              cell.textContent = newValue;
+            }
+          } catch (error) {
+            console.error('Error saving changes:', error);
+            // Restore original content on error
+            cell.classList.remove('editing');
+            cell.textContent = currentContent;
+          }
+        }
+        
+        input.onblur = saveChanges;
+        input.onkeydown = (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            saveChanges();
+          } else if (e.key === 'Escape') {
+            cell.classList.remove('editing');
+            cell.textContent = currentContent;
+          }
+        };
+      }
+
+      // Function to show agent selection menu
+      // Global function to show investigation card
+      window.showInvestigationCard = async function(caseData) {
+        try {
+          // Remove any existing dialogs first
+          const existingOverlay = document.querySelector('.case-dialog-overlay');
+          const existingDialog = document.querySelector('.case-dialog');
+          if (existingOverlay) existingOverlay.remove();
+          if (existingDialog) existingDialog.remove();
+
+          // Create overlay with backdrop blur
+          const overlay = document.createElement('div');
+          overlay.className = 'case-dialog-overlay';
+          document.body.appendChild(overlay);
+
+          // Create dialog
+          const dialog = document.createElement('div');
+          dialog.className = 'case-dialog';
+          document.body.appendChild(dialog);
+
+          // Force browser to process the new elements before animation
+          void overlay.offsetHeight;
+          void dialog.offsetHeight;
+
+          // Add visible class to trigger animations
+          setTimeout(() => {
+            overlay.classList.add('visible');
+            dialog.classList.add('visible');
+          }, 10);
+          
+          dialog.innerHTML = `
+            <div class="case-dialog-content">
+              <div class="case-dialog-header">
+                <div class="case-dialog-title">EDIT CASE</div>
+                <div class="case-dialog-buttons">
+                  <button class="case-dialog-btn" onclick="window.saveInvestigationCard('${caseData.id}')">SAVE CHANGES</button>
+                  <button class="case-dialog-btn cancel" onclick="closeNewCaseDialog()">CANCEL</button>
+                </div>
+              </div>
+              <div class="case-form">
+                <div class="form-group">
+                  <label>Lead Agent</label>
+                  <div id="leadAgentList" class="agent-checkbox-grid"></div>
+                </div>
+                <div class="form-group compact">
+                  <div class="form-row">
+                    <div class="form-group third">
+                      <label>Report Number</label>
+                      <input type="text" id="reportNumber" class="case-input" value="${caseData.reportNumber || ''}" placeholder="Leave empty for '-'">
+                    </div>
+                    <div class="form-group third">
+                      <label>Case Number</label>
+                      <input type="text" id="caseNumber" class="case-input" value="${caseData.caseNumber || ''}" placeholder="Leave empty for '-'">
+                    </div>
+                    <div class="form-group third">
+                      <label>Investigation Name</label>
+                      <input type="text" id="investigationName" class="case-input" value="${caseData.investigationName || ''}" placeholder="Enter Investigation Name">
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Involved Agents</label>
+                  <div id="involvedAgentsList" class="agent-checkbox-grid"></div>
+                </div>
+                <div class="form-group">
+                  <label>Status</label>
+                  <div id="statusList" class="status-checkbox-grid">
+                    ${Object.entries(CASE_STATUSES).map(([key, status]) => `
+                      <label class="status-checkbox-label" data-description="${status.description}">
+                        <input type="radio" name="caseStatus" value="${key}" ${caseData.status === key ? 'checked' : ''}>
+                        <span>${status.label}</span>
+                      </label>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Load and populate agents
+          const [rosterSnapshot, traineesSnapshot] = await Promise.all([
+            fbGet(fbRef(fbDatabase, 'roster')),
+            fbGet(fbRef(fbDatabase, 'trainees'))
+          ]);
+
+          // Add search functionality for lead agents
+          const leadAgentList = document.getElementById('leadAgentList');
+          const leadSearchInput = document.createElement('input');
+          leadSearchInput.type = 'text';
+          leadSearchInput.className = 'agent-search-input';
+          leadSearchInput.placeholder = 'Search lead agents...';
+          leadAgentList.appendChild(leadSearchInput);
+
+          // Add search functionality for involved agents
+          const involvedAgentsList = document.getElementById('involvedAgentsList');
+          const involvedSearchInput = document.createElement('input');
+          involvedSearchInput.type = 'text';
+          involvedSearchInput.className = 'agent-search-input';
+          involvedSearchInput.placeholder = 'Search involved agents...';
+          involvedAgentsList.appendChild(involvedSearchInput);
+
+          // Get and sort agents
+          const agents = [
+            ...(rosterSnapshot.exists() ? Object.entries(rosterSnapshot.val()).map(([id, data]) => ({
+              ...data,
+              id,
+              source: 'roster'
+            })) : []),
+            ...(traineesSnapshot.exists() ? Object.entries(traineesSnapshot.val()).map(([id, data]) => ({
+              ...data,
+              id,
+              source: 'trainees'
+            })) : [])
+          ].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+          // Separate agents by type
+          const rosterAgents = agents.filter(a => a.source === 'roster');
+          const traineeAgents = agents.filter(a => a.source === 'trainees');
+
+          // Function to create agent label
+          function createAgentLabel(agent, type, container, isLeadAgent = false) {
+            const label = document.createElement('label');
+            label.className = 'agent-checkbox-label';
+            const input = document.createElement('input');
+            input.type = isLeadAgent ? 'radio' : 'checkbox';
+            input.name = isLeadAgent ? 'leadAgent' : 'involvedAgents';
+            input.value = JSON.stringify({
+              id: agent.id,
+              source: agent.source,
+              name: agent.name,
+              callsign: agent.callsign
+            });
+            
+            if (isLeadAgent) {
+              if (caseData.leadAgent && caseData.leadAgent.id === agent.id) {
+                input.checked = true;
+              }
+            } else {
+              if (caseData.involvedAgents && caseData.involvedAgents.some(a => a.id === agent.id)) {
+                input.checked = true;
+              }
+            }
+            
+            label.appendChild(input);
+            const span = document.createElement('span');
+            span.textContent = `${agent.name} (${agent.callsign || 'No Callsign'})`;
+            label.appendChild(span);
+            container.appendChild(label);
+          }
+
+          // Function to add section title
+          function addSectionTitle(container, title) {
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'agent-section-title';
+            titleDiv.textContent = title;
+            container.appendChild(titleDiv);
+          }
+
+          // Populate lead agent list
+          if (rosterAgents.length > 0) {
+            addSectionTitle(leadAgentList, 'ROSTER AGENTS');
+            rosterAgents.forEach(agent => createAgentLabel(agent, 'roster', leadAgentList, true));
+          }
+          if (traineeAgents.length > 0) {
+            addSectionTitle(leadAgentList, 'TRAINEE AGENTS');
+            traineeAgents.forEach(agent => createAgentLabel(agent, 'trainee', leadAgentList, true));
+          }
+
+          // Add "Other" option for lead agent
+          addSectionTitle(leadAgentList, 'OTHER AGENT');
+          const leadOtherLabel = document.createElement('label');
+          leadOtherLabel.className = 'agent-checkbox-label other-option';
+          const leadOtherInput = document.createElement('input');
+          leadOtherInput.type = 'radio';
+          leadOtherInput.name = 'leadAgent';
+          leadOtherInput.className = 'other-agent-input';
+          const leadOtherNameInput = document.createElement('input');
+          leadOtherNameInput.type = 'text';
+          leadOtherNameInput.className = 'agent-other-input';
+          leadOtherNameInput.placeholder = 'Enter agent name...';
+          leadOtherLabel.appendChild(leadOtherInput);
+          leadOtherLabel.appendChild(leadOtherNameInput);
+          leadAgentList.appendChild(leadOtherLabel);
+
+          // Populate involved agents list
+          if (rosterAgents.length > 0) {
+            addSectionTitle(involvedAgentsList, 'ROSTER AGENTS');
+            rosterAgents.forEach(agent => createAgentLabel(agent, 'roster', involvedAgentsList, false));
+          }
+          if (traineeAgents.length > 0) {
+            addSectionTitle(involvedAgentsList, 'TRAINEE AGENTS');
+            traineeAgents.forEach(agent => createAgentLabel(agent, 'trainee', involvedAgentsList, false));
+          }
+
+          // Add "Other" option for involved agents
+          addSectionTitle(involvedAgentsList, 'OTHER AGENTS');
+          const involvedOtherInput = document.createElement('input');
+          involvedOtherInput.type = 'text';
+          involvedOtherInput.className = 'agent-other-input involved-other-input';
+          involvedOtherInput.placeholder = 'Enter agent names (comma-separated)...';
+          const otherContainer = document.createElement('div');
+          otherContainer.className = 'agent-checkbox-label other-option';
+          otherContainer.appendChild(involvedOtherInput);
+          involvedAgentsList.appendChild(otherContainer);
+
+          // Add search functionality
+          function setupSearch(searchInput, container) {
+            searchInput.addEventListener('input', (e) => {
+              const searchTerm = e.target.value.toLowerCase();
+              // Get all sections
+              const sections = Array.from(container.querySelectorAll('.agent-section-title')).map(title => ({
+                title,
+                agents: []
+              }));
+              
+              let currentSection = null;
+              Array.from(container.children).forEach(element => {
+                if (element.classList.contains('agent-section-title')) {
+                  currentSection = sections.find(s => s.title === element);
+                } else if (currentSection && element.classList.contains('agent-checkbox-label')) {
+                  currentSection.agents.push(element);
+                }
+              });
+
+              // Filter and show/hide elements
+              sections.forEach(section => {
+                const isOtherSection = section.title.textContent.includes('OTHER');
+                let hasVisibleAgents = false;
+
+                if (isOtherSection) {
+                  // Always show "OTHER" section
+                  section.title.style.display = 'block';
+                  section.agents.forEach(agent => agent.style.display = 'flex');
+                  hasVisibleAgents = true;
+                } else {
+                  section.agents.forEach(agent => {
+                    const text = agent.textContent.toLowerCase();
+                    const visible = text.includes(searchTerm);
+                    agent.style.display = visible ? 'flex' : 'none';
+                    if (visible) hasVisibleAgents = true;
+                  });
+                  section.title.style.display = hasVisibleAgents ? 'block' : 'none';
+                }
+              });
+            });
+          }
+
+          setupSearch(leadSearchInput, leadAgentList);
+          setupSearch(involvedSearchInput, involvedAgentsList);
+
+        } catch (error) {
+          console.error('Error showing investigation card:', error);
+          showDatabaseError('Failed to show investigation card. Please try again.');
+        }
+      };
+
+      // Global function to save investigation card changes
+      window.saveInvestigationCard = async function(caseId) {
+        try {
+          // Get form values
+          const reportNumber = document.getElementById('reportNumber').value.trim() || '-';
+          const caseNumber = document.getElementById('caseNumber').value.trim() || '-';
+          const investigationName = document.getElementById('investigationName').value.trim();
+          
+          // Get lead agent
+          const leadAgentRadio = document.querySelector('input[name="leadAgent"]:checked');
+          let leadAgent;
+          
+          if (!leadAgentRadio) {
+            alert('Please select a Lead Agent');
+            return;
+          }
+
+          if (leadAgentRadio.classList.contains('other-agent-input')) {
+            const otherAgentName = leadAgentRadio.parentElement.querySelector('.agent-other-input').value.trim();
+            if (!otherAgentName) {
+              alert('Please enter a name for the Other Agent');
+              return;
+            }
+            leadAgent = {
+              id: `other_${Date.now()}`,
+              source: 'other',
+              name: otherAgentName,
+              callsign: 'External'
+            };
+          } else {
+            leadAgent = JSON.parse(leadAgentRadio.value);
+          }
+
+          // Get involved agents
+          const involvedAgentInputs = document.querySelectorAll('input[name="involvedAgents"]:checked');
+          const otherAgentsInput = document.querySelector('.involved-other-input');
+          const involvedAgents = [];
+
+          // Add checked agents
+          Array.from(involvedAgentInputs).forEach(input => {
+            if (!input.classList.contains('other-agent-input')) {
+              involvedAgents.push(JSON.parse(input.value));
+            }
+          });
+
+          // Add other agents if any are entered
+          if (otherAgentsInput && otherAgentsInput.value.trim()) {
+            const otherNames = otherAgentsInput.value.split(',').map(name => name.trim()).filter(name => name.length > 0);
+            otherNames.forEach(name => {
+              involvedAgents.push({
+                id: `other_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                source: 'other',
+                name: name,
+                callsign: 'External'
+              });
+            });
+          }
+
+          // Get status
+          const statusRadio = document.querySelector('input[name="caseStatus"]:checked');
+          if (!statusRadio) {
+            alert('Please select a Status');
+            return;
+          }
+          const status = statusRadio.value;
+
+          if (!leadAgent || !investigationName || !status) {
+            alert('Please fill in all required fields (Lead Agent, Investigation Name, and Status)');
+            return;
+          }
+
+          // Update case in Firebase
+          const updates = {
+            [`/cases/${caseId}/reportNumber`]: reportNumber,
+            [`/cases/${caseId}/caseNumber`]: caseNumber,
+            [`/cases/${caseId}/investigationName`]: investigationName,
+            [`/cases/${caseId}/leadAgent`]: leadAgent,
+            [`/cases/${caseId}/involvedAgents`]: involvedAgents,
+            [`/cases/${caseId}/status`]: status,
+            [`/cases/${caseId}/updatedAt`]: new Date().toISOString()
+          };
+
+          await fbUpdate(fbRef(fbDatabase), updates);
+          closeNewCaseDialog();
+        } catch (error) {
+          console.error('Error saving case changes:', error);
+          showDatabaseError('Failed to save changes. Please try again.');
+        }
+      };
+
+      // Global function to show agent selection menu
+        window.showAgentSelectionMenu = async function(caseData, cell, field, multiple = false) {
+        // Clear any existing menus first
+        const existingMenus = document.querySelectorAll('.agent-selection-menu, .agent-hover-card, .status-menu');
+        existingMenus.forEach(el => el && el.parentNode && el.remove());
+        
+        // Clear any existing timeouts
+        if (window.hoverTimeout) {
+          clearTimeout(window.hoverTimeout);
+        }
+        if (window.currentCard && window.currentCard.parentNode) {
+          window.currentCard.remove();
+          window.currentCard = null;
+        }
+        try {
+          if (!caseData || !cell || !field) {
+            console.error('Missing required parameters:', { caseData, cell, field });
+            return;
+          }
+
+          // Remove any existing menus and hover cards
+          document.querySelectorAll('.agent-selection-menu, .agent-hover-card, .status-menu').forEach(el => {
+            if (el && el.parentNode) {
+              el.remove();
+            }
+          });
+          clearTimeout(hoverTimeout);
+          if (currentCard && currentCard.parentNode) {
+            currentCard.remove();
+            currentCard = null;
+          }
+
+          // Clean up any existing menus
+          document.querySelectorAll('.agent-selection-menu').forEach(el => el.remove());
+
+          // Create menu
+          const menu = document.createElement('div');
+          menu.className = 'popup-base agent-selection-menu';
+
+          // Create agent list
+          const agentList = document.createElement('div');
+          agentList.className = 'agent-list-container';
+          menu.appendChild(agentList);
+
+          // Add agents to list
+          const addAgentToList = (agent, source) => {
+            const label = document.createElement('label');
+            label.className = 'agent-checkbox-label';
+            label.style.display = 'flex';
+
+            const input = document.createElement('input');
+            input.type = multiple ? 'checkbox' : 'radio';
+            input.name = 'agent-selection';
+            input.value = `${source}/${agent.id}`;
+            
+            // Check if this agent is currently selected
+            if (!multiple && caseData[field] === `${source}/${agent.id}`) {
+              input.checked = true;
+            } else if (multiple && caseData[field]?.includes(`${source}/${agent.id}`)) {
+              input.checked = true;
+            }
+
+            const text = document.createElement('div');
+            text.innerHTML = `
+              <div class="agent-name">${agent.name}</div>
+              <div class="agent-callsign">${agent.callsign || 'No Callsign'}</div>
+            `;
+
+            label.appendChild(input);
+            label.appendChild(text);
+            agentList.appendChild(label);
+          };
+
+          // Add all agents
+          if (rosterAgents.length > 0) {
+            const rosterTitle = document.createElement('div');
+            rosterTitle.className = 'agent-section-title';
+            rosterTitle.textContent = 'ROSTER AGENTS';
+            agentList.appendChild(rosterTitle);
+            rosterAgents.forEach(agent => addAgentToList(agent, 'roster'));
+          }
+
+          if (traineeAgents.length > 0) {
+            const traineeTitle = document.createElement('div');
+            traineeTitle.className = 'agent-section-title';
+            traineeTitle.textContent = 'TRAINEE AGENTS';
+            agentList.appendChild(traineeTitle);
+            traineeAgents.forEach(agent => addAgentToList(agent, 'trainees'));
+          }
+
+          if (otherAgents.length > 0) {
+            const otherTitle = document.createElement('div');
+            otherTitle.className = 'agent-section-title';
+            otherTitle.textContent = 'OTHER AGENTS';
+            agentList.appendChild(otherTitle);
+            otherAgents.forEach(agent => addAgentToList(agent, 'other'));
+          }
+
+          // Position menu
+          document.body.appendChild(menu);
+          const menuPosition = cell.getBoundingClientRect();
+          menu.style.position = 'absolute';
+          menu.style.top = `${menuPosition.bottom + window.scrollY}px`;
+          menu.style.left = `${menuPosition.left + window.scrollX}px`;
+          menu.style.display = 'block';
+          
+          // Show with animation
+          requestAnimationFrame(() => menu.classList.add('visible'));
+
+          // Handle click outside
+          const handleClickOutside = (e) => {
+            if (!menu.contains(e.target) && !cell.contains(e.target)) {
+              document.removeEventListener('click', handleClickOutside);
+              menu.classList.add('fade-out');
+              setTimeout(() => menu.remove(), 200);
+            }
+          };
+
+          // Add click listener
+          setTimeout(() => {
+            document.addEventListener('click', handleClickOutside);
+          }, 0);
+
+          return menu;
+
+          // Function to safely parse agent data
+          function parseAgentValue(value) {
+            try {
+              // Try to parse as JSON first
+              return JSON.parse(value);
+            } catch {
+              // Fallback for plain text or corrupted value
+              const [source, id] = (value || '').split('/');
+              return {
+                id: id || 'unknown',
+                source: source || 'unknown',
+                name: value,
+                callsign: 'unknown'
+              };
+            }
+          }
+
+
+          // Setup cleanup function
+          function cleanup() {
+            try {
+              // Remove menu from DOM
+              if (menu && menu.parentNode) {
+                menu.remove();
+              }
+            } catch (error) {
+              console.error('Error during cleanup:', error);
+            }
+          }
+
+          // Position menu
+          const cellRect = cell.getBoundingClientRect();
+          const menuBounds = menu.getBoundingClientRect();
+          
+          // Calculate position
+          const posLeft = cellRect.left + window.scrollX;
+          const posTop = cellRect.bottom + window.scrollY;
+
+          // Adjust if menu would go off screen
+          if (posTop + menuBounds.height > window.innerHeight) {
+            posTop = cellRect.top + window.scrollY - menuBounds.height;
+          }
+          if (posLeft + menuBounds.width > window.innerWidth) {
+            posLeft = window.innerWidth - menuBounds.width - 10;
+          }
+
+          // Set position
+          menu.style.top = `${posTop}px`;
+          menu.style.left = `${posLeft}px`;
+          menu.style.display = 'block';
+          
+          // Show with animation
+          requestAnimationFrame(() => menu.classList.add('visible'));
+          // Setup menu close behavior
+          setTimeout(() => {
+            function closeOnClickOutside(e) {
+              if (!menu.contains(e.target) && !cell.contains(e.target)) {
+                menu.classList.add('fade-out');
+                menu.classList.remove('visible');
+                document.removeEventListener('click', closeOnClickOutside);
+                setTimeout(cleanup, 200);
+              }
+            }
+            document.addEventListener('click', closeOnClickOutside);
+          }, 0);
+
+          // Get all agents
+          const [rosterSnapshot, traineesSnapshot, otherAgentsSnapshot] = await Promise.all([
+            fbGet(fbRef(fbDatabase, 'roster')),
+            fbGet(fbRef(fbDatabase, 'trainees')),
+            fbGet(fbRef(fbDatabase, 'other_agents'))
+          ]);
+          
+          const agents = [
+            ...(rosterSnapshot.exists() ? Object.entries(rosterSnapshot.val()).map(([id, data]) => ({
+              ...data,
+              id,
+              source: 'roster'
+            })) : []),
+            ...(traineesSnapshot.exists() ? Object.entries(traineesSnapshot.val()).map(([id, data]) => ({
+              ...data,
+              id,
+              source: 'trainees'
+            })) : []),
+            ...(otherAgentsSnapshot.exists() ? Object.entries(otherAgentsSnapshot.val()).map(([id, data]) => ({
+              ...data,
+              id,
+              source: 'other'
+            })) : [])
+          ].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+          // Create sections for roster and trainee agents
+          const rosterAgents = agents.filter(a => a.source === 'roster');
+          const traineeAgents = agents.filter(a => a.source === 'trainees');
+
+          // Function to create agent option
+          function createAgentOption(agent) {
+            const label = document.createElement('label');
+            const input = document.createElement('input');
+            input.type = multiple ? 'checkbox' : 'radio';
+            input.name = `agent-${field}`;
+            input.value = JSON.stringify({
+              id: agent.id,
+              source: agent.source,
+              name: agent.name,
+              callsign: agent.callsign
+            });
+            
+            // Check if agent is selected
+            const isSelected = multiple 
+              ? caseData.involvedAgents?.some(a => a.id === agent.id)
+              : caseData.leadAgent?.id === agent.id;
+            
+            input.checked = isSelected;
+            if (isSelected) {
+              label.classList.add('selected');
+            }
+            
+            label.appendChild(input);
+
+            const agentInfo = document.createElement('div');
+            agentInfo.className = 'agent-info';
+            
+            const agentName = document.createElement('div');
+            agentName.className = 'agent-name';
+            agentName.textContent = agent.name;
+            
+            const agentCallsign = document.createElement('div');
+            agentCallsign.className = 'agent-callsign';
+            agentCallsign.textContent = agent.callsign || 'No Callsign';
+            
+            agentInfo.appendChild(agentName);
+            agentInfo.appendChild(agentCallsign);
+            label.appendChild(agentInfo);
+
+            // Add change handler to update selected class
+            input.onchange = () => {
+              if (multiple) {
+                label.classList.toggle('selected', input.checked);
+              } else {
+                menu.querySelectorAll('label').forEach(l => l.classList.remove('selected'));
+                if (input.checked) label.classList.add('selected');
+              }
+            };
+
+            return label;
+          }
+
+          // Add roster section
+          if (rosterAgents.length > 0) {
+            const rosterSection = document.createElement('div');
+            rosterSection.className = 'menu-section';
+            
+            const rosterTitle = document.createElement('div');
+            rosterTitle.className = 'section-title';
+            rosterTitle.textContent = 'Roster Agents';
+            rosterSection.appendChild(rosterTitle);
+            
+            rosterAgents.forEach(agent => {
+              rosterSection.appendChild(createAgentOption(agent));
+            });
+            
+            menu.appendChild(rosterSection);
+          }
+
+          // Add trainee section
+          if (traineeAgents.length > 0) {
+            const traineeSection = document.createElement('div');
+            traineeSection.className = 'menu-section';
+            
+            const traineeTitle = document.createElement('div');
+            traineeTitle.className = 'section-title';
+            traineeTitle.textContent = 'Trainee Agents';
+            traineeSection.appendChild(traineeTitle);
+            
+            traineeAgents.forEach(agent => {
+              traineeSection.appendChild(createAgentOption(agent));
+            });
+            
+            menu.appendChild(traineeSection);
+          }
+
+          // Add "Other" option
+          const otherSection = document.createElement('div');
+          otherSection.className = 'agent-other-option';
+          
+          const otherTitle = document.createElement('div');
+          otherTitle.className = 'section-title';
+          otherTitle.textContent = multiple ? 'Other Agents' : 'Other Agent';
+          otherSection.appendChild(otherTitle);
+
+          if (multiple) {
+            // For involved agents, add a text input for multiple names
+            const otherNameInput = document.createElement('input');
+            otherNameInput.type = 'text';
+            otherNameInput.className = 'agent-other-input involved-other-input';
+            otherNameInput.placeholder = 'Enter agent names (comma-separated)...';
+            otherSection.appendChild(otherNameInput);
+          } else {
+            // For lead agent, keep single selection
+            const otherLabel = document.createElement('label');
+            otherLabel.className = 'agent-checkbox-label other-option';
+            
+            const otherInput = document.createElement('input');
+            otherInput.type = 'radio';
+            otherInput.name = `agent-${field}`;
+            otherInput.className = 'other-agent-input';
+            
+            const otherNameInput = document.createElement('input');
+            otherNameInput.type = 'text';
+            otherNameInput.className = 'agent-other-input';
+            otherNameInput.placeholder = 'Enter agent name...';
+            
+            otherLabel.appendChild(otherInput);
+            otherLabel.appendChild(otherNameInput);
+            otherSection.appendChild(otherLabel);
+
+            // Handle "Other" option selection
+            otherInput.addEventListener('change', () => {
+              if (otherInput.checked) {
+                otherNameInput.focus();
+                menu.querySelectorAll('label').forEach(l => l.classList.remove('selected'));
+                otherLabel.classList.add('selected');
+              } else {
+                otherLabel.classList.remove('selected');
+              }
+            });
+          }
+          
+          menu.appendChild(otherSection);
+
+          // Add search functionality
+          const setupSearch = () => {
+            const searchInput = menu.querySelector('.agent-search-input');
+            if (!searchInput) return;
+            
+            searchInput.addEventListener('input', (e) => {
+              const searchTerm = e.target.value.toLowerCase();
+              menu.querySelectorAll('.agent-checkbox-label').forEach(label => {
+                const agentName = label.querySelector('.agent-name')?.textContent.toLowerCase();
+                const agentCallsign = label.querySelector('.agent-callsign')?.textContent.toLowerCase();
+                const matches = !agentName || agentName.includes(searchTerm) || agentCallsign.includes(searchTerm);
+                label.style.display = matches ? 'flex' : 'none';
+              });
+            });
+          };
+          setupSearch();
+
+          // Add save button for multiple selection
+          if (multiple) {
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'case-dialog-btn';
+            saveBtn.textContent = 'Save';
+            saveBtn.style.width = '100%';
+            saveBtn.style.marginTop = '8px';
+            saveBtn.onclick = async () => {
+              try {
+                const selectedAgents = Array.from(menu.querySelectorAll('input:checked'))
+                  .map(input => {
+                    if (input.classList.contains('other-agent-input')) {
+                      const name = input.parentElement.querySelector('.agent-other-input').value.trim();
+                      if (!name) return null;
+                      return {
+                        id: `other_${Date.now()}`,
+                        source: 'other',
+                        name: name,
+                        callsign: 'External'
+                      };
+                    }
+                    return JSON.parse(input.value);
+                  })
+                  .filter(Boolean);
+                
+                const updates = {};
+                updates[`/cases/${caseData.id}/${field}`] = selectedAgents;
+                updates[`/cases/${caseData.id}/updatedAt`] = new Date().toISOString();
+                
+                await fbUpdate(fbRef(fbDatabase), updates);
+                menu.remove();
+              } catch (error) {
+                console.error('Error saving agents:', error);
+                showDatabaseError('Failed to save agents. Please try again.');
+              }
+            };
+            menu.appendChild(saveBtn);
+          } else {
+            // For single selection, save immediately on change
+            menu.addEventListener('change', async (e) => {
+              try {
+                let selectedAgent;
+                if (e.target.classList.contains('other-agent-input')) {
+                  const name = e.target.parentElement.querySelector('.agent-other-input').value.trim();
+                  if (!name) return;
+                  selectedAgent = {
+                    id: `other_${Date.now()}`,
+                    source: 'other',
+                    name: name,
+                    callsign: 'External'
+                  };
+                } else {
+                  selectedAgent = JSON.parse(e.target.value);
+                }
+                
+                const updates = {};
+                updates[`/cases/${caseData.id}/${field}`] = selectedAgent;
+                updates[`/cases/${caseData.id}/updatedAt`] = new Date().toISOString();
+                
+                await fbUpdate(fbRef(fbDatabase), updates);
+                menu.remove();
+              } catch (error) {
+                console.error('Error saving agent:', error);
+                showDatabaseError('Failed to save agent. Please try again.');
+              }
+            });
+          }
+
+          // Position menu
+          const cellBounds = cell.getBoundingClientRect();
+          const menuRect = menu.getBoundingClientRect();
+
+          // Calculate position
+          let top = cellBounds.bottom + window.scrollY + 5;
+          let left = cellBounds.left + window.scrollX;
+
+          // Adjust if would go off screen
+          if (left + menuRect.width > window.innerWidth) {
+            left = window.innerWidth - menuRect.width - 20;
+          }
+
+          menu.style.top = `${top}px`;
+          menu.style.left = `${left}px`;
+
+          // Show with animation
+          requestAnimationFrame(() => menu.classList.add('visible'));
+          
+          // Add click listener on next tick to avoid immediate trigger
+          setTimeout(() => {
+            function handleMenuClose(e) {
+              if (!menu.contains(e.target) && !cell.contains(e.target)) {
+                menu.classList.add('fade-out');
+                menu.classList.remove('visible');
+                document.removeEventListener('click', handleMenuClose);
+                setTimeout(() => {
+                  if (menu && menu.parentNode) {
+                    menu.remove();
+                  }
+                }, 200);
+              }
+            }
+            document.addEventListener('click', handleMenuClose);
+          }, 0);
+
+        } catch (error) {
+          console.error('Error showing agent selection menu:', error);
+        }
+
+        // Add search functionality
+        searchInput.addEventListener('input', (e) => {
+          const searchTerm = e.target.value.toLowerCase();
+          menu.querySelectorAll('.agent-checkbox-label').forEach(label => {
+            const agentName = label.querySelector('.agent-name').textContent.toLowerCase();
+            const agentCallsign = label.querySelector('.agent-callsign').textContent.toLowerCase();
+            const matches = agentName.includes(searchTerm) || agentCallsign.includes(searchTerm);
+            label.style.display = matches ? 'flex' : 'none';
+          });
+        });
+        
+        // Position menu
+        const rect = cell.getBoundingClientRect();
+        menu.style.top = `${rect.bottom + window.scrollY + 5}px`;
+        menu.style.left = `${rect.left + window.scrollX}px`;
+        
+          // Get all agents
+          const [rosterSnapshot, traineesSnapshot, otherAgentsSnapshot] = await Promise.all([
+            fbGet(fbRef(fbDatabase, 'roster')),
+            fbGet(fbRef(fbDatabase, 'trainees')),
+            fbGet(fbRef(fbDatabase, 'other_agents'))
+          ]);
+          
+          const agents = [
+            ...(rosterSnapshot.exists() ? Object.entries(rosterSnapshot.val()).map(([id, data]) => ({
+              ...data,
+              id,
+              source: 'roster'
+            })) : []),
+            ...(traineesSnapshot.exists() ? Object.entries(traineesSnapshot.val()).map(([id, data]) => ({
+              ...data,
+              id,
+              source: 'trainees'
+            })) : []),
+            ...(otherAgentsSnapshot.exists() ? Object.entries(otherAgentsSnapshot.val()).map(([id, data]) => ({
+              ...data,
+              id,
+              source: 'other'
+            })) : [])
+          ].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        
+        // Add menu title
+        const title = document.createElement('div');
+        title.className = 'menu-title';
+        title.textContent = multiple ? 'Select Involved Agents' : 'Select Lead Agent';
+        menu.appendChild(title);
+
+        // Create sections for roster and trainee agents
+        const rosterAgents = agents.filter(a => a.source === 'roster');
+        const traineeAgents = agents.filter(a => a.source === 'trainees');
+
+        // Function to create agent option
+        function createAgentOption(agent) {
+          const label = document.createElement('label');
+          const input = document.createElement('input');
+          input.type = multiple ? 'checkbox' : 'radio';
+          input.name = `agent-${field}`;
+          input.value = JSON.stringify({
+            id: agent.id,
+            source: agent.source,
+            name: agent.name,
+            callsign: agent.callsign
+          });
+          
+          // Check if agent is selected
+          const isSelected = multiple 
+            ? caseData.involvedAgents?.some(a => a.id === agent.id)
+            : caseData.leadAgent?.id === agent.id;
+          
+          input.checked = isSelected;
+          if (isSelected) {
+            label.classList.add('selected');
+          }
+          
+          label.appendChild(input);
+
+          const agentInfo = document.createElement('div');
+          agentInfo.className = 'agent-info';
+          
+          const agentName = document.createElement('div');
+          agentName.className = 'agent-name';
+          agentName.textContent = agent.name;
+          
+          const agentCallsign = document.createElement('div');
+          agentCallsign.className = 'agent-callsign';
+          agentCallsign.textContent = agent.callsign || 'No Callsign';
+          
+          agentInfo.appendChild(agentName);
+          agentInfo.appendChild(agentCallsign);
+          label.appendChild(agentInfo);
+
+          // Add change handler to update selected class
+          input.onchange = () => {
+            if (multiple) {
+              label.classList.toggle('selected', input.checked);
+            } else {
+              // For radio buttons, remove selected class from all labels
+              menu.querySelectorAll('label').forEach(l => l.classList.remove('selected'));
+              if (input.checked) label.classList.add('selected');
+            }
+          };
+
+          return label;
+        }
+
+        // Add roster section
+        if (rosterAgents.length > 0) {
+          const rosterSection = document.createElement('div');
+          rosterSection.className = 'menu-section';
+          
+          const rosterTitle = document.createElement('div');
+          rosterTitle.className = 'section-title';
+          rosterTitle.textContent = 'Roster Agents';
+          rosterSection.appendChild(rosterTitle);
+          
+          rosterAgents.forEach(agent => {
+            rosterSection.appendChild(createAgentOption(agent));
+          });
+          
+          menu.appendChild(rosterSection);
+        }
+
+        // Add trainee section
+        if (traineeAgents.length > 0) {
+          const traineeSection = document.createElement('div');
+          traineeSection.className = 'menu-section';
+          
+          const traineeTitle = document.createElement('div');
+          traineeTitle.className = 'section-title';
+          traineeTitle.textContent = 'Trainee Agents';
+          traineeSection.appendChild(traineeTitle);
+          
+          traineeAgents.forEach(agent => {
+            traineeSection.appendChild(createAgentOption(agent));
+          });
+          
+          menu.appendChild(traineeSection);
+        }
+
+        // Add "Other" option
+        const otherSection = document.createElement('div');
+        otherSection.className = 'agent-other-option';
+        
+        const otherTitle = document.createElement('div');
+        otherTitle.className = 'section-title';
+        otherTitle.textContent = 'Other Agent';
+        otherSection.appendChild(otherTitle);
+
+        const otherLabel = document.createElement('label');
+        otherLabel.className = 'agent-checkbox-label';
+        
+        const otherInput = document.createElement('input');
+        otherInput.type = multiple ? 'checkbox' : 'radio';
+        otherInput.name = `agent-${field}`;
+        otherInput.className = 'other-agent-input';
+        
+        const otherNameInput = document.createElement('input');
+        otherNameInput.type = 'text';
+        otherNameInput.className = 'agent-other-input';
+        otherNameInput.placeholder = 'Enter agent name...';
+        
+        otherLabel.appendChild(otherInput);
+        otherLabel.appendChild(otherNameInput);
+        otherSection.appendChild(otherLabel);
+        menu.appendChild(otherSection);
+
+        // Handle "Other" option selection
+        otherInput.addEventListener('change', () => {
+          if (otherInput.checked) {
+            otherNameInput.focus();
+            if (!multiple) {
+              menu.querySelectorAll('label').forEach(l => l.classList.remove('selected'));
+            }
+            otherLabel.classList.add('selected');
+          } else {
+            otherLabel.classList.remove('selected');
+          }
+        });
+
+        // Add save button for multiple selection
+        if (multiple) {
+          const saveBtn = document.createElement('button');
+          saveBtn.className = 'case-dialog-btn';
+          saveBtn.textContent = 'Save';
+          saveBtn.style.width = '100%';
+          saveBtn.style.marginTop = '8px';
+          saveBtn.onclick = async () => {
+            try {
+              const selectedAgents = Array.from(menu.querySelectorAll('input:checked'))
+                .map(input => {
+                  if (input.classList.contains('other-agent-input')) {
+                    const name = input.parentElement.querySelector('.agent-other-input').value.trim();
+                    if (!name) return null;
+                    return {
+                      id: `other_${Date.now()}`,
+                      source: 'other',
+                      name: name,
+                      callsign: 'External'
+                    };
+                  }
+                  return JSON.parse(input.value);
+                })
+                .filter(Boolean);
+              
+              const updates = {};
+              updates[`/cases/${caseData.id}/${field}`] = selectedAgents;
+              updates[`/cases/${caseData.id}/updatedAt`] = new Date().toISOString();
+              
+              await fbUpdate(fbRef(fbDatabase), updates);
+              menu.remove();
+            } catch (error) {
+              console.error('Error saving agents:', error);
+              showDatabaseError('Failed to save agents. Please try again.');
+            }
+          };
+          menu.appendChild(saveBtn);
+        } else {
+          // For single selection, save immediately on change
+          menu.addEventListener('change', async (e) => {
+            try {
+              let selectedAgent;
+              if (e.target.classList.contains('other-agent-input')) {
+                const name = e.target.parentElement.querySelector('.agent-other-input').value.trim();
+                if (!name) return;
+                selectedAgent = {
+                  id: `other_${Date.now()}`,
+                  source: 'other',
+                  name: name,
+                  callsign: 'External'
+                };
+              } else {
+                selectedAgent = JSON.parse(e.target.value);
+              }
+              
+              const updates = {};
+              updates[`/cases/${caseData.id}/${field}`] = selectedAgent;
+              updates[`/cases/${caseData.id}/updatedAt`] = new Date().toISOString();
+              
+              await fbUpdate(fbRef(fbDatabase), updates);
+              menu.remove();
+            } catch (error) {
+              console.error('Error saving agent:', error);
+              showDatabaseError('Failed to save agent. Please try again.');
+            }
+          });
+        }
+        
+        document.body.appendChild(menu);
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function closeMenu(e) {
+          if (!menu.contains(e.target) && !cell.contains(e.target)) {
+            menu.remove();
+            document.removeEventListener('click', closeMenu);
+          }
+        });
+      }
+
+      // Function to edit case
+      async function editCase(caseId) {
+        const caseData = window.cases.find(c => c.id === caseId);
+        if (!caseData) return;
+
+        // Show edit form (similar to new case form but populated with existing data)
+        const dialog = document.createElement('div');
+        dialog.className = 'case-dialog';
+        dialog.innerHTML = `
+          <div class="case-dialog-title">EDIT CASE</div>
+          <div class="case-form">
+            <div class="form-group">
+              <label>Lead Agent</label>
+              <select id="leadAgent" class="case-input">
+                <option value="">Select Lead Agent</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Report Number</label>
+              <input type="text" id="reportNumber" class="case-input" value="${caseData.reportNumber}">
+            </div>
+            <div class="form-group">
+              <label>Case Number</label>
+              <input type="text" id="caseNumber" class="case-input" value="${caseData.caseNumber}">
+            </div>
+            <div class="form-group">
+              <label>Investigation Name</label>
+              <input type="text" id="investigationName" class="case-input" value="${caseData.investigationName}">
+            </div>
+            <div class="form-group">
+              <label>Involved Agents</label>
+              <select id="involvedAgents" class="case-input" multiple>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="caseStatus" class="case-input">
+                <option value="">Select Status</option>
+                ${Object.entries(CASE_STATUSES).map(([key, status]) => 
+                  `<option value="${key}" data-description="${status.description}" ${key === caseData.status ? 'selected' : ''}>${status.label}</option>`
+                ).join('')}
+              </select>
+              <div id="statusDescription" class="status-description"></div>
+            </div>
+          </div>
+          <div class="case-dialog-buttons">
+            <button class="case-dialog-btn" onclick="updateCase('${caseId}')">UPDATE CASE</button>
+            <button class="case-dialog-btn cancel" onclick="this.closest('.case-dialog').remove()">CANCEL</button>
+          </div>
+        `;
+        document.body.appendChild(dialog);
+
+        // Add status hover effect
+        const statusSelect = dialog.querySelector('#caseStatus');
+        const statusDescription = dialog.querySelector('#statusDescription');
+        
+        statusSelect.addEventListener('change', () => {
+          const selected = statusSelect.options[statusSelect.selectedIndex];
+          statusDescription.textContent = selected.dataset.description || '';
+        });
+
+        // Show initial status description
+        statusDescription.textContent = CASE_STATUSES[caseData.status].description;
+
+        // Populate agent dropdowns
+        await populateAgentDropdowns();
+
+        // Set selected values
+        const leadSelect = dialog.querySelector('#leadAgent');
+        const involvedSelect = dialog.querySelector('#involvedAgents');
+        
+        if (leadSelect) leadSelect.value = caseData.leadAgent;
+        if (involvedSelect) {
+          Array.from(involvedSelect.options).forEach(option => {
+            option.selected = caseData.involvedAgents.includes(option.value);
+          });
+        }
+      }
+
+      // Function to update existing case
+      async function updateCase(caseId) {
+        try {
+          const leadAgent = document.getElementById('leadAgent').value;
+          const reportNumber = document.getElementById('reportNumber').value;
+          const caseNumber = document.getElementById('caseNumber').value;
+          const investigationName = document.getElementById('investigationName').value;
+          const involvedAgents = Array.from(document.getElementById('involvedAgents').selectedOptions).map(opt => opt.value);
+          const status = document.getElementById('caseStatus').value;
+
+          if (!leadAgent || !reportNumber || !caseNumber || !investigationName || !status) {
+            alert('Please fill in all required fields');
+            return;
+          }
+
+          const updates = {};
+          updates[`/cases/${caseId}`] = {
+            ...window.cases.find(c => c.id === caseId),
+            leadAgent,
+            reportNumber,
+            caseNumber,
+            investigationName,
+            involvedAgents,
+            status,
+            updatedAt: new Date().toISOString()
+          };
+
+          await fbUpdate(fbRef(fbDatabase), updates);
+          document.querySelector('.case-dialog').remove();
+          await loadCases();
+        } catch (error) {
+          console.error('Error updating case:', error);
+          showDatabaseError('Failed to update case. Please try again.');
+        }
+      }
+
+      // Toggle analytics panel
+      window.toggleAnalytics = function() {
+        const panel = document.getElementById('analyticsPanel');
+        const isVisible = panel.classList.contains('visible');
+        
+        if (isVisible) {
+          panel.classList.remove('visible');
+          setTimeout(() => {
+            panel.style.display = 'none';
+          }, 300);
+        } else {
+          panel.style.display = 'block';
+          // Force reflow
+          void panel.offsetHeight;
+          panel.classList.add('visible');
+          updateAnalytics();
+        }
+      };
+
+      // Update analytics data
+      async function updateAnalytics() {
+        try {
+          // Get all cases
+          const cases = window.cases || [];
+          
+          // Calculate status metrics
+          const statusCounts = {};
+          Object.keys(CASE_STATUSES).forEach(status => {
+            statusCounts[status] = cases.filter(c => c.status === status).length;
+          });
+
+          // Update status metrics
+          const statusMetrics = document.getElementById('statusMetrics');
+          statusMetrics.innerHTML = Object.entries(CASE_STATUSES).map(([key, status]) => `
+            <div class="status-metric">
+              <div class="count" style="color: ${getStatusColor(key)}">${statusCounts[key]}</div>
+              <div class="label">${status.label}</div>
+            </div>
+          `).join('');
+
+          // Calculate agent metrics
+          const agentMetrics = {};
+          
+          // Process lead agents
+          cases.forEach(caseData => {
+            if (!caseData.leadAgent?.name) return;
+            
+            const agentName = caseData.leadAgent.name;
+            if (!agentMetrics[agentName]) {
+              agentMetrics[agentName] = {
+                name: agentName,
+                callsign: caseData.leadAgent.callsign,
+                statuses: Object.keys(CASE_STATUSES).reduce((acc, status) => ({ ...acc, [status]: 0 }), {})
+              };
+            }
+            agentMetrics[agentName].statuses[caseData.status]++;
+          });
+
+          // Sort agents by total cases
+          const sortedAgents = Object.values(agentMetrics)
+            .sort((a, b) => {
+              const aTotal = Object.values(a.statuses).reduce((sum, count) => sum + count, 0);
+              const bTotal = Object.values(b.statuses).reduce((sum, count) => sum + count, 0);
+              return bTotal - aTotal;
+            });
+
+          // Update agent metrics
+          const agentMetricsEl = document.getElementById('agentMetrics');
+          agentMetricsEl.innerHTML = sortedAgents.map(agent => {
+            const total = Object.values(agent.statuses).reduce((sum, count) => sum + count, 0);
+            const statusBars = Object.entries(CASE_STATUSES)
+              .filter(([key]) => agent.statuses[key] > 0)
+              .map(([key, status]) => {
+                const count = agent.statuses[key];
+                const percentage = (count / total) * 100;
+                return `
+                  <div class="status-bar">
+                    <div class="bar-label">${status.label}</div>
+                    <div class="bar-track">
+                      <div class="bar-fill" style="width: ${percentage}%; color: ${getStatusColor(key)}"></div>
+                    </div>
+                    <div class="bar-value">${count}</div>
+                  </div>
+                `;
+              }).join('');
+
+            return `
+              <div class="agent-metric">
+                <div class="agent-name">${agent.name} (${agent.callsign || 'No Callsign'})</div>
+                <div class="status-bars">
+                  ${statusBars}
+                </div>
+              </div>
+            `;
+          }).join('');
+
+        } catch (error) {
+          console.error('Error updating analytics:', error);
+        }
+      }
+
+      // Get color for status
+      function getStatusColor(status) {
+        const colors = {
+          'COLD_CASE': '#94a3b8',
+          'WARM_CASE': '#eab308',
+          'HOT_CASE': '#ef4444',
+          'LIVE_CASE': '#22c55e',
+          'CLOSED': '#9ca3af',
+          'DORMANT': '#475569',
+          'PENDING_REVIEW': '#a855f7',
+          'UNDER_ANALYSIS': '#3b82f6',
+          'CLASSIFIED_HOLD': '#fde047'
+        };
+        return colors[status] || '#fff';
+      }
+
+      // Shared variables for hover functionality
+      let hoverTimeout;
+      let currentCard;
+      let caseGroups = {};
+
+      // Function to show group manager
+      window.showGroupManager = function() {
+        const existingDialog = document.querySelector('.case-dialog');
+        const existingOverlay = document.querySelector('.case-dialog-overlay');
+        if (existingDialog) existingDialog.remove();
+        if (existingOverlay) existingOverlay.remove();
+
+        const dialog = document.createElement('div');
+        dialog.className = 'case-dialog';
+        dialog.innerHTML = `
+          <div class="case-dialog-content">
+            <div class="case-dialog-header">
+              <div class="case-dialog-title">CASE GROUPS</div>
+              <div class="case-dialog-buttons">
+                <button class="case-dialog-btn" onclick="showNewGroupForm()">NEW GROUP</button>
+                <button class="case-dialog-btn cancel" onclick="closeNewCaseDialog()">CLOSE</button>
+              </div>
+            </div>
+            <div id="groupList" class="group-list"></div>
+          </div>
+        `;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'case-dialog-overlay';
+        document.body.appendChild(overlay);
+        document.body.appendChild(dialog);
+
+        setTimeout(() => {
+          overlay.classList.add('visible');
+          dialog.classList.add('visible');
+        }, 10);
+
+        updateGroupList();
+      };
+
+      // Function to show new group form
+      window.showNewGroupForm = function() {
+        // Remove any existing dialogs and overlays
+        document.querySelector('.case-dialog')?.remove();
+        document.querySelector('.case-dialog-overlay')?.remove();
+
+        const dialog = document.createElement('div');
+        dialog.className = 'case-dialog';
+        dialog.innerHTML = `
+          <div class="case-dialog-content">
+            <div class="case-dialog-header">
+              <div class="case-dialog-title">NEW GROUP</div>
+              <div class="case-dialog-buttons">
+                <button class="case-dialog-btn" onclick="createNewGroup()">CREATE GROUP</button>
+                <button class="case-dialog-btn cancel" onclick="showGroupManager()">CANCEL</button>
+              </div>
+            </div>
+            <div class="case-form">
+              <div class="form-group">
+                <label>Group Name</label>
+                <input type="text" id="groupName" class="case-input" placeholder="Enter group name">
+              </div>
+              <div class="form-group">
+                <label>Group Color</label>
+                <div class="color-picker">
+                  <input type="color" id="groupColor" value="#fde047">
+                  <div class="color-preview"></div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Select Cases</label>
+                <div id="caseSelector" class="case-selector"></div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const existingDialog = document.querySelector('.case-dialog');
+        if (existingDialog) existingDialog.remove();
+
+        document.body.appendChild(dialog);
+        setTimeout(() => dialog.classList.add('visible'), 10);
+
+        // Populate case selector
+        const caseSelector = document.getElementById('caseSelector');
+        window.cases.forEach(caseData => {
+          const caseOption = document.createElement('label');
+          caseOption.className = 'case-option';
+          caseOption.innerHTML = `
+            <input type="checkbox" name="selectedCases" value="${caseData.id}">
+            <span>${caseData.investigationName}</span>
+          `;
+          caseSelector.appendChild(caseOption);
+        });
+
+        // Setup color picker preview
+        const colorInput = document.getElementById('groupColor');
+        const updateColorPreview = () => {
+          const preview = document.querySelector('.color-preview');
+          preview.style.backgroundColor = colorInput.value;
+        };
+        colorInput.addEventListener('input', updateColorPreview);
+        updateColorPreview();
+      };
+
+      // Function to update group list and display area
+      async function updateGroupList() {
+        try {
+          const groupDisplayArea = document.getElementById('groupDisplayArea');
+          const groupList = document.getElementById('groupList');
+          const snapshot = await fbGet(fbRef(fbDatabase, 'groups'));
+          
+          // Clear the display area if it exists
+          if (groupDisplayArea) {
+            groupDisplayArea.innerHTML = '';
+          }
+
+          // Clear the group list if it exists (in the dialog)
+          if (groupList) {
+            groupList.innerHTML = '';
+          }
+
+          if (snapshot.exists()) {
+            const groups = Object.values(snapshot.val());
+            groups.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+            // Update group list in dialog if it exists
+            if (groupList) {
+              groups.forEach(group => {
+                const groupElement = document.createElement('div');
+                groupElement.className = 'group-item';
+                groupElement.innerHTML = `
+                  <div class="group-header" style="background: ${group.color}20; border-color: ${group.color}40">
+                    <div class="group-name" style="color: ${group.color}">${group.name}</div>
+                    <div class="group-actions">
+                      <button onclick="editGroup('${group.id}')" class="group-btn">Edit</button>
+                      <button onclick="deleteGroup('${group.id}')" class="group-btn delete">Delete</button>
+                    </div>
+                  </div>
+                  <div class="group-cases">
+                    ${group.cases.map(caseId => {
+                      const caseData = window.cases.find(c => c.id === caseId);
+                      return caseData ? `
+                        <div class="group-case">
+                          <span class="case-name">${caseData.investigationName}</span>
+                          <button onclick="removeCaseFromGroup('${group.id}', '${caseId}')" class="remove-case">×</button>
+                        </div>
+                      ` : '';
+                    }).join('')}
+                  </div>
+                `;
+                groupList.appendChild(groupElement);
+              });
+            }
+
+            // Update group display area if it exists
+            if (groupDisplayArea) {
+              groups.forEach(group => {
+                const groupDisplay = document.createElement('div');
+                groupDisplay.className = 'group-display';
+                groupDisplay.innerHTML = `
+                  <div class="group-display-header" style="background: ${group.color}20; border-color: ${group.color}40">
+                    <div class="group-display-title" style="color: ${group.color}">${group.name}</div>
+                    <div class="group-case-count">${group.cases.length} Cases</div>
+                  </div>
+                  <table class="group-display-table">
+                    <thead>
+                      <tr>
+                        <th>Case #</th>
+                        <th>Report #</th>
+                        <th>Investigation</th>
+                        <th>Lead Agent</th>
+                        <th>Involved Agents</th>
+                        <th>Status</th>
+                        <th>Date Created</th>
+                        <th>Last Updated</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${group.cases.map(caseId => {
+                        const caseData = window.cases.find(c => c.id === caseId);
+                        return caseData ? `
+                          <tr>
+                            <td>${caseData.caseNumber || '-'}</td>
+                            <td>${caseData.reportNumber || '-'}</td>
+                            <td>${caseData.investigationName}</td>
+                            <td>${caseData.leadAgent ? `${caseData.leadAgent.name} (${caseData.leadAgent.callsign || 'No Callsign'})` : 'Unknown'}</td>
+                            <td>${caseData.involvedAgents && caseData.involvedAgents.length > 0 ? 
+                              caseData.involvedAgents.map(agent => `${agent.name} (${agent.callsign || 'No Callsign'})`).join(', ') : 
+                              'None'}</td>
+                            <td>
+                              <div class="status-badge" data-status="${caseData.status}">
+                                ${CASE_STATUSES[caseData.status].label}
+                              </div>
+                            </td>
+                            <td>${new Date(caseData.createdAt).toLocaleString()}</td>
+                            <td>${new Date(caseData.updatedAt).toLocaleString()}</td>
+                          </tr>
+                        ` : '';
+                      }).join('')}
+                    </tbody>
+                  </table>
+                `;
+                groupDisplayArea.appendChild(groupDisplay);
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error updating group list:', error);
+          showDatabaseError('Failed to load groups. Please try again.');
+        }
+      }
+
+      // Function to create new group
+      window.createNewGroup = async function() {
+        const groupName = document.getElementById('groupName').value.trim();
+        const groupColor = document.getElementById('groupColor').value;
+        const selectedCases = Array.from(document.querySelectorAll('input[name="selectedCases"]:checked'))
+          .map(input => input.value);
+
+        if (!groupName) {
+          alert('Please enter a group name');
+          return;
+        }
+
+        if (selectedCases.length === 0) {
+          alert('Please select at least one case');
+          return;
+        }
+
+        const groupId = `group_${Date.now()}`;
+        const group = {
+          id: groupId,
+          name: groupName,
+          color: groupColor,
+          cases: selectedCases,
+          createdAt: new Date().toISOString()
+        };
+
+        try {
+          await fbSet(fbRef(fbDatabase, `groups/${groupId}`), group);
+          // Remove any existing dialogs and overlays
+          document.querySelector('.case-dialog')?.remove();
+          document.querySelector('.case-dialog-overlay')?.remove();
+          showGroupManager();
+        } catch (error) {
+          console.error('Error creating group:', error);
+          showDatabaseError('Failed to create group. Please try again.');
+        }
+      };
+
+      // Function to delete group
+      window.deleteGroup = async function(groupId) {
+        if (!confirm('Are you sure you want to delete this group?')) return;
+
+        try {
+          await fbRemove(fbRef(fbDatabase, `groups/${groupId}`));
+          updateGroupList();
+        } catch (error) {
+          console.error('Error deleting group:', error);
+          showDatabaseError('Failed to delete group. Please try again.');
+        }
+      };
+
+      // Function to edit group
+      window.editGroup = async function(groupId) {
+        try {
+          const snapshot = await fbGet(fbRef(fbDatabase, `groups/${groupId}`));
+          if (!snapshot.exists()) {
+            showDatabaseError('Group not found');
+            return;
+          }
+
+          const group = snapshot.val();
+          
+          // Remove any existing dialogs and overlays
+          document.querySelector('.case-dialog')?.remove();
+          document.querySelector('.case-dialog-overlay')?.remove();
+
+          const dialog = document.createElement('div');
+          dialog.className = 'case-dialog';
+          dialog.innerHTML = `
+            <div class="case-dialog-content">
+              <div class="case-dialog-header">
+                <div class="case-dialog-title">EDIT GROUP</div>
+                <div class="case-dialog-buttons">
+                  <button class="case-dialog-btn" onclick="saveGroupChanges('${groupId}')">SAVE CHANGES</button>
+                  <button class="case-dialog-btn cancel" onclick="showGroupManager()">CANCEL</button>
+                </div>
+              </div>
+              <div class="case-form">
+                <div class="form-group">
+                  <label>Group Name</label>
+                  <input type="text" id="groupName" class="case-input" value="${group.name}" placeholder="Enter group name">
+                </div>
+                <div class="form-group">
+                  <label>Group Color</label>
+                  <div class="color-picker">
+                    <input type="color" id="groupColor" value="${group.color}">
+                    <div class="color-preview"></div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Select Cases</label>
+                  <div id="caseSelector" class="case-selector"></div>
+                </div>
+              </div>
+            </div>
+          `;
+
+          document.body.appendChild(dialog);
+          setTimeout(() => dialog.classList.add('visible'), 10);
+
+          // Populate case selector
+          const caseSelector = document.getElementById('caseSelector');
+          window.cases.forEach(caseData => {
+            const caseOption = document.createElement('label');
+            caseOption.className = 'case-option';
+            caseOption.innerHTML = `
+              <input type="checkbox" name="selectedCases" value="${caseData.id}" ${group.cases.includes(caseData.id) ? 'checked' : ''}>
+              <span>${caseData.investigationName}</span>
+            `;
+            caseSelector.appendChild(caseOption);
+          });
+
+          // Setup color picker preview
+          const colorInput = document.getElementById('groupColor');
+          const updateColorPreview = () => {
+            const preview = document.querySelector('.color-preview');
+            preview.style.backgroundColor = colorInput.value;
+          };
+          colorInput.addEventListener('input', updateColorPreview);
+          updateColorPreview();
+
+        } catch (error) {
+          console.error('Error editing group:', error);
+          showDatabaseError('Failed to load group details. Please try again.');
+        }
+      };
+
+      // Function to save group changes
+      window.saveGroupChanges = async function(groupId) {
+        const groupName = document.getElementById('groupName').value.trim();
+        const groupColor = document.getElementById('groupColor').value;
+        const selectedCases = Array.from(document.querySelectorAll('input[name="selectedCases"]:checked'))
+          .map(input => input.value);
+
+        if (!groupName) {
+          alert('Please enter a group name');
+          return;
+        }
+
+        if (selectedCases.length === 0) {
+          alert('Please select at least one case');
+          return;
+        }
+
+        try {
+          const updates = {
+            name: groupName,
+            color: groupColor,
+            cases: selectedCases,
+            updatedAt: new Date().toISOString()
+          };
+
+          await fbUpdate(fbRef(fbDatabase, `groups/${groupId}`), updates);
+          // Remove any existing dialogs and overlays
+          document.querySelector('.case-dialog')?.remove();
+          document.querySelector('.case-dialog-overlay')?.remove();
+          showGroupManager();
+        } catch (error) {
+          console.error('Error saving group changes:', error);
+          showDatabaseError('Failed to save changes. Please try again.');
+        }
+      };
+
+      // Function to remove case from group
+      window.removeCaseFromGroup = async function(groupId, caseId) {
+        try {
+          const snapshot = await fbGet(fbRef(fbDatabase, `groups/${groupId}`));
+          if (snapshot.exists()) {
+            const group = snapshot.val();
+            group.cases = group.cases.filter(id => id !== caseId);
+            await fbSet(fbRef(fbDatabase, `groups/${groupId}`), group);
+            updateGroupList();
+          }
+        } catch (error) {
+          console.error('Error removing case from group:', error);
+          showDatabaseError('Failed to remove case from group. Please try again.');
+        }
+      };
+
+      // Initialize when DOM is loaded
+      document.addEventListener('DOMContentLoaded', async () => {
+        try {
+          // Set up initial UI state
+          const mainContent = document.querySelector('.wrap');
+          if (mainContent) {
+            mainContent.style.opacity = '0';
+            mainContent.style.display = 'block';
+            requestAnimationFrame(() => {
+              mainContent.style.opacity = '1';
+              mainContent.style.transition = 'opacity 0.5s ease';
+            });
+          }
+
+          // Initialize Firebase
+          const success = await initializeFirebase();
+          if (!success) {
+            showDatabaseError('Failed to initialize database. Please refresh the page.');
+            return;
+          }
+
+          // Wait for database connection
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              reject(new Error('Database connection timeout'));
+            }, 10000); // 10 second timeout
+
+            const connectedRef = fbRef(fbDatabase, '.info/connected');
+            fbOnValue(connectedRef, (snap) => {
+              const connected = snap.val() === true;
+              if (connected) {
+                clearTimeout(timeout);
+                enableInterface();
+                resolve();
+              } else {
+                showDatabaseError('Lost connection to database. Please check your internet connection.');
+              }
+            }, (error) => {
+              clearTimeout(timeout);
+              console.error('Connection monitoring error:', error);
+              reject(error);
+            });
+          }).catch(error => {
+            console.error('Database connection error:', error);
+            showDatabaseError('Failed to connect to database. Please refresh the page.');
+            return;
+          });
+
+          // Load initial data
+          await Promise.all([
+            loadAgents(),
+            loadCases()
+          ]);
+          
+          // Update analytics and groups initially
+          updateAnalytics();
+          updateGroupList();
+
+          // Enable interface
+          enableInterface();
+
+          // Set up new case button
+          const newCaseBtn = document.querySelector('.new-case-btn');
+          if (newCaseBtn) {
+            newCaseBtn.onclick = () => window.showNewCaseForm();
+          } else {
+            console.error('New case button not found');
+          }
+
+          initialized = true;
+        } catch (error) {
+          console.error('Error during initialization:', error);
+          showDatabaseError('Error during initialization. Please refresh the page.');
+        }
+      });
+    </script>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body { 
+        margin: 0; 
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+        background: #0b0b0f; 
+        color: #fff; 
+      }
+      
+      .wrap { 
+        max-width: 1400px; 
+        margin: 0 auto; 
+        padding: 24px; 
+      }
+
+      .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding: 10px 0 14px 0;
+        background: #0b0b0f;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+
+      .brand { 
+        display: flex; 
+        align-items: center; 
+        gap: 24px;
+        padding: 16px 0;
+      }
+
+      .brand img { 
+        height: 120px; 
+        width: auto; 
+        border-radius: 4px;
+        filter: drop-shadow(0 0 10px rgba(253,224,71,.2));
+      }
+
+      h1 { 
+        font-size: 48px; 
+        font-weight: 900; 
+        margin: 0; 
+        letter-spacing: 1px; 
+        color: #fde047; 
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace; 
+        text-shadow: 0 0 10px rgba(253,224,71,.3);
+        line-height: 1.2;
+      }
+
+      /* Case Form Styles */
+      .add-case-form {
+        background: rgba(0,0,0,.3);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .form-title {
+        color: #fde047;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 16px;
+      }
+
+      .new-case-btn {
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .management-buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .analytics-btn {
+        background: rgba(253, 224, 71, 0.1);
+        color: #fde047;
+        border: 1px solid rgba(253, 224, 71, 0.2);
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .analytics-btn:hover,
+      .management-buttons .group-btn:hover {
+        background: rgba(253, 224, 71, 0.2);
+        box-shadow: 0 0 8px rgba(253, 224, 71, 0.2);
+      }
+
+      .management-buttons .group-btn {
+        background: rgba(253, 224, 71, 0.1);
+        color: #fde047;
+        border: 1px solid rgba(253, 224, 71, 0.2);
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .new-case-btn:hover {
+        background: rgba(34, 197, 94, 0.2);
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+      }
+
+      /* Analytics Panel Styles */
+      .analytics-panel {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(253, 224, 71, 0.2);
+        border-radius: 14px;
+        margin: 20px 0;
+        overflow: hidden;
+        display: none;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .analytics-panel.visible {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .analytics-content {
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .analytics-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+          linear-gradient(45deg, rgba(253, 224, 71, 0.05) 25%, transparent 25%) -20px 0,
+          linear-gradient(-45deg, rgba(253, 224, 71, 0.05) 25%, transparent 25%) -20px 0,
+          linear-gradient(45deg, transparent 75%, rgba(253, 224, 71, 0.05) 75%),
+          linear-gradient(-45deg, transparent 75%, rgba(253, 224, 71, 0.05) 75%);
+        background-size: 40px 40px;
+        pointer-events: none;
+        opacity: 0.3;
+      }
+
+      .analytics-header {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      .analytics-title {
+        color: #fde047;
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        margin-bottom: 8px;
+        text-shadow: 0 0 20px rgba(253, 224, 71, 0.3);
+      }
+
+      .analytics-subtitle {
+        color: rgba(253, 224, 71, 0.5);
+        font-size: 12px;
+        letter-spacing: 4px;
+      }
+
+      .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 24px;
+      }
+
+      .analytics-section {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+      }
+
+      .analytics-section .section-title {
+        color: #fde047;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        letter-spacing: 1px;
+      }
+
+      .status-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 16px;
+      }
+
+      .status-metric {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 12px;
+        transition: all 0.2s ease;
+      }
+
+      .status-metric:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateY(-2px);
+      }
+
+      .status-metric .count {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .status-metric .label {
+        font-size: 12px;
+        color: #9ca3af;
+      }
+
+      .agent-metrics {
+        display: grid;
+        gap: 16px;
+      }
+
+      .agent-metric {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 16px;
+        transition: all 0.2s ease;
+      }
+
+      .agent-metric:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateY(-2px);
+      }
+
+      .agent-metric .agent-name {
+        color: #fde047;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .agent-metric .status-bars {
+        display: grid;
+        gap: 8px;
+      }
+
+      .status-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+      }
+
+      .status-bar .bar-label {
+        width: 120px;
+        color: #9ca3af;
+      }
+
+      .status-bar .bar-track {
+        flex: 1;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .status-bar .bar-fill {
+        height: 100%;
+        background: currentColor;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+
+      .status-bar .bar-value {
+        width: 30px;
+        text-align: right;
+        color: #9ca3af;
+      }
+
+      /* Case Dialog Styles */
+.case-dialog-overlay {
+         position: fixed;
+         top: 0;
+         left: 0;
+         right: 0;
+         bottom: 0;
+         background: rgba(0, 0, 0, 0.85);
+         backdrop-filter: blur(8px);
+         z-index: 100000;
+         opacity: 0;
+         transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+       }
+
+       .case-dialog-overlay.visible {
+         opacity: 1;
+       }
+
+       .case-dialog {
+         position: fixed;
+         top: 50%;
+         left: 50%;
+         transform: translate(-50%, -45%);
+         background: linear-gradient(
+           to bottom,
+           rgba(11, 11, 15, 0.98),
+           rgba(20, 20, 25, 0.98)
+         );
+         border: 1px solid rgba(253, 224, 71, 0.3);
+         border-radius: 12px;
+         padding: 32px;
+         width: 800px;
+         max-width: calc(100vw - 64px);
+         max-height: calc(100vh - 64px);
+         overflow: hidden;
+         z-index: 100001;
+         opacity: 0;
+         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+         box-shadow: 
+           0 0 40px rgba(253, 224, 71, 0.2),
+           0 0 100px rgba(0, 0, 0, 0.4),
+           inset 0 0 0 1px rgba(253, 224, 71, 0.1);
+       }
+
+       .case-dialog-content {
+         height: 100%;
+         overflow-y: auto;
+         overflow-x: hidden;
+         padding: 16px;
+         max-height: calc(100vh - 48px);
+       }
+
+       .case-dialog-header {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         margin-bottom: 16px;
+         padding-bottom: 16px;
+         border-bottom: 1px solid rgba(253, 224, 71, 0.2);
+       }
+
+       .case-dialog::before {
+         content: '';
+         position: absolute;
+         top: 0;
+         left: 0;
+         right: 0;
+         bottom: -80px;
+         background: linear-gradient(
+           to bottom,
+           rgba(253, 224, 71, 0.1),
+           rgba(253, 224, 71, 0.05) 70%,
+           rgba(253, 224, 71, 0.02) 85%,
+           transparent
+         );
+         border-radius: 12px;
+         pointer-events: none;
+       }
+
+       .case-dialog.visible {
+         opacity: 1;
+         transform: translate(-50%, -50%);
+       }
+
+       .case-dialog::-webkit-scrollbar {
+         width: 8px;
+       }
+
+       .case-dialog::-webkit-scrollbar-track {
+         background: rgba(255, 255, 255, 0.05);
+         border-radius: 4px;
+       }
+
+       .case-dialog::-webkit-scrollbar-thumb {
+         background: rgba(255, 255, 255, 0.2);
+         border-radius: 4px;
+       }
+
+       .case-dialog::-webkit-scrollbar-thumb:hover {
+         background: rgba(255, 255, 255, 0.3);
+       }
+
+      .case-dialog::before {
+        content: '';
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        right: -1px;
+        bottom: -1px;
+        background: linear-gradient(45deg, rgba(253, 224, 71, 0.1), transparent, rgba(253, 224, 71, 0.1));
+        border-radius: 12px;
+        z-index: -1;
+        pointer-events: none;
+      }
+
+      .case-dialog-title {
+        color: #fde047;
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 24px;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        position: relative;
+        text-shadow: 0 0 20px rgba(253, 224, 71, 0.3);
+      }
+
+      .case-dialog-title::before,
+      .case-dialog-title::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 60px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(253, 224, 71, 0.5));
+      }
+
+      .case-dialog-title::before {
+        right: calc(100% + 20px);
+        transform: scaleX(-1);
+      }
+
+      .case-dialog-title::after {
+        left: calc(100% + 20px);
+      }
+
+.status-checkbox-grid {
+         display: grid;
+         grid-template-columns: repeat(2, minmax(0, 1fr));
+         gap: 0;
+         max-height: 200px;
+         overflow-y: auto;
+         overflow-x: hidden;
+         padding: 0;
+         margin: 0;
+         background: rgba(255, 255, 255, 0.05);
+         border: 1px solid rgba(255, 255, 255, 0.1);
+         border-radius: 6px;
+       }
+
+       .status-checkbox-label {
+         display: flex;
+         align-items: center;
+         gap: 8px;
+         padding: 8px 16px;
+         cursor: pointer;
+         transition: background-color 0.2s ease;
+         position: relative;
+         white-space: nowrap;
+         overflow: hidden;
+         text-overflow: ellipsis;
+       }
+
+      .status-checkbox-label:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .status-checkbox-label:hover::after {
+        content: attr(data-description);
+        position: absolute;
+        bottom: calc(100% + 5px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .status-checkbox-label input[type="radio"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+
+      .status-checkbox-label span {
+        color: #fff;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .case-form {
+         display: flex;
+         flex-direction: column;
+         gap: 16px;
+         margin-bottom: 32px;
+       }
+
+.form-group {
+         display: flex;
+         flex-direction: column;
+         gap: 8px;
+         position: relative;
+         margin-bottom: 16px;
+       }
+
+       .form-group:last-child {
+         margin-bottom: 0;
+       }
+
+       .form-group label {
+         color: #fde047;
+         font-size: 11px;
+         font-weight: 600;
+         text-transform: uppercase;
+         letter-spacing: 1px;
+         opacity: 0.8;
+       }
+
+       .form-group.compact {
+         margin-bottom: 8px;
+       }
+
+       .form-row {
+         display: flex;
+         gap: 16px;
+         width: 100%;
+       }
+
+       .form-group.third {
+         flex: 1;
+         margin: 0;
+       }
+
+       .agent-checkbox-grid {
+         max-height: 220px;
+       }
+
+       .form-group.half {
+         flex: 1;
+         margin-bottom: 0;
+         border-bottom: none;
+       }
+
+      .case-input {
+        background: rgba(255,255,255,.02);
+        border: 1px solid rgba(253, 224, 71, 0.1);
+        border-radius: 6px;
+        padding: 12px 16px;
+        color: #fff;
+        font-size: 14px;
+        width: 100%;
+        transition: all 0.2s ease;
+      }
+
+      .case-input:focus {
+        background: rgba(255,255,255,.04);
+        border-color: rgba(253, 224, 71, 0.3);
+        box-shadow: 0 0 20px rgba(253, 224, 71, 0.1);
+      }
+
+      .case-input::placeholder {
+        color: rgba(255,255,255,.3);
+      }
+
+      .case-input.optional {
+        border-style: dashed;
+        border-color: rgba(253, 224, 71, 0.2);
+      }
+
+      .case-input.optional::placeholder {
+        color: rgba(253, 224, 71, 0.3);
+      }
+
+.agent-checkbox-grid {
+         display: flex;
+         flex-direction: column;
+         max-height: 300px;
+         overflow-y: auto;
+         overflow-x: hidden;
+         padding: 0;
+         margin: 0;
+         background: rgba(255, 255, 255, 0.05);
+         border: 1px solid rgba(255, 255, 255, 0.1);
+         border-radius: 6px;
+       }
+
+       .agent-checkbox-grid .agent-search-input {
+         margin: 8px;
+         width: calc(100% - 16px);
+         background: rgba(255, 255, 255, 0.1);
+         border: 1px solid rgba(253, 224, 71, 0.2);
+         border-radius: 4px;
+         color: #fff;
+         font-size: 13px;
+         padding: 8px 12px;
+       }
+
+       .agent-checkbox-grid .agent-search-input:focus {
+         background: rgba(255, 255, 255, 0.15);
+         border-color: rgba(253, 224, 71, 0.3);
+         outline: none;
+       }
+
+       .agent-checkbox-grid .agent-section-title {
+         background: rgba(253, 224, 71, 0.1);
+         color: #fde047;
+         font-size: 11px;
+         font-weight: 600;
+         padding: 6px 12px;
+         text-transform: uppercase;
+         letter-spacing: 1px;
+         margin: 0;
+         border-top: 1px solid rgba(253, 224, 71, 0.2);
+       }
+
+       .agent-checkbox-grid .agent-section-title:first-of-type {
+         border-top: none;
+       }
+
+       .agent-checkbox-label {
+         display: flex;
+         align-items: center;
+         gap: 8px;
+         padding: 8px 12px;
+         cursor: pointer;
+         transition: background-color 0.2s ease;
+         white-space: nowrap;
+         overflow: hidden;
+         text-overflow: ellipsis;
+         border-top: 1px solid rgba(255, 255, 255, 0.05);
+       }
+
+       .agent-checkbox-label:first-of-type {
+         border-top: none;
+       }
+
+       .agent-checkbox-label.other-option {
+         background: rgba(253, 224, 71, 0.05);
+         padding: 8px;
+       }
+
+       .agent-checkbox-label.other-option .agent-other-input {
+         flex: 1;
+         background: rgba(255, 255, 255, 0.1);
+         border: 1px solid rgba(253, 224, 71, 0.2);
+         border-radius: 4px;
+         color: #fff;
+         font-size: 13px;
+         padding: 6px 10px;
+       }
+
+       .agent-checkbox-label.other-option .agent-other-input:focus {
+         background: rgba(255, 255, 255, 0.15);
+         border-color: rgba(253, 224, 71, 0.3);
+         outline: none;
+       }
+
+      .agent-checkbox-label:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .agent-checkbox-label input[type="radio"],
+      .agent-checkbox-label input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+
+      .agent-checkbox-label span {
+        color: #fff;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .case-input:focus {
+        outline: none;
+        border-color: #22c55e;
+      }
+
+      select.case-input {
+        cursor: pointer;
+      }
+
+      select.case-input[multiple] {
+        height: 120px;
+      }
+
+      .status-description {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-top: 4px;
+        font-style: italic;
+      }
+
+.case-dialog-buttons {
+         display: flex;
+         justify-content: center;
+         gap: 8px;
+         margin-top: 16px;
+       }
+
+      .case-dialog-btn {
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        border: 1px solid #22c55e;
+        border-radius: 4px;
+        padding: 8px 16px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .case-dialog-btn:hover {
+        background: rgba(34, 197, 94, 0.2);
+      }
+
+      .case-dialog-btn.cancel {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border-color: #ef4444;
+      }
+
+      .case-dialog-btn.cancel:hover {
+        background: rgba(239, 68, 68, 0.2);
+      }
+
+      /* Case Table Styles */
+      .case-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        margin-bottom: 24px;
+        table-layout: fixed;
+      }
+
+      /* Column widths */
+      .case-table th:nth-child(1), /* Case # */
+      .case-table td:nth-child(1) {
+        width: 120px;
+      }
+      
+      .case-table th:nth-child(2), /* Report # */
+      .case-table td:nth-child(2) {
+        width: 120px;
+      }
+
+      .case-table th:nth-child(3), /* Investigation */
+      .case-table td:nth-child(3) {
+        width: auto;
+      }
+
+      .case-table th:nth-child(4), /* Lead Agent */
+      .case-table td:nth-child(4) {
+        width: 200px;
+      }
+
+      .case-table th:nth-child(5), /* Involved Agents */
+      .case-table td:nth-child(5) {
+        width: 300px;
+      }
+
+      .case-table th:nth-child(6), /* Status */
+      .case-table td:nth-child(6) {
+        width: 150px;
+      }
+
+      .case-table th:nth-child(7), /* Date Created */
+      .case-table td:nth-child(7),
+      .case-table th:nth-child(8), /* Last Updated */
+      .case-table td:nth-child(8) {
+        width: 160px;
+      }
+
+      /* Add text truncation for cells */
+      .case-table td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .case-table th {
+        background: #fde047;
+        color: #000;
+        padding: 12px 8px;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        text-align: left;
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+      }
+
+      .case-table th:hover {
+        background: #fcd34d;
+      }
+
+      .case-table th::after {
+        content: '⇅';
+        position: absolute;
+        right: 8px;
+        opacity: 0.3;
+      }
+
+      .case-table th.sort-asc::after {
+        content: '↑';
+        opacity: 1;
+      }
+
+      .case-table th.sort-desc::after {
+        content: '↓';
+        opacity: 1;
+      }
+
+      .case-table tr {
+        transition: background 0.2s ease;
+      }
+
+      /* Status-based row colors */
+      .case-table tr[data-status="COLD_CASE"] {
+        background: rgba(148, 163, 184, 0.05);
+      }
+
+      .case-table tr[data-status="WARM_CASE"] {
+        background: rgba(234, 179, 8, 0.05);
+      }
+
+      .case-table tr[data-status="HOT_CASE"] {
+        background: rgba(239, 68, 68, 0.05);
+      }
+
+      .case-table tr[data-status="LIVE_CASE"] {
+        background: rgba(34, 197, 94, 0.05);
+      }
+
+      .case-table tr[data-status="CLOSED"] {
+        background: rgba(0, 0, 0, 0.1);
+      }
+
+      .case-table tr[data-status="DORMANT"] {
+        background: rgba(71, 85, 105, 0.05);
+      }
+
+      .case-table tr[data-status="PENDING_REVIEW"] {
+        background: rgba(168, 85, 247, 0.05);
+      }
+
+      .case-table tr[data-status="UNDER_ANALYSIS"] {
+        background: rgba(59, 130, 246, 0.05);
+      }
+
+      .case-table tr[data-status="CLASSIFIED_HOLD"] {
+        background: rgba(253, 224, 71, 0.05);
+      }
+
+      /* Removed hover effect */
+
+      .case-table {
+        table-layout: fixed;
+        width: 100%;
+      }
+
+      .case-table th:nth-child(1), /* Case # */
+      .case-table td:nth-child(1) {
+        width: 40px;
+      }
+
+      .case-table th:nth-child(2), /* Report # */
+      .case-table td:nth-child(2) {
+        width: 80px;
+      }
+
+      .case-table th:nth-child(3), /* Investigation */
+      .case-table td:nth-child(3) {
+        width: 400px;
+      }
+
+      .case-table th:nth-child(4), /* Lead Agent */
+      .case-table td:nth-child(4) {
+        width: 180px;
+      }
+
+      .case-table th:nth-child(5), /* Involved Agents */
+      .case-table td:nth-child(5) {
+        width: 250px;
+      }
+
+      .case-table th:nth-child(6), /* Status */
+      .case-table td:nth-child(6) {
+        width: 120px;
+      }
+
+      .case-table th:nth-child(7), /* Date Created */
+      .case-table td:nth-child(7),
+      .case-table th:nth-child(8), /* Last Updated */
+      .case-table td:nth-child(8) {
+        width: 150px;
+      }
+
+      .case-table td {
+        padding: 12px 8px;
+        font-size: 13px;
+        border-top: 1px solid rgba(255,255,255,.1);
+        cursor: pointer;
+        transition: background 0.2s ease;
+        position: relative;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .agent-cell-text {
+        margin-right: 24px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .edit-icon {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0;
+        color: #fde047;
+        font-size: 14px;
+        transition: opacity 0.2s ease;
+        z-index: 10;
+        cursor: pointer;
+      }
+
+      .case-table td:hover .edit-icon {
+        opacity: 0.5;
+      }
+
+      .case-table td:hover .edit-icon:hover {
+        opacity: 1;
+      }
+
+      /* Removed hover effect */
+
+      .case-table td.editing {
+        padding: 0;
+      }
+
+      .case-table td.editing input {
+        width: 100%;
+        height: 100%;
+        padding: 12px 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: #fff;
+        font-size: 13px;
+        outline: none;
+      }
+
+      .case-table td.editing input:focus {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      /* Date picker styling */
+      .case-table td input[type="datetime-local"] {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: #fff;
+        font-size: 13px;
+        padding: 12px 8px;
+        width: 100%;
+        outline: none;
+      }
+
+      /* Agent selection menu */
+      .agent-selection-menu {
+        padding: 16px;
+        max-height: 500px;
+        overflow-y: auto;
+        min-width: 400px;
+        z-index: 1000;
+      }
+
+      .agent-search-container {
+        position: relative;
+        margin-bottom: 16px;
+      }
+
+      .agent-search-input {
+        width: 100%;
+        padding: 12px 40px 12px 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(253, 224, 71, 0.2);
+        border-radius: 8px;
+        color: #fff;
+        font-size: 14px;
+        transition: all 0.2s ease;
+      }
+
+      .agent-search-input:focus {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(253, 224, 71, 0.3);
+        box-shadow: 0 0 20px rgba(253, 224, 71, 0.1);
+        outline: none;
+      }
+
+      .agent-search-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+.agent-other-option {
+         margin: 16px -32px 0;
+         padding: 16px 32px 0;
+         border-top: 1px solid rgba(253, 224, 71, 0.1);
+       }
+
+      .agent-other-input {
+        width: 100%;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px dashed rgba(253, 224, 71, 0.2);
+        border-radius: 6px;
+        color: #fff;
+        font-size: 13px;
+        margin-top: 8px;
+        transition: all 0.2s ease;
+      }
+
+      .agent-other-input:focus {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(253, 224, 71, 0.3);
+        box-shadow: 0 0 15px rgba(253, 224, 71, 0.1);
+        outline: none;
+      }
+
+      .agent-selection-menu::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .agent-selection-menu::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+      }
+
+      .agent-selection-menu::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+      }
+
+      .agent-selection-menu::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .agent-selection-menu .menu-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fde047;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .agent-selection-menu .menu-section {
+        margin-bottom: 16px;
+      }
+
+      .agent-selection-menu .section-title {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .agent-selection-menu label {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        margin-bottom: 4px;
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .agent-selection-menu label:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateX(4px);
+      }
+
+      .agent-selection-menu label.selected {
+        background: rgba(253, 224, 71, 0.1);
+        border: 1px solid rgba(253, 224, 71, 0.2);
+      }
+
+      .agent-selection-menu input[type="radio"],
+      .agent-selection-menu input[type="checkbox"] {
+        margin-right: 12px;
+        width: 16px;
+        height: 16px;
+        accent-color: #fde047;
+      }
+
+      .agent-selection-menu .agent-info {
+        flex: 1;
+      }
+
+      .agent-selection-menu .agent-name {
+        color: #fff;
+        font-weight: 500;
+      }
+
+      .agent-selection-menu .agent-callsign {
+        color: #9ca3af;
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
+      .agent-selection-menu .save-btn {
+        background: rgba(253, 224, 71, 0.1);
+        color: #fde047;
+        border: 1px solid rgba(253, 224, 71, 0.2);
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        width: 100%;
+        margin-top: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .agent-selection-menu .save-btn:hover {
+        background: rgba(253, 224, 71, 0.2);
+        transform: translateY(-1px);
+      }
+
+      .agent-selection-menu .save-btn:active {
+        transform: translateY(0);
+      }
+
+      .case-table td:first-child {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+      }
+
+      .case-table td:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+      }
+
+      /* Status Badge Styles */
+      .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .status-badge[data-status="COLD_CASE"] {
+        background: rgba(148, 163, 184, 0.1);
+        color: #94a3b8;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+      }
+
+      .status-badge[data-status="WARM_CASE"] {
+        background: rgba(234, 179, 8, 0.1);
+        color: #eab308;
+        border: 1px solid rgba(234, 179, 8, 0.2);
+      }
+
+      .status-badge[data-status="HOT_CASE"] {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+
+      .status-badge[data-status="LIVE_CASE"] {
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+      }
+
+      .status-badge[data-status="CLOSED"] {
+        background: rgba(0, 0, 0, 0.2);
+        color: #9ca3af;
+        border: 1px solid rgba(156, 163, 175, 0.2);
+      }
+
+      .status-badge[data-status="DORMANT"] {
+        background: rgba(71, 85, 105, 0.1);
+        color: #475569;
+        border: 1px solid rgba(71, 85, 105, 0.2);
+      }
+
+      .status-badge[data-status="PENDING_REVIEW"] {
+        background: rgba(168, 85, 247, 0.1);
+        color: #a855f7;
+        border: 1px solid rgba(168, 85, 247, 0.2);
+      }
+
+      .status-badge[data-status="UNDER_ANALYSIS"] {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+      }
+
+      .status-badge[data-status="CLASSIFIED_HOLD"] {
+        background: rgba(0, 0, 0, 0.3);
+        color: #fde047;
+        border: 1px solid rgba(253, 224, 71, 0.2);
+      }
+
+      .status-tooltip {
+        position: absolute;
+        bottom: calc(100% + 5px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .status-badge {
+        cursor: pointer;
+      }
+
+      .status-badge:hover .status-tooltip {
+        opacity: 1;
+      }
+
+      /* Status Menu Styles */
+      .status-menu {
+        padding: 8px;
+      }
+
+      .status-menu-option {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s ease;
+      }
+
+      .status-menu-option:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .status-menu-option .status-badge {
+        padding: 4px 8px;
+        font-size: 11px;
+        border-radius: 4px;
+      }
+
+      .status-menu-option .status-description {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-top: 2px;
+      }
+
+      /* Agent Hover Card Styles */
+      /* Common popup styles */
+      .popup-base {
+        position: absolute;
+        background: rgba(11, 11, 15, 0.98);
+        border: 1px solid rgba(253, 224, 71, 0.2);
+        border-radius: 8px;
+        z-index: 2000;
+        box-shadow: 
+          0 4px 20px rgba(0, 0, 0, 0.4),
+          0 0 30px rgba(253, 224, 71, 0.1);
+        opacity: 0;
+        transform: translateY(10px);
+        transition: 
+          opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+          transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: auto;
+      }
+
+      .popup-base.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .popup-base.fade-out {
+        opacity: 0;
+        transform: translateY(10px);
+        transition: 
+          opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+          transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .agent-hover-card {
+        padding: 16px;
+        min-width: 280px;
+        max-width: 800px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+        pointer-events: auto;
+      }
+
+      .agent-hover-card.multi-agent {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+        padding: 20px;
+      }
+
+      .agent-hover-card.multi-agent .agent-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        padding: 12px;
+      }
+
+      .agent-hover-card.multi-agent .agent-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .agent-hover-card::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .agent-hover-card::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+      }
+
+      .agent-hover-card::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+      }
+
+      .agent-hover-card::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .agent-hover-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .agent-hover-card::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        left: 20px;
+        width: 12px;
+        height: 12px;
+        background: rgba(11, 11, 15, 0.98);
+        border-left: 1px solid rgba(253, 224, 71, 0.2);
+        border-top: 1px solid rgba(253, 224, 71, 0.2);
+        transform: rotate(45deg);
+      }
+
+      .agent-hover-card .agent-name {
+        color: #fde047;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .agent-hover-card .agent-callsign {
+        color: #9ca3af;
+        font-size: 12px;
+        margin-bottom: 12px;
+      }
+
+      .agent-hover-card .agent-details {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px 12px;
+        font-size: 13px;
+      }
+
+      .agent-hover-card .detail-label {
+        color: #9ca3af;
+        font-weight: 500;
+      }
+
+      .agent-hover-card .detail-value {
+        color: #fff;
+      }
+
+      .agent-hover-card .detail-value:empty::after {
+        content: '-';
+        color: #4b5563;
+      }
+
+      /* Group Management Styles */
+      .group-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 16px;
+      }
+
+      .group-item {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid;
+      }
+
+      .group-name {
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .group-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .group-actions .group-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .group-actions .group-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .group-actions .group-btn.delete {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.2);
+      }
+
+      .group-actions .group-btn.delete:hover {
+        background: rgba(239, 68, 68, 0.2);
+        box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+      }
+
+      .group-cases {
+        padding: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .group-case {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        padding: 4px 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+      }
+
+      .remove-case {
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        padding: 0;
+        font-size: 16px;
+        line-height: 1;
+        transition: color 0.2s ease;
+      }
+
+      .remove-case:hover {
+        color: #ef4444;
+      }
+
+      .case-selector {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 8px;
+      }
+
+      .case-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background 0.2s ease;
+      }
+
+      .case-option:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .case-option input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+      }
+
+      .color-picker {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .color-picker input[type="color"] {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .color-preview {
+        width: 100px;
+        height: 40px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="toolbar">
+            <div class="brand">
+                <img src="https://kappa.lol/aDnGzF" alt="FIB Logo">
+                <h1>FEDERAL INVESTIGATION BUREAU<br>CASE DATABASE</h1>
+            </div>
+        </div>
+
+        <div class="add-case-form">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="form-title">Case Management</div>
+                <div class="management-buttons">
+                    <button class="analytics-btn" onclick="toggleAnalytics()">ANALYTICS</button>
+                    <button class="group-btn" onclick="showGroupManager()">GROUPS</button>
+                    <button class="new-case-btn">+ NEW CASE</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="analyticsPanel" class="analytics-panel">
+            <div class="analytics-content">
+                <div class="analytics-header">
+                    <div class="analytics-title">CASE ANALYTICS</div>
+                    <div class="analytics-subtitle">REAL-TIME METRICS</div>
+                </div>
+                
+                <div class="analytics-grid">
+                    <div class="analytics-section">
+                        <div class="section-title">STATUS DISTRIBUTION</div>
+                        <div class="status-metrics" id="statusMetrics"></div>
+                    </div>
+                    
+                    <div class="analytics-section">
+                        <div class="section-title">AGENT WORKLOAD</div>
+                        <div class="agent-metrics" id="agentMetrics"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="case-table">
+            <thead>
+                <tr>
+                    <th data-sort="caseNumber" onclick="handleSort('caseNumber')">Case #</th>
+                    <th data-sort="reportNumber" onclick="handleSort('reportNumber')">Report #</th>
+                    <th data-sort="investigationName" onclick="handleSort('investigationName')">Investigation</th>
+                    <th data-sort="leadAgent.name" onclick="handleSort('leadAgent.name')">Lead Agent</th>
+                    <th>Involved Agents</th>
+                    <th data-sort="status" onclick="handleSort('status')">Status</th>
+                    <th data-sort="createdAt" onclick="handleSort('createdAt')" class="sort-desc">Date Created</th>
+                    <th data-sort="updatedAt" onclick="handleSort('updatedAt')">Last Updated</th>
+                </tr>
+            </thead>
+            <tbody id="caseTableBody">
+                <!-- Cases will be populated here -->
+            </tbody>
+        </table>
+
+        <div id="groupDisplayArea" class="group-display-area"></div>
+    </div>
+
+    <style>
+      .group-display-area {
+        margin-top: 32px;
+      }
+
+      .group-display {
+        margin-bottom: 24px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .group-display-header {
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid;
+      }
+
+      .group-display-title {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .group-display-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .group-display-table th {
+        text-align: left;
+        padding: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      .group-display-table td {
+        padding: 12px;
+        font-size: 13px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .group-display-table tr:hover {
+        background: rgba(255, 255, 255, 0.02);
+      }
+    </style>
+</body>
+</html>
