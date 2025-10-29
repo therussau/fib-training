@@ -330,6 +330,8 @@
           const { getDatabase, ref, set, onValue, update, get: fbGet } = 
             await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
           const { getAnalytics } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js");
+          const { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } = 
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
 
           const firebaseConfig = {
             apiKey: "AIzaSyC8MXihU-0-FRkYwx0qrs_Sv4CKZCVgFUs",
@@ -345,6 +347,7 @@
           // Initialize Firebase
           const app = initializeApp(firebaseConfig);
           const database = getDatabase(app);
+          const auth = getAuth(app);
 
           // Make functions available globally
           window.fbDatabase = database;
@@ -353,6 +356,13 @@
           window.fbOnValue = onValue;
           window.fbUpdate = update;
           window.fbGet = fbGet;
+          window.fbAuth = auth;
+          window.fbSignIn = signInWithEmailAndPassword;
+          window.fbSignOut = signOut;
+          window.fbOnAuthStateChanged = onAuthStateChanged;
+          
+          // Track authentication state
+          window.isAuthenticated = false;
 
           // Initialize training modules
           if (!window.trainingModules) {
@@ -2179,6 +2189,32 @@
             box-shadow: 0 0 10px #ff0000;
         }
         
+        .auth-login-btn {
+            width: 100%;
+            background-color: #ff0000;
+            border: 1px solid #ff0000;
+            color: #000;
+            padding: 0.75rem;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            letter-spacing: 2px;
+        }
+        
+        .auth-login-btn:hover {
+            background-color: #ff3333;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+            transform: scale(1.02);
+        }
+        
+        .auth-login-btn:active {
+            transform: scale(0.98);
+        }
+        
         .access-denied {
             color: #ff0000;
             font-size: 1.2rem;
@@ -2202,8 +2238,10 @@
         <canvas id="matrixCanvas" class="matrix-bg"></canvas>
         <div class="auth-container">
             <h1 class="auth-title">CLASSIFIED DATA</h1>
-            <input type="password" id="passwordInput" class="password-input" placeholder="ENTER ACCESS CODE" onkeypress="checkEnter(event)">
-            <div id="accessDenied" class="access-denied">ACCESS DENIED - INVALID CODE</div>
+            <input type="email" id="emailInput" class="password-input" placeholder="ENTER EMAIL ADDRESS" style="margin-bottom: 16px;" onkeypress="checkEnter(event)">
+            <input type="password" id="passwordInput" class="password-input" placeholder="ENTER PASSWORD" onkeypress="checkEnter(event)">
+            <button onclick="attemptLogin()" class="auth-login-btn">ACCESS DATABASE</button>
+            <div id="accessDenied" class="access-denied">ACCESS DENIED - INVALID CREDENTIALS</div>
         </div>
     </div>
 
@@ -2247,19 +2285,47 @@
             setInterval(drawMatrix, 33);
         }
         
+        async function attemptLogin() {
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            const accessDenied = document.getElementById('accessDenied');
+            
+            if (!email || !password) {
+                accessDenied.textContent = 'ACCESS DENIED - ENTER CREDENTIALS';
+                accessDenied.style.display = 'block';
+                setTimeout(() => {
+                    accessDenied.style.display = 'none';
+                }, 2000);
+                return;
+            }
+            
+            try {
+                await window.fbSignIn(window.fbAuth, email, password);
+                // Success - hide auth screen
+                document.getElementById('authScreen').classList.add('hidden');
+                window.isAuthenticated = true;
+            } catch (error) {
+                console.error('Login error:', error);
+                
+                let errorMessage = 'ACCESS DENIED - INVALID CREDENTIALS';
+                if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'ACCESS DENIED - TOO MANY ATTEMPTS';
+                } else if (error.code === 'auth/network-request-failed') {
+                    errorMessage = 'ACCESS DENIED - NETWORK ERROR';
+                }
+                
+                accessDenied.textContent = errorMessage;
+                accessDenied.style.display = 'block';
+                setTimeout(() => {
+                    accessDenied.style.display = 'none';
+                }, 3000);
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+        
         function checkEnter(e) {
             if (e.key === 'Enter') {
-                const password = document.getElementById('passwordInput').value;
-                if (password === 'FIB42069') {
-                    document.getElementById('authScreen').classList.add('hidden');
-                } else {
-                    const accessDenied = document.getElementById('accessDenied');
-                    accessDenied.style.display = 'block';
-                    setTimeout(() => {
-                        accessDenied.style.display = 'none';
-                    }, 2000);
-                    document.getElementById('passwordInput').value = '';
-                }
+                attemptLogin();
             }
         }
         
@@ -2411,7 +2477,7 @@
         <img src="https://kappa.lol/aDnGzF" alt="FIB Logo" />
         <h1>FEDERAL INVESTIGATION BUREAU<br>EMPLOYEE DATABASE</h1>
       </div>
-      <a href="https://fibdatabase.cloud/" target="_blank" rel="noopener noreferrer" class="internal-db-btn">
+      <a href="https://fibdatabase.cloud/" class="internal-db-btn">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
           <polyline points="15 3 21 3 21 9"></polyline>
