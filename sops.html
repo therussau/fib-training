@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>FIB SOPS</title>
+    <title>FIB SOP DATABASE</title>
     <link rel="icon" type="image/webp" href="https://kappa.lol/aDnGzF">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
@@ -16,6 +16,8 @@
           const { getDatabase, ref, set, onValue, update, get: fbGet } = 
             await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
           const { getAnalytics } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js");
+          const { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } = 
+            await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
 
           const firebaseConfig = {
             apiKey: "AIzaSyC8MXihU-0-FRkYwx0qrs_Sv4CKZCVgFUs",
@@ -31,6 +33,7 @@
           // Initialize Firebase
           const app = initializeApp(firebaseConfig);
           const database = getDatabase(app);
+          const auth = getAuth(app);
 
           // Make functions available globally
           window.fbDatabase = database;
@@ -39,6 +42,19 @@
           window.fbOnValue = onValue;
           window.fbUpdate = update;
           window.fbGet = fbGet;
+          window.fbAuth = auth;
+          window.fbSignIn = signInWithEmailAndPassword;
+          window.fbSignOut = signOut;
+          window.fbOnAuthStateChanged = onAuthStateChanged;
+          
+          // Track authentication state
+          window.isAuthenticated = false;
+          
+          // Listen for auth state changes
+          onAuthStateChanged(auth, (user) => {
+            window.isAuthenticated = !!user;
+            updateAuthUI(user);
+          });
 
           // Initialize SOPs
           if (!window.sops) {
@@ -150,6 +166,68 @@
         }
       };
 
+      // Update UI based on auth state
+      function updateAuthUI(user) {
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userEmail = document.getElementById('userEmail');
+        
+        if (user) {
+          loginBtn.style.display = 'none';
+          logoutBtn.style.display = 'block';
+          userEmail.textContent = user.email;
+          userEmail.style.display = 'block';
+        } else {
+          loginBtn.style.display = 'block';
+          logoutBtn.style.display = 'none';
+          userEmail.style.display = 'none';
+        }
+        
+        // Re-render SOPs to show/hide edit buttons
+        if (window.sops && window.sops.bureauGuidelines) {
+          initializeSOPs();
+        }
+      }
+      window.updateAuthUI = updateAuthUI;
+
+      // Login function
+      async function showLogin() {
+        const email = prompt('Enter your email:');
+        if (!email) return;
+        
+        const password = prompt('Enter your password:');
+        if (!password) return;
+        
+        try {
+          await window.fbSignIn(window.fbAuth, email, password);
+          alert('Login successful!');
+        } catch (error) {
+          console.error('Login error:', error);
+          if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+            alert('Invalid email or password. Please try again.');
+          } else if (error.code === 'auth/user-not-found') {
+            alert('No user found with this email.');
+          } else if (error.code === 'auth/too-many-requests') {
+            alert('Too many failed attempts. Please try again later.');
+          } else {
+            alert('Login failed: ' + error.message);
+          }
+        }
+      }
+      window.showLogin = showLogin;
+
+      // Logout function
+      async function logout() {
+        try {
+          await window.fbSignOut(window.fbAuth);
+          alert('Logged out successfully!');
+        } catch (error) {
+          console.error('Logout error:', error);
+          alert('Logout failed: ' + error.message);
+        }
+      }
+      window.logout = logout;
+
       // Function to toggle sections
       function toggleSection(sectionId) {
         const content = document.getElementById(`section-content-${sectionId}`);
@@ -184,27 +262,151 @@
       }
       window.toggleGroup = toggleGroup;
 
+      // Function to apply formatting
+      function applyFormat(command, value = null) {
+        document.execCommand(command, false, value);
+      }
+      window.applyFormat = applyFormat;
+
       // Function to edit section
       async function editSection(sectionId, groupId) {
-        const group = window.sops[groupId];
-        const section = group.sections.find(s => s.id === sectionId);
-        if (!section) return;
-
-        let lead = null;
-        if (groupId !== 'bureauGuidelines') {
-          const leadPrompt = groupId === 'specialityHandbooks' ? 'Enter Speciality Expert:' : 'Enter Division Lead:';
-          lead = prompt(leadPrompt, section.lead || '');
-          if (lead === null) return;
+        // Check authentication
+        if (!window.isAuthenticated) {
+          alert('You must be logged in to edit SOPs.');
+          showLogin();
+          return;
         }
-
-        const content = prompt('Enter section content:', section.content || '');
-        if (content === null) return;
-
-        if (lead !== null) section.lead = lead;
-        section.content = content;
-
-        await saveSOPs();
-        await initializeSOPs();
+        
+        const contentDiv = document.getElementById(`section-content-${sectionId}`);
+        const editBtn = contentDiv.querySelector('.edit-section-btn');
+        const leadElement = contentDiv.querySelector('.section-lead p');
+        const contentElement = contentDiv.querySelector('.section-content');
+        
+        // Check if already in edit mode
+        if (contentDiv.classList.contains('editing')) return;
+        
+        contentDiv.classList.add('editing');
+        editBtn.style.display = 'none';
+        
+        // Store original values
+        const originalLead = leadElement ? leadElement.innerHTML : null;
+        const originalContent = contentElement.innerHTML;
+        
+        // Make lead editable (simple text, no toolbar)
+        if (leadElement) {
+          leadElement.contentEditable = 'true';
+          leadElement.style.background = 'rgba(34, 197, 94, 0.1)';
+          leadElement.style.padding = '8px';
+          leadElement.style.borderRadius = '4px';
+          leadElement.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+          leadElement.focus();
+        }
+        
+        // Create formatting toolbar for content
+        const toolbar = document.createElement('div');
+        toolbar.className = 'format-toolbar';
+        toolbar.innerHTML = `
+          <button onclick="applyFormat('bold')" title="Bold" class="format-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+              <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+            </svg>
+          </button>
+          <button onclick="applyFormat('italic')" title="Italic" class="format-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="4" x2="10" y2="4"></line>
+              <line x1="14" y1="20" x2="5" y2="20"></line>
+              <line x1="15" y1="4" x2="9" y2="20"></line>
+            </svg>
+          </button>
+          <button onclick="applyFormat('underline')" title="Underline" class="format-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"></path>
+              <line x1="4" y1="21" x2="20" y2="21"></line>
+            </svg>
+          </button>
+          <div class="toolbar-divider"></div>
+          <select onchange="applyFormat('fontSize', this.value); this.value='';" class="format-select" title="Font Size">
+            <option value="">Size</option>
+            <option value="1">Small</option>
+            <option value="3">Normal</option>
+            <option value="5">Large</option>
+            <option value="7">Extra Large</option>
+          </select>
+          <input type="color" onchange="applyFormat('foreColor', this.value)" class="format-color" title="Text Color" value="#ffffff">
+          <button onclick="applyFormat('removeFormat')" title="Clear Formatting" class="format-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 7h16M9 7v10M15 7v5M12 17h6"></path>
+              <line x1="3" y1="3" x2="21" y2="21"></line>
+            </svg>
+          </button>
+        `;
+        
+        // Insert toolbar before content element
+        contentElement.parentNode.insertBefore(toolbar, contentElement);
+        
+        // Make content editable
+        contentElement.contentEditable = 'true';
+        contentElement.style.background = 'rgba(34, 197, 94, 0.1)';
+        contentElement.style.padding = '8px';
+        contentElement.style.borderRadius = '4px';
+        contentElement.style.border = '1px solid rgba(34, 197, 94, 0.3)';
+        contentElement.style.minHeight = '100px';
+        
+        // Create action buttons
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'edit-actions';
+        
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'save-btn';
+        saveBtn.textContent = 'Save';
+        saveBtn.onclick = async (e) => {
+          e.stopPropagation();
+          
+          const group = window.sops[groupId];
+          const section = group.sections.find(s => s.id === sectionId);
+          
+          if (leadElement) {
+            section.lead = leadElement.textContent.trim();
+          }
+          section.content = contentElement.innerHTML.trim();
+          
+          await saveSOPs();
+          await initializeSOPs();
+        };
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'cancel-btn';
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.onclick = (e) => {
+          e.stopPropagation();
+          
+          if (leadElement) {
+            leadElement.innerHTML = originalLead;
+            leadElement.contentEditable = 'false';
+            leadElement.style.background = '';
+            leadElement.style.padding = '';
+            leadElement.style.borderRadius = '';
+            leadElement.style.border = '';
+          }
+          
+          contentElement.innerHTML = originalContent;
+          contentElement.contentEditable = 'false';
+          contentElement.style.background = '';
+          contentElement.style.padding = '';
+          contentElement.style.borderRadius = '';
+          contentElement.style.border = '';
+          contentElement.style.minHeight = '';
+          
+          toolbar.remove();
+          contentDiv.classList.remove('editing');
+          editBtn.style.display = '';
+          actionsDiv.remove();
+        };
+        
+        actionsDiv.appendChild(saveBtn);
+        actionsDiv.appendChild(cancelBtn);
+        contentDiv.appendChild(actionsDiv);
       }
       window.editSection = editSection;
 
@@ -265,10 +467,11 @@
             content.id = `section-content-${section.id}`;
             content.style.display = 'none';
             
-            // Edit button
+            // Edit button (only show if authenticated)
             const editBtn = document.createElement('button');
             editBtn.className = 'edit-section-btn';
             editBtn.title = 'Edit Section';
+            editBtn.style.display = window.isAuthenticated ? 'flex' : 'none';
             editBtn.innerHTML = `
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -337,6 +540,91 @@
         padding: 10px 0 14px 0;
         background: #0b0b0f;
         border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+
+      .nav-buttons {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: center;
+        padding: 0 16px;
+      }
+
+      .nav-btn {
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: 4px;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .nav-btn:hover {
+        background: rgba(34, 197, 94, 0.2);
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+        transform: scale(1.05);
+      }
+
+      .nav-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .auth-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: flex-end;
+        padding: 0 16px;
+      }
+
+      #userEmail {
+        color: #22c55e;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 8px 12px;
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: 4px;
+      }
+
+      #loginBtn, #logoutBtn {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: inherit;
+      }
+
+      #loginBtn:hover, #logoutBtn:hover {
+        background: rgba(34, 197, 94, 0.25);
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+        transform: translateY(-1px);
+      }
+
+      #logoutBtn {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+
+      #logoutBtn:hover {
+        background: rgba(239, 68, 68, 0.25);
+        box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
       }
 
       .brand { 
@@ -475,7 +763,128 @@
         color: #fff;
         font-size: 13px;
         line-height: 1.5;
-        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      .edit-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        justify-content: flex-end;
+      }
+
+      .save-btn, .cancel-btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .save-btn {
+        background: #22c55e;
+        color: #0b0b0f;
+      }
+
+      .save-btn:hover {
+        background: #16a34a;
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+      }
+
+      .cancel-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .cancel-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      [contenteditable="true"]:focus {
+        outline: 2px solid rgba(34, 197, 94, 0.5);
+        outline-offset: 2px;
+      }
+
+      .format-toolbar {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        padding: 8px;
+        background: rgba(34, 197, 94, 0.15);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        border-radius: 4px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+      }
+
+      .format-btn {
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: 4px;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .format-btn:hover {
+        background: rgba(34, 197, 94, 0.25);
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+      }
+
+      .format-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .toolbar-divider {
+        width: 1px;
+        height: 24px;
+        background: rgba(34, 197, 94, 0.3);
+        margin: 0 4px;
+      }
+
+      .format-select {
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: 4px;
+        height: 32px;
+        padding: 0 8px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .format-select:hover {
+        background: rgba(34, 197, 94, 0.25);
+      }
+
+      .format-color {
+        width: 40px;
+        height: 32px;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: 4px;
+        background: rgba(34, 197, 94, 0.1);
+        cursor: pointer;
+        padding: 2px;
+      }
+
+      .format-color::-webkit-color-swatch-wrapper {
+        padding: 0;
+      }
+
+      .format-color::-webkit-color-swatch {
+        border: none;
+        border-radius: 2px;
       }
     </style>
 </head>
@@ -485,6 +894,37 @@
             <div class="brand">
                 <img src="https://kappa.lol/aDnGzF" alt="FIB Logo">
                 <h1>FEDERAL INVESTIGATION BUREAU<br>STANDARD OPERATING PROCEDURES</h1>
+            </div>
+            <div class="nav-buttons">
+                <a href="https://fibdatabase.cloud/" class="nav-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    Internal Database
+                </a>
+                <a href="https://fibdatabase.cloud/training-database" class="nav-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    Training Database
+                </a>
+                <a href="https://fibdatabase.cloud/sops" class="nav-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    SOPs
+                </a>
+            </div>
+            <div class="auth-controls">
+                <span id="userEmail" style="display: none;"></span>
+                <button id="loginBtn" onclick="showLogin()" style="display: block;">Admin Login</button>
+                <button id="logoutBtn" onclick="logout()" style="display: none;">Logout</button>
             </div>
         </div>
 
