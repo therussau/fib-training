@@ -101,6 +101,12 @@
               title: 'INTERNAL RELATIONS',
               lead: '',
               content: ''
+            },
+            {
+              id: 'bureauWideStandards',
+              title: 'BUREAU WIDE STANDARDS',
+              lead: '',
+              content: ''
             }
           ]
         },
@@ -416,6 +422,31 @@
           const snapshot = await window.fbGet(window.fbRef(window.fbDatabase, 'sops'));
           if (snapshot.exists()) {
             window.sops = snapshot.val();
+            
+            // Merge any new sections from defaults into existing data
+            let needsUpdate = false;
+            Object.keys(window.defaultSOPs).forEach(groupId => {
+              if (!window.sops[groupId]) {
+                // Group doesn't exist, add it
+                window.sops[groupId] = window.defaultSOPs[groupId];
+                needsUpdate = true;
+              } else {
+                // Check for new sections within the group
+                window.defaultSOPs[groupId].sections.forEach(defaultSection => {
+                  const existingSection = window.sops[groupId].sections.find(s => s.id === defaultSection.id);
+                  if (!existingSection) {
+                    // New section found, add it
+                    window.sops[groupId].sections.push(defaultSection);
+                    needsUpdate = true;
+                  }
+                });
+              }
+            });
+            
+            // Save if we added any new sections
+            if (needsUpdate) {
+              await saveSOPs();
+            }
           } else {
             window.sops = window.defaultSOPs;
             await saveSOPs();
