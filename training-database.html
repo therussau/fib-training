@@ -426,6 +426,34 @@
       height: 16px;
     }
 
+  /* Drag and Drop Styles */
+  .drag-handle {
+    cursor: grab;
+    padding: 8px;
+    color: #9ca3af;
+    font-size: 18px;
+    user-select: none;
+    transition: color 0.2s;
+    text-align: center;
+  }
+  
+  .drag-handle:hover {
+    color: #fde047;
+  }
+  
+  .drag-handle:active {
+    cursor: grabbing;
+  }
+  
+  .dragging {
+    opacity: 0.5;
+    background: rgba(253, 224, 71, 0.1) !important;
+  }
+  
+  .drag-over {
+    border-top: 2px solid #fde047 !important;
+  }
+
   .toolbar {
     position: sticky; top: 0; z-index: 50;
     display:flex; flex-direction: column; gap:16px; margin-bottom:24px;
@@ -2549,6 +2577,7 @@
         <table class="training-table" id="trainingTable">
           <thead>
             <tr>
+              <th style="width: 40px;"></th>
               <th>#</th>
               <th>Rank</th>
               <th>Name</th>
@@ -2574,6 +2603,7 @@
               <table class="training-table" id="rosterTable">
                 <thead>
                   <tr>
+                    <th style="width: 40px;"></th>
                     <th>#</th>
                     <th>Rank</th>
                     <th>Name</th>
@@ -2761,7 +2791,7 @@
           try {
             console.log('Received trainees update');
           const raw = snapshot.val() || {};
-            trainees = Object.entries(raw).map(([id, data]) => {
+            trainees = Object.entries(raw).map(([id, data], index) => {
               // Ensure trainee has required fields
               const trainee = {
                 id,
@@ -2778,10 +2808,13 @@
                 strikes: data.strikes || [],
                 commendations: data.commendations || [],
                 timeline: data.timeline || [],
+                order: data.order !== undefined ? data.order : index,
                 ...data
               };
               return ensureTraineeSkills(trainee);
             });
+            // Sort by order field
+            trainees.sort((a, b) => a.order - b.order);
             console.log('Processed trainees:', trainees);
             updateTrainingTable();
           } catch (error) {
@@ -2796,7 +2829,7 @@
           try {
             console.log('Received roster update');
             const raw = snapshot.val() || {};
-            roster = Object.entries(raw).map(([id, data]) => {
+            roster = Object.entries(raw).map(([id, data], index) => {
               // Ensure roster entry has required fields
               const trainee = {
                 id,
@@ -2815,10 +2848,13 @@
                 timeline: data.timeline || [],
                 promotedOn: data.promotedOn || null,
                 profilePicture: data.profilePicture || '',
+                order: data.order !== undefined ? data.order : index,
                 ...data
               };
               return ensureTraineeSkills(trainee);
             });
+            // Sort by order field
+            roster.sort((a, b) => a.order - b.order);
             console.log('Processed roster:', roster);
             updateRosterTable();
           } catch (error) {
@@ -3124,7 +3160,8 @@
             strikes: trainee.strikes || [],
             commendations: trainee.commendations || [],
             timeline: trainee.timeline || [],
-            profilePicture: trainee.profilePicture || ''
+            profilePicture: trainee.profilePicture || '',
+            order: trainee.order !== undefined ? trainee.order : 0
           };
         });
 
@@ -3154,7 +3191,8 @@
             commendations: entry.commendations || [],
             timeline: entry.timeline || [],
             promotedOn: entry.promotedOn || new Date().toISOString(),
-            profilePicture: entry.profilePicture || ''
+            profilePicture: entry.profilePicture || '',
+            order: entry.order !== undefined ? entry.order : 0
           };
         });
 
@@ -3289,11 +3327,23 @@
       const tbody = document.getElementById('rosterTableBody');
       tbody.innerHTML = '';
       
-      roster.forEach(trainee => {
+      roster.forEach((trainee, index) => {
         try {
           const row = document.createElement('tr');
           row.className = 'trainee-row';
+          row.draggable = true;
+          row.dataset.traineeId = trainee.id;
+          row.dataset.index = index;
           row.onclick = () => showProfile(trainee);
+          
+          // Drag handle cell
+          const dragCell = document.createElement('td');
+          dragCell.className = 'drag-handle';
+          dragCell.style.width = '40px';
+          dragCell.innerHTML = '⠿'; // Drag icon
+          dragCell.title = 'Drag to reorder';
+          dragCell.onclick = (e) => e.stopPropagation(); // Prevent row click when dragging
+          row.appendChild(dragCell);
           
           // # (Callsign) cell
           const callsignCell = createEditableCell(trainee, 'callsign', 'callsign');
@@ -3564,6 +3614,79 @@
         } catch (error) {
           console.error('Error creating row for roster trainee:', trainee, error);
         }
+      });
+
+      // Add drag and drop event listeners
+      setupDragAndDrop(tbody, 'roster');
+    }
+
+    // Drag and drop functionality
+    function setupDragAndDrop(tbody, listType) {
+      const rows = tbody.querySelectorAll('tr[draggable="true"]');
+      let draggedRow = null;
+
+      rows.forEach(row => {
+        row.addEventListener('dragstart', (e) => {
+          draggedRow = row;
+          row.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/html', row.innerHTML);
+        });
+
+        row.addEventListener('dragend', (e) => {
+          row.classList.remove('dragging');
+          // Remove all drag-over classes
+          rows.forEach(r => r.classList.remove('drag-over'));
+        });
+
+        row.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          
+          if (draggedRow !== row) {
+            row.classList.add('drag-over');
+          }
+        });
+
+        row.addEventListener('dragleave', (e) => {
+          row.classList.remove('drag-over');
+        });
+
+        row.addEventListener('drop', async (e) => {
+          e.preventDefault();
+          row.classList.remove('drag-over');
+          
+          if (draggedRow !== row && draggedRow) {
+            const list = listType === 'trainees' ? trainees : roster;
+            const draggedIndex = parseInt(draggedRow.dataset.index);
+            const targetIndex = parseInt(row.dataset.index);
+            
+            console.log(`Reordering ${listType}: Moving index ${draggedIndex} to ${targetIndex}`);
+            
+            // Reorder the array
+            const [removed] = list.splice(draggedIndex, 1);
+            list.splice(targetIndex, 0, removed);
+            
+            // Update order fields
+            list.forEach((item, index) => {
+              item.order = index;
+            });
+            
+            console.log('Updated order values:', list.map(item => ({ name: item.name, order: item.order })));
+            
+            // Save to Firebase
+            console.log('Saving reordered list to Firebase...');
+            await saveTrainees();
+            console.log('Save complete!');
+            
+            // Refresh the display
+            if (listType === 'trainees') {
+              updateTrainingTable();
+            } else {
+              updateRosterTable();
+            }
+          }
+        });
       });
     }
 
@@ -4060,6 +4183,17 @@
       trainees.forEach((trainee, index) => {
         try {
           const row = document.createElement('tr');
+          row.draggable = true;
+          row.dataset.traineeId = trainee.id;
+          row.dataset.index = index;
+
+          // Drag handle cell
+          const dragCell = document.createElement('td');
+          dragCell.className = 'drag-handle';
+          dragCell.style.width = '40px';
+          dragCell.innerHTML = '⠿'; // Drag icon
+          dragCell.title = 'Drag to reorder';
+          row.appendChild(dragCell);
 
           // # (Callsign) cell
           const callsignCell = createEditableCell(trainee, 'callsign', 'callsign');
@@ -4435,6 +4569,10 @@
           console.error('Error creating row for trainee:', trainee, error);
         }
       });
+
+      // Add drag and drop event listeners
+      setupDragAndDrop(tbody, 'trainees');
+      
       } catch (error) {
         console.error('Error updating training table:', error);
       }
