@@ -447,6 +447,473 @@
         </div>
 
         <div class="section">
+            <h2>Use of Force Continuum</h2>
+            <p>The Use of Force Continuum is a critical framework that guides officers in applying appropriate levels of force based on the situation. Always use the minimum force necessary to safely control a situation.</p>
+
+            <style>
+                .force-matrix {
+                    display: grid;
+                    gap: 12px;
+                    margin: 20px 0;
+                }
+                .force-level {
+                    background: rgba(0,0,0,.2);
+                    border-left: 4px solid;
+                    border-radius: 8px;
+                    padding: 16px;
+                    transition: all 0.2s ease;
+                }
+                .force-level:hover {
+                    transform: translateX(4px);
+                    box-shadow: 0 4px 12px rgba(0,0,0,.3);
+                }
+                .force-level-1 { border-color: #22c55e; background: rgba(34,197,94,.05); }
+                .force-level-2 { border-color: #3b82f6; background: rgba(59,130,246,.05); }
+                .force-level-3 { border-color: #f59e0b; background: rgba(245,158,11,.05); }
+                .force-level-4 { border-color: #f97316; background: rgba(249,115,22,.05); }
+                .force-level-5 { border-color: #ef4444; background: rgba(239,68,68,.05); }
+                .force-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 8px;
+                }
+                .force-title {
+                    font-weight: 700;
+                    font-size: 16px;
+                    color: #fde047;
+                }
+                .force-category {
+                    font-size: 12px;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                }
+                .force-level-1 .force-category { background: rgba(34,197,94,.2); color: #22c55e; }
+                .force-level-2 .force-category { background: rgba(59,130,246,.2); color: #3b82f6; }
+                .force-level-3 .force-category { background: rgba(245,158,11,.2); color: #f59e0b; }
+                .force-level-4 .force-category { background: rgba(249,115,22,.2); color: #f97316; }
+                .force-level-5 .force-category { background: rgba(239,68,68,.2); color: #ef4444; }
+                .force-description {
+                    color: #d1d5db;
+                    font-size: 14px;
+                    line-height: 1.6;
+                }
+            </style>
+
+            <div class="force-matrix">
+                <div class="force-level force-level-1">
+                    <div class="force-header">
+                        <span class="force-title">LEVEL ONE - Officer Presence</span>
+                        <span class="force-category">No Force Required</span>
+                    </div>
+                    <div class="force-description">
+                        Just presence in area. The mere presence of a law enforcement officer in uniform can deter criminal activity and establish control.
+                    </div>
+                </div>
+
+                <div class="force-level force-level-2">
+                    <div class="force-header">
+                        <span class="force-title">LEVEL TWO - Verbalization</span>
+                        <span class="force-category">No Force Required</span>
+                    </div>
+                    <div class="force-description">
+                        Utilization of verbal commands. Clear, professional communication and lawful orders to gain compliance without physical force.
+                    </div>
+                </div>
+
+                <div class="force-level force-level-3">
+                    <div class="force-header">
+                        <span class="force-title">LEVEL THREE - Empty Hand Control</span>
+                        <span class="force-category">Low-Level Force</span>
+                    </div>
+                    <div class="force-description">
+                        Involves body force including punches, kicks, tackles, and grabbing techniques. Used when verbal commands fail and physical control is necessary.
+                    </div>
+                </div>
+
+                <div class="force-level force-level-4">
+                    <div class="force-header">
+                        <span class="force-title">LEVEL FOUR - Less Lethal</span>
+                        <span class="force-category">Intermediate Force</span>
+                    </div>
+                    <div class="force-description">
+                        Baton, flashlight, tasers, and other less-lethal tools. Designed to incapacitate temporarily without causing permanent injury or death.
+                    </div>
+                </div>
+
+                <div class="force-level force-level-5">
+                    <div class="force-header">
+                        <span class="force-title">LEVEL FIVE - Lethal Force</span>
+                        <span class="force-category">Deadly Force</span>
+                    </div>
+                    <div class="force-description">
+                        Lethal weapons such as firearms. Only authorized when there is an imminent threat of death or serious bodily injury to yourself or others.
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning">
+                De-escalation should always be attempted when safe and feasible. Use only the force necessary to safely resolve the situation.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Legal Standards & Definitions</h2>
+            <p>Understanding these legal concepts is fundamental to proper law enforcement and ensuring your actions are constitutional and admissible in court.</p>
+
+            <style>
+                .legal-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 20px;
+                    margin: 20px 0;
+                }
+                .legal-card {
+                    background: rgba(34,197,94,.05);
+                    border: 2px solid rgba(34,197,94,.2);
+                    border-radius: 8px;
+                    padding: 20px;
+                    transition: all 0.2s ease;
+                }
+                .legal-card:hover {
+                    border-color: rgba(34,197,94,.4);
+                    box-shadow: 0 4px 16px rgba(34,197,94,.1);
+                }
+                .legal-card-title {
+                    color: #22c55e;
+                    font-size: 18px;
+                    font-weight: 700;
+                    margin-bottom: 12px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                .legal-card-content {
+                    color: #d1d5db;
+                    font-size: 14px;
+                    line-height: 1.7;
+                }
+                .legal-highlight {
+                    background: rgba(253,224,71,.1);
+                    border-left: 3px solid #fde047;
+                    padding: 12px;
+                    margin: 12px 0;
+                    border-radius: 4px;
+                }
+                .legal-highlight strong {
+                    color: #fde047;
+                }
+            </style>
+
+            <div class="legal-grid">
+                <div class="legal-card">
+                    <div class="legal-card-title">Reasonable Suspicion</div>
+                    <div class="legal-card-content">
+                        <strong style="color: #22c55e;">Reasonable Suspicion</strong> is the legal standard where a law enforcement officer has <strong>specific, articulable facts</strong> that suggest a person <strong>may be</strong> involved in criminal activity.
+                        <div class="legal-highlight">
+                            <strong>Required For:</strong> Terry Stops, Brief Detainment, Pat-Down Searches (if officer believes subject is armed and dangerous)
+                        </div>
+                        <p style="margin-top: 12px;"><strong>Example:</strong> Officer observes a person looking into car windows at 3 AM in a parking lot and walking away quickly when approached - this creates reasonable suspicion to briefly detain and investigate.</p>
+                    </div>
+                </div>
+
+                <div class="legal-card">
+                    <div class="legal-card-title">Probable Cause</div>
+                    <div class="legal-card-content">
+                        <strong style="color: #22c55e;">Probable Cause</strong> is the reasonable belief, based on <strong>facts and circumstances</strong>, that a crime <strong>has been</strong>, <strong>is being</strong>, or <strong>will be</strong> committed, or that evidence of a crime can be found in a specific location.
+                        <div class="legal-highlight">
+                            <strong>Required For:</strong> Arrests, Search Warrants, Warrantless Searches (under exceptions), Seizure of Evidence
+                        </div>
+                        <p style="margin-top: 12px;"><strong>Example:</strong> Officer smells marijuana, sees drug paraphernalia in plain view, and the suspect admits to having drugs - this establishes probable cause for arrest and search.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: #fde047; margin: 32px 0 16px;">Key Legal Actions</h3>
+
+            <div class="legal-grid">
+                <div class="legal-card" style="background: rgba(59,130,246,.05); border-color: rgba(59,130,246,.2);">
+                    <div class="legal-card-title" style="color: #3b82f6;">Detain</div>
+                    <div class="legal-card-content">
+                        A <strong style="color: #3b82f6;">detention</strong> is a brief holding for the purpose of investigation and questioning, based on <strong>Reasonable Suspicion</strong>.
+                        <div class="legal-highlight">
+                            <strong>Requirements:</strong>
+                            <ul style="margin: 8px 0; padding-left: 20px;">
+                                <li>Must be based on specific, articulable facts</li>
+                                <li>Duration MUST NOT be longer than reasonably required</li>
+                                <li>Person is not free to leave</li>
+                                <li>Does not require Miranda warnings unless questioning becomes custodial</li>
+                            </ul>
+                        </div>
+                        <p style="margin-top: 12px;"><strong>Remember:</strong> A detention can escalate to an arrest if probable cause develops during the investigation.</p>
+                    </div>
+                </div>
+
+                <div class="legal-card" style="background: rgba(239,68,68,.05); border-color: rgba(239,68,68,.2);">
+                    <div class="legal-card-title" style="color: #ef4444;">Arrest</div>
+                    <div class="legal-card-content">
+                        An <strong style="color: #ef4444;">arrest</strong> is made with <strong>Probable Cause</strong>, taking a suspect into custody with the purpose of charging them with a crime.
+                        <div class="legal-highlight">
+                            <strong>Requirements:</strong>
+                            <ul style="margin: 8px 0; padding-left: 20px;">
+                                <li>Must have probable cause that a crime was committed</li>
+                                <li>Subject is not free to leave</li>
+                                <li><strong>Miranda warnings required</strong> before custodial interrogation</li>
+                                <li>Search incident to arrest is permitted</li>
+                            </ul>
+                        </div>
+                        <p style="margin-top: 12px;"><strong>Remember:</strong> An arrest is a significant deprivation of liberty and must be justified by probable cause.</p>
+                    </div>
+                </div>
+
+                <div class="legal-card" style="background: rgba(168,85,247,.05); border-color: rgba(168,85,247,.2);">
+                    <div class="legal-card-title" style="color: #a855f7;">Search Warrant</div>
+                    <div class="legal-card-content">
+                        A <strong style="color: #a855f7;">search warrant</strong> is a legal document issued by a judge authorizing law enforcement to search a specific location for specific evidence.
+                        <div class="legal-highlight">
+                            <strong>Requirements:</strong>
+                            <ul style="margin: 8px 0; padding-left: 20px;">
+                                <li>Must be supported by <strong>probable cause</strong></li>
+                                <li>Must describe with <strong>particularity</strong> the place to be searched and items to be seized</li>
+                                <li>Must be signed by a neutral magistrate or judge</li>
+                                <li>Generally required for searches of homes and private property</li>
+                            </ul>
+                        </div>
+                        <p style="margin-top: 12px;"><strong>Remember:</strong> The Fourth Amendment's warrant requirement protects citizens from unreasonable searches and seizures.</p>
+                    </div>
+                </div>
+
+                <div class="legal-card" style="background: rgba(236,72,153,.05); border-color: rgba(236,72,153,.2);">
+                    <div class="legal-card-title" style="color: #ec4899;">Exigent Circumstances</div>
+                    <div class="legal-card-content">
+                        <strong style="color: #ec4899;">Exigent circumstances</strong> are emergency situations that justify warrantless entry or search when there is no time to obtain a warrant.
+                        <div class="legal-highlight">
+                            <strong>Qualifying Situations:</strong>
+                            <ul style="margin: 8px 0; padding-left: 20px;">
+                                <li><strong>Hot pursuit</strong> of a fleeing felon</li>
+                                <li><strong>Imminent destruction</strong> of evidence</li>
+                                <li><strong>Emergency aid</strong> - preventing harm to persons</li>
+                                <li><strong>Preventing escape</strong> of a dangerous suspect</li>
+                            </ul>
+                        </div>
+                        <p style="margin-top: 12px;"><strong>Remember:</strong> You must articulate why obtaining a warrant was not feasible given the circumstances.</p>
+                    </div>
+                </div>
+
+                <div class="legal-card" style="background: rgba(20,184,166,.05); border-color: rgba(20,184,166,.2);">
+                    <div class="legal-card-title" style="color: #14b8a6;">Miranda Rights</div>
+                    <div class="legal-card-content">
+                        <strong style="color: #14b8a6;">Miranda rights</strong> are constitutional warnings that must be given before <strong>custodial interrogation</strong> to protect the Fifth Amendment right against self-incrimination.
+                        <div class="legal-highlight">
+                            <strong>The Warning:</strong>
+                            <ul style="margin: 8px 0; padding-left: 20px;">
+                                <li>You have the right to remain silent</li>
+                                <li>Anything you say can be used against you in court</li>
+                                <li>You have the right to an attorney</li>
+                                <li>If you cannot afford one, one will be appointed for you</li>
+                            </ul>
+                        </div>
+                        <p style="margin-top: 12px;"><strong>Remember:</strong> Required only when BOTH custody AND interrogation are present. General booking questions and spontaneous statements don't require Miranda.</p>
+                    </div>
+                </div>
+
+                <div class="legal-card" style="background: rgba(251,146,60,.05); border-color: rgba(251,146,60,.2);">
+                    <div class="legal-card-title" style="color: #fb923c;">Plain View Doctrine</div>
+                    <div class="legal-card-content">
+                        <strong style="color: #fb923c;">Plain view doctrine</strong> allows officers to seize evidence without a warrant when it is clearly visible during a lawful observation.
+                        <div class="legal-highlight">
+                            <strong>Requirements (All Must Be Met):</strong>
+                            <ul style="margin: 8px 0; padding-left: 20px;">
+                                <li>Officer must be <strong>lawfully present</strong> at the location</li>
+                                <li>Evidence must be in <strong>plain view</strong> - no searching required</li>
+                                <li>The <strong>incriminating nature</strong> must be immediately apparent</li>
+                                <li>Officer must have <strong>lawful access</strong> to seize the item</li>
+                            </ul>
+                        </div>
+                        <p style="margin-top: 12px;"><strong>Example:</strong> During a lawful traffic stop, officer sees drugs on the passenger seat in plain view - this can be seized without a warrant.</p>
+                    </div>
+                </div>
+
+                <div class="legal-card" style="background: rgba(245,158,11,.05); border-color: rgba(245,158,11,.2); grid-column: 1 / -1;">
+                    <div class="legal-card-title" style="color: #f59e0b;">Fruit of the Poisonous Tree</div>
+                    <div class="legal-card-content">
+                        <strong style="color: #f59e0b;">Fruit of the Poisonous Tree</strong> is a legal doctrine stating that evidence derived from <strong>illegal searches, arrests, or interrogations</strong> is <strong>inadmissible in court</strong>.
+                        <div class="legal-highlight">
+                            <strong>Key Points:</strong>
+                            <ul style="margin: 8px 0; padding-left: 20px;">
+                                <li>If the initial action (the "tree") is illegal, all evidence gained from it (the "fruit") is tainted</li>
+                                <li>This includes physical evidence, confessions, and witness statements obtained as a result</li>
+                                <li>Applies to violations of the Fourth, Fifth, and Sixth Amendments</li>
+                                <li><strong>Exceptions exist:</strong> Independent Source, Inevitable Discovery, Attenuation</li>
+                            </ul>
+                        </div>
+                        <p style="margin-top: 12px;"><strong>Example:</strong> If officers conduct an illegal search and find a gun, then the suspect confesses to using that gun in a robbery, both the gun AND the confession may be inadmissible as "fruit of the poisonous tree."</p>
+                        <div class="warning" style="margin-top: 16px;">
+                            Always ensure your initial contact, search, or arrest is legal and constitutional. An illegal action can invalidate an entire case.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>NATO Phonetic Alphabet</h2>
+            <p>The phonetic alphabet ensures clear communication over radio, especially when spelling names, license plates, or other critical information.</p>
+
+            <style>
+                .phonetic-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                    gap: 10px;
+                    margin: 20px 0;
+                }
+                .phonetic-item {
+                    background: rgba(34,197,94,.05);
+                    border: 1px solid rgba(34,197,94,.2);
+                    border-radius: 6px;
+                    padding: 12px;
+                    text-align: center;
+                    transition: all 0.2s ease;
+                }
+                .phonetic-item:hover {
+                    background: rgba(34,197,94,.1);
+                    border-color: rgba(34,197,94,.4);
+                    transform: scale(1.05);
+                }
+                .phonetic-letter {
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: #22c55e;
+                    margin-bottom: 4px;
+                    font-family: 'Courier New', monospace;
+                }
+                .phonetic-word {
+                    font-size: 14px;
+                    color: #d1d5db;
+                    font-weight: 600;
+                }
+            </style>
+
+            <div class="phonetic-grid">
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">A</div>
+                    <div class="phonetic-word">Alpha</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">B</div>
+                    <div class="phonetic-word">Bravo</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">C</div>
+                    <div class="phonetic-word">Charlie</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">D</div>
+                    <div class="phonetic-word">Delta</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">E</div>
+                    <div class="phonetic-word">Echo</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">F</div>
+                    <div class="phonetic-word">Foxtrot</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">G</div>
+                    <div class="phonetic-word">Golf</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">H</div>
+                    <div class="phonetic-word">Hotel</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">I</div>
+                    <div class="phonetic-word">India</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">J</div>
+                    <div class="phonetic-word">Juliett</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">K</div>
+                    <div class="phonetic-word">Kilo</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">L</div>
+                    <div class="phonetic-word">Lima</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">M</div>
+                    <div class="phonetic-word">Mike</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">N</div>
+                    <div class="phonetic-word">November</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">O</div>
+                    <div class="phonetic-word">Oscar</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">P</div>
+                    <div class="phonetic-word">Papa</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">Q</div>
+                    <div class="phonetic-word">Quebec</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">R</div>
+                    <div class="phonetic-word">Romeo</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">S</div>
+                    <div class="phonetic-word">Sierra</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">T</div>
+                    <div class="phonetic-word">Tango</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">U</div>
+                    <div class="phonetic-word">Uniform</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">V</div>
+                    <div class="phonetic-word">Victor</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">W</div>
+                    <div class="phonetic-word">Whiskey</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">X</div>
+                    <div class="phonetic-word">X-ray</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">Y</div>
+                    <div class="phonetic-word">Yankee</div>
+                </div>
+                <div class="phonetic-item">
+                    <div class="phonetic-letter">Z</div>
+                    <div class="phonetic-word">Zulu</div>
+                </div>
+            </div>
+
+            <div class="tip">
+                Practice spelling your name, common street names, and license plate combinations using the phonetic alphabet until it becomes second nature.
+            </div>
+
+            <div style="background: rgba(253,224,71,.1); border: 1px solid rgba(253,224,71,.2); border-radius: 8px; padding: 16px; margin-top: 16px;">
+                <strong style="color: #fde047;">Example Usage:</strong>
+                <p style="margin: 8px 0; color: #d1d5db;">License Plate "7XYZ123" would be transmitted as: "Seven, X-ray, Yankee, Zulu, One, Two, Three"</p>
+                <p style="margin: 8px 0; color: #d1d5db;">Name "Johnson" would be: "Juliett, Oscar, Hotel, November, Sierra, Oscar, November"</p>
+            </div>
+        </div>
+
+        <div class="section">
             <h2>Standard Operating Procedures</h2>
 
             <h3>Traffic Stops</h3>
@@ -840,6 +1307,132 @@
                     <td>Excellence in service, advanced specializations</td>
                 </tr>
             </table>
+        </div>
+
+        <div class="section" style="border: 2px solid #22c55e; background: rgba(34,197,94,.05);">
+            <h2 style="color: #22c55e; text-align: center; font-size: 28px;">🎉 Congratulations!</h2>
+            <p style="text-align: center; font-size: 18px; margin-bottom: 24px;">Congratulations on making it through the FIB Academy, grab your gear below and get trained in the field!</p>
+            
+            <h3 style="color: #fde047; margin-bottom: 16px;">Essential Field Gear Checklist</h3>
+            
+            <style>
+                .gear-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                    gap: 12px;
+                    margin-top: 20px;
+                }
+                .gear-item {
+                    background: rgba(0,0,0,.3);
+                    border: 1px solid rgba(34,197,94,.3);
+                    border-radius: 8px;
+                    padding: 12px 16px;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    transition: all 0.2s ease;
+                }
+                .gear-item:hover {
+                    background: rgba(34,197,94,.1);
+                    border-color: rgba(34,197,94,.5);
+                    transform: translateX(4px);
+                }
+                .gear-item::before {
+                    content: "✓";
+                    color: #22c55e;
+                    font-weight: bold;
+                    font-size: 18px;
+                }
+                .gear-quantity {
+                    color: #fde047;
+                    font-weight: 700;
+                    margin-right: 8px;
+                }
+                .gear-name {
+                    color: #fff;
+                    flex: 1;
+                }
+                .already-issued {
+                    color: #9ca3af;
+                    font-size: 12px;
+                    font-style: italic;
+                }
+            </style>
+
+            <div class="gear-grid">
+                <div class="gear-item">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">Camera</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">Camera Bag</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">Spike Strip</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">GSR Test Kit</span>
+                </div>
+                <div class="gear-item" style="opacity: 0.6;">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">Radio <span class="already-issued">(already have)</span></span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">Handcuffs</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">20x</span>
+                    <span class="gear-name">Armour Plates</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">PD Vest</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">15x</span>
+                    <span class="gear-name">Pistol Ammo</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">5x</span>
+                    <span class="gear-name">IFAKS</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">10x</span>
+                    <span class="gear-name">First Aid Kit</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">MDT</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">Tactical Light</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">Flashlight</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">PD Baton</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">Tazer</span>
+                </div>
+                <div class="gear-item">
+                    <span class="gear-quantity">1x</span>
+                    <span class="gear-name">FIB Pistol</span>
+                </div>
+            </div>
+
+            <div class="tip" style="margin-top: 24px;">
+                Make sure to check off each item as you collect it. Report to your Field Training Officer once you have all your equipment!
+            </div>
         </div>
     </div>
 </body>
