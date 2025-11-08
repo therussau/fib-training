@@ -357,6 +357,393 @@
       padding: 20px;
     }
 
+    .roster-error {
+      text-align: center;
+      color: #ef4444;
+      font-weight: 600;
+      padding: 20px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    /* Agent Card Styles */
+    .roster-personnel-section {
+      width: 100%;
+    }
+
+    .roster-section-title {
+      color: #fde047;
+      font-size: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      text-shadow: 0 0 8px rgba(253,224,71,.2);
+      border-bottom: 2px solid #fde047;
+      padding: 12px 0 8px 0;
+      margin: 24px 0 16px 0;
+    }
+
+    .roster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .agent-card {
+      background: rgba(253, 224, 71, 0.05);
+      border: 1px solid rgba(253, 224, 71, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      gap: 16px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .agent-card:hover {
+      background: rgba(253, 224, 71, 0.1);
+      border-color: rgba(253, 224, 71, 0.4);
+      box-shadow: 0 4px 12px rgba(253, 224, 71, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .trainee-card {
+      background: rgba(59, 130, 246, 0.05);
+      border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .trainee-card:hover {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+    }
+
+    .agent-profile-pic {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: rgba(253, 224, 71, 0.1);
+      border: 2px solid rgba(253, 224, 71, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .trainee-card .agent-profile-pic {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .agent-profile-pic img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .agent-initials {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fde047;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    }
+
+    .trainee-card .agent-initials {
+      color: #3b82f6;
+    }
+
+    .agent-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .agent-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .agent-badge-num {
+      font-size: 12px;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      color: #fde047;
+      font-weight: 600;
+    }
+
+    .trainee-card .agent-badge-num {
+      color: #3b82f6;
+    }
+
+    .agent-rank {
+      font-size: 11px;
+      font-weight: 600;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 2px;
+    }
+
+    .agent-status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      width: fit-content;
+    }
+
+    .agent-status.status-active {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    .agent-status.status-inactive {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .agent-division {
+      font-size: 12px;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    .agent-discord {
+      font-size: 11px;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      color: #6b7280;
+    }
+
+    .agent-aliases {
+      font-size: 10px;
+      color: #6b7280;
+      font-style: italic;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (max-width: 768px) {
+      .roster-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .agent-card {
+        padding: 12px;
+      }
+      
+      .agent-profile-pic {
+        width: 60px;
+        height: 60px;
+      }
+      
+      .agent-initials {
+        font-size: 22px;
+      }
+    }
+
+    /* Roster Modal Styles */
+    .roster-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 10000;
+      overflow-y: auto;
+    }
+
+    .roster-modal-content {
+      background: #1a1a1a;
+      border: 2px solid #fde047;
+      border-radius: 12px;
+      max-width: 1200px;
+      margin: 40px auto;
+      box-shadow: 0 0 30px rgba(253, 224, 71, 0.3);
+    }
+
+    .roster-modal-header {
+      background: rgba(253, 224, 71, 0.1);
+      border-bottom: 2px solid #fde047;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .roster-modal-header h2 {
+      color: #fde047;
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    }
+
+    .roster-modal-close {
+      background: none;
+      border: none;
+      color: #fde047;
+      font-size: 32px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+    }
+
+    .roster-modal-close:hover {
+      transform: scale(1.2);
+    }
+
+    .roster-modal-body {
+      padding: 24px;
+    }
+
+    .roster-modal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .roster-modal-section {
+      background: rgba(253, 224, 71, 0.05);
+      border: 1px solid rgba(253, 224, 71, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .roster-modal-section h3 {
+      color: #fde047;
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 12px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .roster-modal-pic {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 2px solid rgba(253, 224, 71, 0.3);
+    }
+
+    .roster-modal-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .roster-modal-info div {
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .roster-modal-info strong {
+      color: #fde047;
+      font-weight: 600;
+      min-width: 120px;
+      display: inline-block;
+    }
+
+    .roster-modal-full-width {
+      grid-column: 1 / -1;
+    }
+
+    .roster-modal-timeline {
+      color: #fff;
+      font-size: 13px;
+    }
+
+    .roster-modal-timeline-item {
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border-left: 3px solid #fde047;
+      margin-bottom: 8px;
+      border-radius: 4px;
+    }
+
+    .roster-modal-timeline-date {
+      color: #fde047;
+      font-weight: 600;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      margin-bottom: 4px;
+    }
+
+    .roster-modal-notes {
+      color: #d1d5db;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      min-height: 60px;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+
+    .roster-modal-skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .roster-skill-badge {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .roster-skill-badge.completed {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    .roster-skill-badge.pending {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .roster-modal-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .roster-modal-content {
+        margin: 20px;
+      }
+    }
+
     .roster-loading {
       text-align: center;
       color: #fde047;
@@ -370,6 +757,168 @@
       0%, 100% { opacity: 0.6; }
       50% { opacity: 1; }
     }
+
+    /* Duty Timers Styles */
+    .duty-timers-section {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .duty-timers-section h2 {
+      margin: 0 0 16px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fde047;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      text-shadow: 0 0 8px rgba(253,224,71,.2);
+      border-bottom: 2px solid #fde047;
+      padding-bottom: 8px;
+    }
+
+    .timers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .timer-card {
+      background: rgba(0,0,0,.3);
+      border: 2px solid #fde047;
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .timer-card:hover {
+      background: rgba(253,224,71,.05);
+      box-shadow: 0 0 20px rgba(253,224,71,.2);
+    }
+
+    .timer-title {
+      color: #fde047;
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    }
+
+    .timer-display {
+      font-size: 48px;
+      font-weight: 700;
+      color: #fff;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+      text-shadow: 0 0 10px rgba(253,224,71,.3);
+      min-width: 180px;
+      text-align: center;
+    }
+
+    .timer-status {
+      font-size: 16px;
+      font-weight: 600;
+      min-height: 24px;
+      text-align: center;
+      letter-spacing: 0.05em;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    }
+
+    .timer-status.approved {
+      color: #22c55e;
+      animation: statusPulse 1.5s ease-in-out infinite;
+    }
+
+    .timer-status.no-fuel {
+      color: #ef4444;
+      animation: statusPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes statusPulse {
+      0%, 100% { opacity: 0.7; text-shadow: 0 0 5px currentColor; }
+      50% { opacity: 1; text-shadow: 0 0 15px currentColor; }
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .timer-btn {
+      padding: 8px 16px;
+      border: 2px solid;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    }
+
+    .start-btn {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+      border-color: #22c55e;
+    }
+
+    .start-btn:hover {
+      background: rgba(34, 197, 94, 0.2);
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+    }
+
+    .stop-btn {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border-color: #ef4444;
+    }
+
+    .stop-btn:hover {
+      background: rgba(239, 68, 68, 0.2);
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+
+    .reset-btn {
+      background: rgba(253, 224, 71, 0.1);
+      color: #fde047;
+      border-color: #fde047;
+    }
+
+    .reset-btn:hover {
+      background: rgba(253, 224, 71, 0.2);
+      box-shadow: 0 0 10px rgba(253, 224, 71, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .timers-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .timer-display {
+        font-size: 36px;
+      }
+      
+      .timer-controls {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .timer-btn {
+        width: 100%;
+      }
+    }
+
       .wrap { max-width: 1160px; margin: 0 auto; padding: 24px; }
 
     .toolbar {
@@ -956,6 +1505,7 @@
         <div class="controls">
           <div class="jumpbar">
             <a class="jump-btn" href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">TOP</a>
+            <a class="jump-btn" href="#sec-timers" onclick="document.getElementById('sec-timers').scrollIntoView({behavior: 'smooth'}); return false;">Duty Timers</a>
             <a class="jump-btn" href="#sec-infraction" onclick="document.getElementById('sec-infraction').scrollIntoView({behavior: 'smooth'}); return false;">Infraction</a>
             <a class="jump-btn" href="#sec-misdemeanor" onclick="document.getElementById('sec-misdemeanor').scrollIntoView({behavior: 'smooth'}); return false;">Misdemeanor</a>
             <a class="jump-btn" href="#sec-felony" onclick="document.getElementById('sec-felony').scrollIntoView({behavior: 'smooth'}); return false;">Felony</a>
@@ -978,33 +1528,41 @@
         <!-- Left Column -->
         <div class="codes-category ten-codes">
           <h3>10 CODES</h3>
-          <div class="code-item"><span class="code-number">10-1</span><span class="code-description">Receiving Poorly</span></div>
-          <div class="code-item"><span class="code-number">10-2</span><span class="code-description auto-dispatch">Receiving Well</span></div>
-          <div class="code-item"><span class="code-number">10-3</span><span class="code-description">Stop Transmitting</span></div>
-          <div class="code-item"><span class="code-number">10-4</span><span class="code-description">Affirmative (OK)</span></div>
-          <div class="code-item"><span class="code-number">10-9</span><span class="code-description">Repeat last</span></div>
-          <div class="code-item"><span class="code-number">10-13</span><span class="code-description critical">Officer Down</span></div>
-          <div class="code-item"><span class="code-number">10-19</span><span class="code-description">Returning to station</span></div>
+          <div class="code-item"><span class="code-number">10-2</span><span class="code-description">Loud and clear</span></div>
+          <div class="code-item"><span class="code-number">10-3</span><span class="code-description">Clear radio chatter</span></div>
+          <div class="code-item"><span class="code-number">10-4</span><span class="code-description">Acknowledgment (OK)</span></div>
+          <div class="code-item"><span class="code-number">10-6</span><span class="code-description">On-duty, Preoccupied</span></div>
+          <div class="code-item"><span class="code-number">10-7</span><span class="code-description">Busy (on a scene)</span></div>
+          <div class="code-item"><span class="code-number">10-8</span><span class="code-description">Back in Service</span></div>
+          <div class="code-item"><span class="code-number">10-9</span><span class="code-description">Repeat</span></div>
+          <div class="code-item"><span class="code-number">10-13A</span><span class="code-description critical">LEO down (Emergency)</span></div>
+          <div class="code-item"><span class="code-number">10-13B</span><span class="code-description critical">LEO down (Contained)</span></div>
+          <div class="code-item"><span class="code-number">10-19</span><span class="code-description">Returning to base</span></div>
           <div class="code-item"><span class="code-number">10-20</span><span class="code-description">Location</span></div>
+          <div class="code-item"><span class="code-number">10-22</span><span class="code-description">Disregard Last</span></div>
           <div class="code-item"><span class="code-number">10-23</span><span class="code-description">Arriving on scene</span></div>
-          <div class="code-item"><span class="code-number">10-31</span><span class="code-description">Suspicious activity</span></div>
-          <div class="code-item"><span class="code-number">10-35</span><span class="code-description">Illegal street racing</span></div>
-          <div class="code-item"><span class="code-number">10-38</span><span class="code-description">Traffic stop</span></div>
-          <div class="code-item"><span class="code-number">10-47</span><span class="code-description">Injured person</span></div>
+          <div class="code-item"><span class="code-number">10-25</span><span class="code-description">Converse in person</span></div>
         </div>
         
         <!-- Middle Column -->
         <div class="codes-category ten-codes">
           <h3>10 CODES</h3>
-          <div class="code-item"><span class="code-number">10-50</span><span class="code-description">Traffic Accident</span></div>
+          <div class="code-item"><span class="code-number">10-31</span><span class="code-description">Suspicious activity</span></div>
+          <div class="code-item"><span class="code-number">10-32</span><span class="code-description">Person with a gun</span></div>
+          <div class="code-item"><span class="code-number">10-35</span><span class="code-description">Illegal street racing</span></div>
+          <div class="code-item"><span class="code-number">10-38</span><span class="code-description">Traffic stop</span></div>
+          <div class="code-item"><span class="code-number">10-41</span><span class="code-description">Starting shift</span></div>
+          <div class="code-item"><span class="code-number">10-42</span><span class="code-description">Ending shift</span></div>
+          <div class="code-item"><span class="code-number">10-47</span><span class="code-description">Injured person</span></div>
+          <div class="code-item"><span class="code-number">10-50</span><span class="code-description">Vehicle collision</span></div>
           <div class="code-item"><span class="code-number">10-70</span><span class="code-description">Foot Pursuit</span></div>
           <div class="code-item"><span class="code-number">10-76</span><span class="code-description">Enroute</span></div>
-          <div class="code-item"><span class="code-number">10-80</span><span class="code-description">Chase in Progress</span></div>
+          <div class="code-item"><span class="code-number">10-77</span><span class="code-description">Backup</span></div>
+          <div class="code-item"><span class="code-number">10-78</span><span class="code-description critical">Backup (EMERGENCY)</span></div>
+          <div class="code-item"><span class="code-number">10-80</span><span class="code-description">Vehicle Pursuit</span></div>
           <div class="code-item"><span class="code-number">10-90</span><span class="code-description auto-dispatch">Robbery in progress</span></div>
-          <div class="code-item"><span class="code-number">10-93</span><span class="code-description">Petty Crime</span></div>
-          <div class="code-item"><span class="code-number">10-95</span><span class="code-description">Suspect in Custody</span></div>
+          <div class="code-item"><span class="code-number">10-95</span><span class="code-description">Suspect in custody</span></div>
           <div class="code-item"><span class="code-number">10-99</span><span class="code-description auto-dispatch">Shots Fired</span></div>
-          <div class="code-item"><span class="code-number">10-200</span><span class="code-description auto-dispatch">Potential Drug Sale</span></div>
         </div>
         
         <!-- Right Column -->
@@ -1014,22 +1572,53 @@
           <div class="code-item"><span class="code-number">Code 2</span><span class="code-description">Lights only</span></div>
           <div class="code-item"><span class="code-number">Code 3</span><span class="code-description">Both lights and siren</span></div>
           <div class="code-item"><span class="code-number">Code 4</span><span class="code-description">Scene under control</span></div>
-          <div class="code-item"><span class="code-number">Code 5</span><span class="code-description auto-dispatch">Felony Stop</span></div>
+          <div class="code-item"><span class="code-number">Code 5</span><span class="code-description auto-dispatch">Felony stop</span></div>
           <div class="code-item"><span class="code-number">Code 6</span><span class="code-description">Searching the area</span></div>
-          <div class="code-item"><span class="code-number">UTL</span><span class="code-description">Unable to Locate</span></div>
-          <div class="code-item"><span class="code-number">VCB</span><span class="code-description">Visual Contact Broken</span></div>
-          
-          <!-- Other 10 Codes directly underneath -->
-          <div style="margin-top: 8px;">
-            <h3 style="color: #22c55e; margin: 8px 0 8px 0; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">OTHER 10 CODES</h3>
-            <div class="code-item"><span class="code-number">10-6</span><span class="code-description">Not responding to calls</span></div>
-            <div class="code-item"><span class="code-number">10-7</span><span class="code-description">Busy (on a scene)</span></div>
-            <div class="code-item"><span class="code-number">10-8</span><span class="code-description">Back in Service</span></div>
-            <div class="code-item"><span class="code-number">10-41</span><span class="code-description">Starting Shift</span></div>
-            <div class="code-item"><span class="code-number">10-42</span><span class="code-description">Ending Shift</span></div>
-            <div class="code-item"><span class="code-number">10-100</span><span class="code-description">Game Crash</span></div>
-          </div>
+          <div class="code-item"><span class="code-number">UTL</span><span class="code-description">Unable to locate</span></div>
+          <div class="code-item"><span class="code-number">VCB</span><span class="code-description">Visual contact broken</span></div>
         </div>
+    </div>
+  </div>
+
+  <!-- DUTY TIMERS -->
+  <div id="sec-timers" class="duty-timers-section">
+    <h2>DUTY TIMERS</h2>
+    <div class="timers-grid">
+      <!-- PBS Timer -->
+      <div class="timer-card">
+        <h3 class="timer-title">PBS Timer</h3>
+        <div class="timer-display" id="pbsDisplay">10:00</div>
+        <div class="timer-status" id="pbsStatus"></div>
+        <div class="timer-controls">
+          <button class="timer-btn start-btn" onclick="startPBSTimer()">Start</button>
+          <button class="timer-btn stop-btn" onclick="stopPBSTimer()">Stop</button>
+          <button class="timer-btn reset-btn" onclick="resetPBSTimer()">Reset</button>
+        </div>
+      </div>
+
+      <!-- Cell Timer -->
+      <div class="timer-card">
+        <h3 class="timer-title">Cell Timer</h3>
+        <div class="timer-display" id="cellDisplay">00:00</div>
+        <div class="timer-status" id="cellStatus"></div>
+        <div class="timer-controls">
+          <button class="timer-btn start-btn" onclick="startCellTimer()">Start</button>
+          <button class="timer-btn stop-btn" onclick="stopCellTimer()">Stop</button>
+          <button class="timer-btn reset-btn" onclick="resetCellTimer()">Reset</button>
+        </div>
+      </div>
+
+      <!-- Helicopter Fuel Timer -->
+      <div class="timer-card">
+        <h3 class="timer-title">Helicopter Fuel</h3>
+        <div class="timer-display" id="heliDisplay">15:00</div>
+        <div class="timer-status" id="heliStatus"></div>
+        <div class="timer-controls">
+          <button class="timer-btn start-btn" onclick="startHeliTimer()">Start</button>
+          <button class="timer-btn stop-btn" onclick="stopHeliTimer()">Stop</button>
+          <button class="timer-btn reset-btn" onclick="resetHeliTimer()">Reset</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1227,7 +1816,159 @@
         <div id="root"></div>
       </div>
 
+  <!-- Roster Person Details Modal -->
+  <div id="rosterModal" class="roster-modal">
+    <div class="roster-modal-content">
+      <div class="roster-modal-header">
+        <h2 id="rosterModalName"></h2>
+        <button class="roster-modal-close" onclick="closeRosterModal()">&times;</button>
+      </div>
+      <div class="roster-modal-body">
+        <div class="roster-modal-grid">
+          <!-- Profile Picture -->
+          <div class="roster-modal-section">
+            <img id="rosterModalPic" class="roster-modal-pic" src="" alt="Profile">
+          </div>
+          
+          <!-- Basic Info -->
+          <div class="roster-modal-section">
+            <h3>Basic Information</h3>
+            <div class="roster-modal-info">
+              <div><strong>Badge:</strong> <span id="rosterModalBadge"></span></div>
+              <div><strong>Rank:</strong> <span id="rosterModalRank"></span></div>
+              <div><strong>Status:</strong> <span id="rosterModalStatus"></span></div>
+              <div><strong>Callsign:</strong> <span id="rosterModalCallsign"></span></div>
+              <div><strong>Codename:</strong> <span id="rosterModalCodename"></span></div>
+              <div><strong>UC Alias:</strong> <span id="rosterModalUC"></span></div>
+              <div><strong>Division:</strong> <span id="rosterModalDivision"></span></div>
+              <div><strong>Department:</strong> <span id="rosterModalDepartment"></span></div>
+              <div><strong>Handler:</strong> <span id="rosterModalHandler"></span></div>
+            </div>
+          </div>
+          
+          <!-- Training Skills (for trainees) -->
+          <div class="roster-modal-section" id="rosterModalSkillsSection" style="display: none;">
+            <h3>Training Progress</h3>
+            <div id="rosterModalSkills" class="roster-modal-skills"></div>
+          </div>
+          
+          <!-- Record -->
+          <div class="roster-modal-section">
+            <h3>Record</h3>
+            <div class="roster-modal-info">
+              <div><strong>Strikes:</strong> <span id="rosterModalStrikes"></span></div>
+              <div><strong>Commendations:</strong> <span id="rosterModalCommendations"></span></div>
+            </div>
+          </div>
+          
+          <!-- Timeline -->
+          <div class="roster-modal-section roster-modal-full-width">
+            <h3>Timeline</h3>
+            <div id="rosterModalTimeline" class="roster-modal-timeline"></div>
+          </div>
+          
+          <!-- Notes -->
+          <div class="roster-modal-section roster-modal-full-width">
+            <h3>Notes</h3>
+            <div id="rosterModalNotes" class="roster-modal-notes"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
     <script>
+    /* ---------- Firebase Initialization ---------- */
+    let fbDatabase, fbRef, fbOnValue, fbGet;
+    let rosterData = [];
+    let traineesData = [];
+
+    // Helper function to expand division abbreviations
+    function expandDivisions(divisionsArray) {
+      if (!divisionsArray || divisionsArray.length === 0) return 'N/A';
+      
+      const divisionMap = {
+        'oc': 'Organized Crime',
+        'cl': 'Criminal Law',
+        'sn': 'Serial Numbers',
+        'ia': 'Internal Affairs',
+        'la': 'Los Angeles',
+        'bc': 'Blaine County',
+        'pd': 'Paleto Division',
+        'sd': 'Sandy Division',
+        'training': 'Training',
+        'hr': 'Human Resources',
+        'tac': 'Tactical',
+        'cyber': 'Cyber Crime',
+        'narcotics': 'Narcotics',
+        'gang': 'Gang Unit',
+        'swat': 'SWAT',
+        'uc': 'Undercover'
+      };
+      
+      return divisionsArray.map(div => {
+        const divLower = div.toLowerCase().trim();
+        return divisionMap[divLower] || div;
+      }).join(', ');
+    }
+
+    // Helper function to get full rank title
+    function getFullRank(rank) {
+      if (!rank) return 'Agent';
+      
+      const rankMap = {
+        'special': 'Special Agent',
+        'senior': 'Senior Special Agent',
+        'supervisory': 'Supervisory Special Agent',
+        'sac': 'Special Agent in Charge',
+        'asac': 'Assistant Special Agent in Charge',
+        'ssa': 'Supervisory Special Agent',
+        'director': 'Director',
+        'deputy': 'Deputy Director',
+        'assistant': 'Assistant Director',
+        'agent': 'Agent',
+        'junior': 'Junior Agent',
+        'probationary': 'Probationary Agent',
+        'recruit': 'Recruit',
+        'trainee': 'Trainee',
+        'intern': 'Intern'
+      };
+      
+      const rankLower = rank.toLowerCase().trim();
+      return rankMap[rankLower] || rank;
+    }
+
+    async function initializeFirebase() {
+      try {
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
+        const { getDatabase, ref, onValue, get } = 
+          await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyC8MXihU-0-FRkYwx0qrs_Sv4CKZCVgFUs",
+          authDomain: "fib-training-tracker.firebaseapp.com",
+          projectId: "fib-training-tracker",
+          storageBucket: "fib-training-tracker.appspot.com",
+          messagingSenderId: "1086248091161",
+          appId: "1:1086248091161:web:6e74e452d665123e88f488",
+          measurementId: "G-ZHPFZNV4WZ",
+          databaseURL: "https://fib-training-tracker-default-rtdb.firebaseio.com"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        fbDatabase = getDatabase(app);
+        fbRef = ref;
+        fbOnValue = onValue;
+        fbGet = get;
+
+        console.log('✅ Firebase initialized successfully (public read-only access)');
+        return true;
+      } catch (error) {
+        console.error('❌ Firebase initialization error:', error);
+        return false;
+      }
+    }
+
     /* ---------- Helpers ---------- */
     function c(name, severity, description, group, timeMonths, fineDollars){
       const id = Math.random().toString(36).slice(2);
@@ -2898,221 +3639,504 @@
       runClassifiedSequence();
     });
 
-  /* ----- ROSTER INTEGRATION ----- */
-  let rosterData = [];
-  let rosterUpdateInterval;
+  /* ----- ROSTER INTEGRATION WITH FIREBASE ----- */
 
-  // Function to fetch roster data from Google Sheets
+  // Function to fetch roster data from Firebase
   async function fetchRosterData() {
     try {
-      // Your specific Google Sheets CSV export URL with correct GID
-      const SHEET_URL = 'https://docs.google.com/spreadsheets/d/18YPIHPxr5ki5JUFpvEEAxx0sCOKKdgrsGaeO_1rOOMU/export?format=csv&gid=1266358180';
+      if (!fbDatabase || !fbRef || !fbOnValue) {
+        console.log('❌ Firebase not fully initialized yet');
+        console.log('fbDatabase:', !!fbDatabase, 'fbRef:', !!fbRef, 'fbOnValue:', !!fbOnValue);
+        return;
+      }
+
+      console.log('📊 Fetching roster and trainees from Firebase...');
+
+      // Fetch roster (FIB ROSTER)
+      const rosterRef = fbRef(fbDatabase, 'roster');
+      console.log('Setting up roster listener...');
       
-      console.log('Fetching roster from:', SHEET_URL);
-      console.log('Starting fetch request...');
-      
-      const response = await fetch(SHEET_URL, {
-        method: 'GET',
-        mode: 'cors',
-        headers: {
-          'Accept': 'text/csv',
+      fbOnValue(rosterRef, (snapshot) => {
+        console.log('📥 Roster snapshot received');
+        const data = snapshot.val();
+        console.log('Roster data:', data);
+        
+        if (data) {
+          rosterData = Object.entries(data).map(([id, agent], index) => ({
+            id,
+            badge: agent.callsign || 'N/A',
+            name: agent.name || 'Unknown',
+            rank: getFullRank(agent.rank || 'Agent'),
+            status: 'Active',
+            discord: agent.handler || 'N/A',
+            division: expandDivisions(agent.divisions),
+            department: (agent.departments || []).join(', ') || 'N/A',
+            profilePicture: agent.profilePicture || '',
+            codename: agent.codename || '',
+            alias: agent.alias || '',
+            ucAlias: agent.ucAlias || '',
+            order: agent.order !== undefined ? agent.order : index,
+            type: 'roster'
+          }));
+          // Sort by order field
+          rosterData.sort((a, b) => a.order - b.order);
+          console.log('✅ Loaded roster:', rosterData.length, 'agents');
+          updateRosterDisplay();
+        } else {
+          console.log('⚠️ No roster data found in database');
+          updateRosterDisplay(); // Still call to show trainees if available
         }
+      }, (error) => {
+        console.error('❌ Roster listener error:', error);
       });
+
+      // Fetch trainees (TRAINING PROGRESS)
+      const traineesRef = fbRef(fbDatabase, 'trainees');
+      console.log('Setting up trainees listener...');
       
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-      }
-      
-      const csvText = await response.text();
-      console.log('CSV response length:', csvText.length);
-      console.log('CSV response preview:', csvText.substring(0, 500) + '...');
-      
-    // Parse CSV data
-    const lines = csvText.split('\n').filter(line => line.trim() !== '');
-    console.log('CSV lines found:', lines.length);
-    
-    if (lines.length === 0) {
-      throw new Error('No data found in CSV');
-    }
-    
-    // Find the actual header row (skip title rows)
-    let headerRowIndex = 0;
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].toLowerCase();
-      if (line.includes('badge') && line.includes('name') && line.includes('rank')) {
-        headerRowIndex = i;
-        break;
-      }
-    }
-    
-    const headers = lines[headerRowIndex].split(',').map(h => h.trim().replace(/"/g, ''));
-    console.log('Headers found at row', headerRowIndex, ':', headers);
-    
-    // Use data starting from the row after headers
-    const dataLines = lines.slice(headerRowIndex + 1);
-      
-    rosterData = dataLines.map(line => {
-      const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-      const row = {};
-      headers.forEach((header, index) => {
-        row[header.toLowerCase()] = values[index] || '';
+      fbOnValue(traineesRef, (snapshot) => {
+        console.log('📥 Trainees snapshot received');
+        const data = snapshot.val();
+        console.log('Trainees data:', data);
+        
+        if (data) {
+          traineesData = Object.entries(data).map(([id, trainee], index) => ({
+            id,
+            badge: trainee.callsign || 'TRN',
+            name: trainee.name || 'Unknown',
+            rank: getFullRank(trainee.rank || 'Trainee'),
+            status: 'In Training',
+            discord: trainee.handler || 'N/A',
+            division: expandDivisions(trainee.divisions),
+            department: (trainee.departments || []).join(', ') || 'N/A',
+            profilePicture: trainee.profilePicture || '',
+            codename: trainee.codename || '',
+            alias: trainee.alias || '',
+            ucAlias: trainee.ucAlias || '',
+            skills: trainee.skills || {},
+            order: trainee.order !== undefined ? trainee.order : index,
+            type: 'trainee'
+          }));
+          // Sort by order field
+          traineesData.sort((a, b) => a.order - b.order);
+          console.log('✅ Loaded trainees:', traineesData.length, 'trainees');
+          updateRosterDisplay();
+        } else {
+          console.log('⚠️ No trainees data found in database');
+          updateRosterDisplay(); // Still call to show roster if available
+        }
+      }, (error) => {
+        console.error('❌ Trainees listener error:', error);
       });
-      return row;
-    }).filter(row => {
-      // Check if any field has content (not just empty strings)
-      return Object.values(row).some(value => value && value.trim() !== '');
-    });
-      
-    console.log('Parsed roster data count:', rosterData.length);
-    console.log('Sample parsed data:', rosterData.slice(0, 3));
-    console.log('First agent keys:', Object.keys(rosterData[0] || {}));
-    console.log('First agent data:', rosterData[0]);
-    updateRosterDisplay();
-      
+
     } catch (error) {
-      console.error('Error fetching roster:', error);
-      console.log('Error details:', error.message);
-      console.log('Using fallback data...');
-      
-      // Fallback to static data if fetch fails
-      rosterData = [
-        { name: 'John Doe', rank: 'Special Agent', status: 'Active', badge: '001', discord: 'johndoe#1234' },
-        { name: 'Jane Smith', rank: 'Senior Agent', status: 'Active', badge: '002', discord: 'janesmith#5678' },
-        { name: 'Mike Johnson', rank: 'Agent', status: 'Active', badge: '003', discord: 'mikejohnson#9012' }
-      ];
-      updateRosterDisplay();
+      console.error('❌ Error in fetchRosterData:', error);
+      const rosterContainer = document.getElementById('rosterContainer');
+      if (rosterContainer) {
+        rosterContainer.innerHTML = '<div class="roster-error">Error loading roster data: ' + error.message + '</div>';
+      }
     }
   }
 
   // Function to update the roster display on the page
   function updateRosterDisplay() {
+    console.log('🔄 Updating roster display...');
     const rosterContainer = document.getElementById('rosterContainer');
-    if (!rosterContainer) return;
-    
-    rosterContainer.innerHTML = '';
-    
-    if (rosterData.length === 0) {
-      rosterContainer.innerHTML = '<div class="roster-empty">No roster data available</div>';
+    if (!rosterContainer) {
+      console.error('❌ Roster container not found!');
       return;
     }
     
-  // Filter and clean the data to show only the cool stuff
-  const cleanData = rosterData
-    .filter(agent => {
-      // Only show agents with names and valid data
-      const name = agent.name || '';
-      const rank = agent.rank || '';
-      return name.trim() !== '' && name.trim() !== 'N/A' && rank.trim() !== '';
-    })
-    .map(agent => ({
-      badge: agent['badge#'] || 'N/A',
-      name: agent.name || 'Unknown Agent',
-      rank: agent.rank || 'Agent',
-      status: agent.status || 'Active',
-      discord: agent['discord id'] || 'N/A',
-      comments: agent.comments || '',
-      division: agent.division || '',
-      timezone: agent.timezone || ''
-    }))
-      .sort((a, b) => {
-        // Sort by rank hierarchy, then by name
-        const rankOrder = {
-          'Director': 1,
-          'Deputy Director': 2,
-          'Special Agent': 3,
-          'Agent': 4,
-          'Recruit': 5,
-          'Trainee': 6
-        };
-        const aOrder = rankOrder[a.rank] || 99;
-        const bOrder = rankOrder[b.rank] || 99;
-        if (aOrder !== bOrder) return aOrder - bOrder;
-        return a.name.localeCompare(b.name);
-      });
+    console.log('Current rosterData:', rosterData.length, 'traineesData:', traineesData.length);
+    rosterContainer.innerHTML = '';
     
-    // Create roster table
-    const table = document.createElement('table');
-    table.className = 'roster-table';
+    // Combine both roster and trainees data
+    const allPersonnel = [...rosterData, ...traineesData];
+    console.log('Total personnel:', allPersonnel.length);
     
-  // Create header row with only essential columns
-  const thead = document.createElement('thead');
-  thead.innerHTML = `
-    <tr>
-      <th>Badge #</th>
-      <th>Agent Name</th>
-      <th>Division</th>
-      <th>Rank</th>
-      <th>Status</th>
-      <th>Discord</th>
-    </tr>
-  `;
-    table.appendChild(thead);
-    
-    // Create body rows
-    const tbody = document.createElement('tbody');
-    cleanData.forEach(agent => {
-      const row = document.createElement('tr');
-      
-      // Badge number
-      const badgeTd = document.createElement('td');
-      badgeTd.textContent = agent.badge;
-      badgeTd.className = 'badge-cell';
-      row.appendChild(badgeTd);
-      
-    // Agent name
-    const nameTd = document.createElement('td');
-    nameTd.textContent = agent.name;
-    nameTd.className = 'name-cell';
-    row.appendChild(nameTd);
-    
-    // Division
-    const divisionTd = document.createElement('td');
-    divisionTd.textContent = agent.division;
-    divisionTd.className = 'division-cell';
-    row.appendChild(divisionTd);
-    
-    // Rank
-    const rankTd = document.createElement('td');
-    rankTd.textContent = agent.rank;
-    rankTd.className = 'rank-cell';
-    row.appendChild(rankTd);
-      
-      // Status with badge
-      const statusTd = document.createElement('td');
-      const statusClass = agent.status.toLowerCase().includes('active') ? 'active' : 'inactive';
-      statusTd.innerHTML = `<span class="status-badge ${statusClass}">${agent.status}</span>`;
-      row.appendChild(statusTd);
-      
-      // Discord ID
-      const discordTd = document.createElement('td');
-      discordTd.textContent = agent.discord;
-      discordTd.className = 'discord-cell';
-      row.appendChild(discordTd);
-      
-      tbody.appendChild(row);
-    });
-    
-    table.appendChild(tbody);
-    rosterContainer.appendChild(table);
-  }
-
-  // Function to start live updates
-  function startRosterUpdates() {
-    // Fetch immediately
-    fetchRosterData();
-    
-    // Update every 5 minutes
-    rosterUpdateInterval = setInterval(fetchRosterData, 5 * 60 * 1000);
-  }
-
-  // Function to stop live updates
-  function stopRosterUpdates() {
-    if (rosterUpdateInterval) {
-      clearInterval(rosterUpdateInterval);
+    if (allPersonnel.length === 0) {
+      rosterContainer.innerHTML = '<div class="roster-empty">No roster data available. Loading...</div>';
+      console.log('⚠️ No personnel data to display');
+      return;
     }
+    
+    console.log('✅ Displaying', allPersonnel.length, 'personnel');
+    
+    // Filter data (already sorted by order field from Firebase)
+    const sortedData = allPersonnel
+      .filter(person => person.name && person.name.trim() !== '' && person.name.trim() !== 'N/A');
+    
+    // Create sections
+    const rosterSection = document.createElement('div');
+    rosterSection.className = 'roster-personnel-section';
+    
+    const rosterAgents = sortedData.filter(p => p.type === 'roster');
+    const trainees = sortedData.filter(p => p.type === 'trainee');
+    
+    // FIB ROSTER section
+    if (rosterAgents.length > 0) {
+      const rosterTitle = document.createElement('h3');
+      rosterTitle.className = 'roster-section-title';
+      rosterTitle.textContent = `FIB ROSTER (${rosterAgents.length})`;
+      rosterSection.appendChild(rosterTitle);
+      
+      const rosterGrid = document.createElement('div');
+      rosterGrid.className = 'roster-grid';
+      
+      rosterAgents.forEach(agent => {
+        rosterGrid.appendChild(createAgentCard(agent));
+      });
+      
+      rosterSection.appendChild(rosterGrid);
+    }
+    
+    // TRAINING PROGRESS section
+    if (trainees.length > 0) {
+      const traineesTitle = document.createElement('h3');
+      traineesTitle.className = 'roster-section-title';
+      traineesTitle.textContent = `TRAINING PROGRESS (${trainees.length})`;
+      rosterSection.appendChild(traineesTitle);
+      
+      const traineesGrid = document.createElement('div');
+      traineesGrid.className = 'roster-grid';
+      
+      trainees.forEach(trainee => {
+        traineesGrid.appendChild(createAgentCard(trainee));
+      });
+      
+      rosterSection.appendChild(traineesGrid);
+    }
+    
+    rosterContainer.appendChild(rosterSection);
+  }
+  
+  // Function to create an agent card
+  function createAgentCard(person) {
+    const card = document.createElement('div');
+    card.className = `agent-card ${person.type === 'trainee' ? 'trainee-card' : ''}`;
+    card.style.cursor = 'pointer';
+    card.onclick = () => showPersonDetails(person);
+    
+    // Profile picture
+    const profileDiv = document.createElement('div');
+    profileDiv.className = 'agent-profile-pic';
+    if (person.profilePicture) {
+      const img = document.createElement('img');
+      img.src = person.profilePicture;
+      img.alt = person.name;
+      img.onerror = () => {
+        img.style.display = 'none';
+        profileDiv.innerHTML = '<div class="agent-initials">' + getInitials(person.name) + '</div>';
+      };
+      profileDiv.appendChild(img);
+    } else {
+      profileDiv.innerHTML = '<div class="agent-initials">' + getInitials(person.name) + '</div>';
+    }
+    card.appendChild(profileDiv);
+    
+    // Info section
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'agent-info';
+    
+    // Rank (displayed first, above name)
+    const rankDiv = document.createElement('div');
+    rankDiv.className = 'agent-rank';
+    rankDiv.textContent = person.rank;
+    infoDiv.appendChild(rankDiv);
+    
+    // Name
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'agent-name';
+    nameDiv.textContent = person.name;
+    infoDiv.appendChild(nameDiv);
+    
+    // Badge
+    const badgeDiv = document.createElement('div');
+    badgeDiv.className = 'agent-badge-num';
+    badgeDiv.textContent = `Badge: ${person.badge}`;
+    infoDiv.appendChild(badgeDiv);
+    
+    // Status
+    const statusDiv = document.createElement('div');
+    statusDiv.className = `agent-status ${person.status.toLowerCase().includes('active') || person.status.toLowerCase().includes('training') ? 'status-active' : 'status-inactive'}`;
+    statusDiv.textContent = person.status;
+    infoDiv.appendChild(statusDiv);
+    
+    // Division/Department
+    if (person.division && person.division !== 'N/A') {
+      const divDiv = document.createElement('div');
+      divDiv.className = 'agent-division';
+      divDiv.textContent = `Division: ${person.division}`;
+      infoDiv.appendChild(divDiv);
+    }
+    
+    // Discord (without label)
+    const discordDiv = document.createElement('div');
+    discordDiv.className = 'agent-discord';
+    discordDiv.textContent = person.discord;
+    infoDiv.appendChild(discordDiv);
+    
+    // Aliases if available
+    if (person.codename || person.alias || person.ucAlias) {
+      const aliasDiv = document.createElement('div');
+      aliasDiv.className = 'agent-aliases';
+      const aliases = [];
+      if (person.codename) aliases.push(`Codename: ${person.codename}`);
+      if (person.alias) aliases.push(`Alias: ${person.alias}`);
+      if (person.ucAlias) aliases.push(`UC: ${person.ucAlias}`);
+      aliasDiv.textContent = aliases.join(' | ');
+      infoDiv.appendChild(aliasDiv);
+    }
+    
+    card.appendChild(infoDiv);
+    
+    return card;
+  }
+  
+  // Helper function to get initials from name
+  function getInitials(name) {
+    if (!name) return '?';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  // Function to show person details in modal
+  function showPersonDetails(person) {
+    console.log('Opening modal for:', person);
+    const modal = document.getElementById('rosterModal');
+    
+    // Set basic info
+    document.getElementById('rosterModalName').textContent = person.name;
+    document.getElementById('rosterModalBadge').textContent = person.badge || 'N/A';
+    document.getElementById('rosterModalRank').textContent = person.rank || 'N/A';
+    document.getElementById('rosterModalStatus').textContent = person.status || 'Active';
+    document.getElementById('rosterModalCallsign').textContent = person.badge || 'N/A';
+    document.getElementById('rosterModalCodename').textContent = person.codename || 'N/A';
+    document.getElementById('rosterModalUC').textContent = person.ucAlias || 'N/A';
+    document.getElementById('rosterModalDivision').textContent = person.division || 'N/A';
+    document.getElementById('rosterModalDepartment').textContent = person.department || 'N/A';
+    document.getElementById('rosterModalHandler').textContent = person.discord || 'N/A';
+    
+    // Set profile picture
+    const picElement = document.getElementById('rosterModalPic');
+    if (person.profilePicture) {
+      picElement.src = person.profilePicture;
+      picElement.style.display = 'block';
+    } else {
+      picElement.style.display = 'none';
+    }
+    
+    // Show training skills for trainees
+    const skillsSection = document.getElementById('rosterModalSkillsSection');
+    if (person.type === 'trainee' && person.skills) {
+      skillsSection.style.display = 'block';
+      const skillsContainer = document.getElementById('rosterModalSkills');
+      skillsContainer.innerHTML = '';
+      
+      Object.entries(person.skills).forEach(([skillName, completed]) => {
+        const badge = document.createElement('div');
+        badge.className = `roster-skill-badge ${completed ? 'completed' : 'pending'}`;
+        badge.innerHTML = `
+          <span>${completed ? '✓' : '○'}</span>
+          <span>${skillName}</span>
+        `;
+        skillsContainer.appendChild(badge);
+      });
+    } else {
+      skillsSection.style.display = 'none';
+    }
+    
+    // Strikes and Commendations
+    document.getElementById('rosterModalStrikes').textContent = 
+      (person.strikes && person.strikes.length > 0) ? person.strikes.join(', ') : 'None';
+    document.getElementById('rosterModalCommendations').textContent = 
+      (person.commendations && person.commendations.length > 0) ? person.commendations.join(', ') : 'None';
+    
+    // Timeline
+    const timelineContainer = document.getElementById('rosterModalTimeline');
+    timelineContainer.innerHTML = '';
+    if (person.timeline && person.timeline.length > 0) {
+      person.timeline.slice().reverse().forEach(entry => {
+        const item = document.createElement('div');
+        item.className = 'roster-modal-timeline-item';
+        item.innerHTML = `
+          <div class="roster-modal-timeline-date">${entry.date || 'Unknown Date'}</div>
+          <div>${entry.event || entry.description || 'No description'}</div>
+        `;
+        timelineContainer.appendChild(item);
+      });
+    } else {
+      timelineContainer.innerHTML = '<div style="color: #9ca3af;">No timeline entries</div>';
+    }
+    
+    // Notes
+    const notesContainer = document.getElementById('rosterModalNotes');
+    notesContainer.textContent = person.notes || 'No notes available';
+    
+    // Show modal
+    modal.style.display = 'block';
+  }
+
+  // Function to close the roster modal
+  function closeRosterModal() {
+    const modal = document.getElementById('rosterModal');
+    modal.style.display = 'none';
+  }
+
+  // Close modal when clicking outside
+  window.onclick = function(event) {
+    const modal = document.getElementById('rosterModal');
+    if (event.target === modal) {
+      closeRosterModal();
+    }
+  }
+
+  // Firebase provides real-time updates automatically via onValue listeners
+  // No need for manual polling intervals
+
+  /* ----- DUTY TIMERS ----- */
+  
+  // PBS Timer
+  let pbsInterval = null;
+  let pbsSeconds = 600; // 10 minutes
+  let pbsApproved = false;
+  let pbsApprovedTime = 0;
+
+  function updatePBSDisplay() {
+    const display = document.getElementById('pbsDisplay');
+    const status = document.getElementById('pbsStatus');
+    
+    if (pbsApproved) {
+      // Count up after approval
+      const minutes = Math.floor(pbsApprovedTime / 60);
+      const seconds = pbsApprovedTime % 60;
+      display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      status.textContent = 'PBS APPROVED';
+      status.className = 'timer-status approved';
+    } else {
+      // Count down
+      const minutes = Math.floor(pbsSeconds / 60);
+      const seconds = pbsSeconds % 60;
+      display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      status.textContent = '';
+      status.className = 'timer-status';
+    }
+  }
+
+  function startPBSTimer() {
+    if (pbsInterval) return; // Already running
+    
+    pbsInterval = setInterval(() => {
+      if (!pbsApproved) {
+        pbsSeconds--;
+        if (pbsSeconds <= 0) {
+          pbsSeconds = 0;
+          pbsApproved = true;
+          pbsApprovedTime = 0;
+        }
+      } else {
+        pbsApprovedTime++;
+      }
+      updatePBSDisplay();
+    }, 1000);
+  }
+
+  function stopPBSTimer() {
+    if (pbsInterval) {
+      clearInterval(pbsInterval);
+      pbsInterval = null;
+    }
+  }
+
+  function resetPBSTimer() {
+    stopPBSTimer();
+    pbsSeconds = 600;
+    pbsApproved = false;
+    pbsApprovedTime = 0;
+    updatePBSDisplay();
+  }
+
+  // Cell Timer
+  let cellInterval = null;
+  let cellSeconds = 0;
+
+  function updateCellDisplay() {
+    const display = document.getElementById('cellDisplay');
+    const minutes = Math.floor(cellSeconds / 60);
+    const seconds = cellSeconds % 60;
+    display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  function startCellTimer() {
+    if (cellInterval) return; // Already running
+    
+    cellInterval = setInterval(() => {
+      cellSeconds++;
+      updateCellDisplay();
+    }, 1000);
+  }
+
+  function stopCellTimer() {
+    if (cellInterval) {
+      clearInterval(cellInterval);
+      cellInterval = null;
+    }
+  }
+
+  function resetCellTimer() {
+    stopCellTimer();
+    cellSeconds = 0;
+    updateCellDisplay();
+  }
+
+  // Helicopter Fuel Timer
+  let heliInterval = null;
+  let heliSeconds = 900; // 15 minutes
+
+  function updateHeliDisplay() {
+    const display = document.getElementById('heliDisplay');
+    const status = document.getElementById('heliStatus');
+    
+    if (heliSeconds <= 0) {
+      display.textContent = '00:00';
+      status.textContent = 'NO FUEL';
+      status.className = 'timer-status no-fuel';
+    } else {
+      const minutes = Math.floor(heliSeconds / 60);
+      const seconds = heliSeconds % 60;
+      display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      status.textContent = '';
+      status.className = 'timer-status';
+    }
+  }
+
+  function startHeliTimer() {
+    if (heliInterval) return; // Already running
+    
+    heliInterval = setInterval(() => {
+      heliSeconds--;
+      if (heliSeconds < 0) {
+        heliSeconds = 0;
+        stopHeliTimer();
+      }
+      updateHeliDisplay();
+    }, 1000);
+  }
+
+  function stopHeliTimer() {
+    if (heliInterval) {
+      clearInterval(heliInterval);
+      heliInterval = null;
+    }
+  }
+
+  function resetHeliTimer() {
+    stopHeliTimer();
+    heliSeconds = 900;
+    updateHeliDisplay();
   }
 
   /* ----- Search & initial render ----- */
@@ -3120,38 +4144,42 @@
   render();
   renderCart();
 
-  // Test function to verify Google Sheets access
-  async function testGoogleSheetsAccess() {
-    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/18YPIHPxr5ki5JUFpvEEAxx0sCOKKdgrsGaeO_1rOOMU/export?format=csv&gid=1266358180';
-    
-    console.log('Testing Google Sheets access...');
-    console.log('URL:', SHEET_URL);
+  // Initialize Firebase and start roster updates when page loads
+  document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 DOM Content Loaded - Initializing FIB Database...');
     
     try {
-      const response = await fetch(SHEET_URL);
-      console.log('Test response status:', response.status);
-      console.log('Test response headers:', [...response.headers.entries()]);
+      const initialized = await initializeFirebase();
+      console.log('Firebase initialization result:', initialized);
       
-      if (response.ok) {
-        const text = await response.text();
-        console.log('Test CSV preview:', text.substring(0, 200));
-        console.log('✅ Google Sheets is accessible');
+      if (initialized) {
+        console.log('✅ Firebase ready!');
+        console.log('Firebase objects available:', {
+          fbDatabase: !!fbDatabase,
+          fbRef: !!fbRef,
+          fbOnValue: !!fbOnValue,
+          fbGet: !!fbGet
+        });
+        
+        // Small delay to ensure everything is ready
+        setTimeout(() => {
+          console.log('🎯 Starting roster data fetch...');
+          fetchRosterData();
+        }, 500);
       } else {
-        console.log('❌ Google Sheets returned error:', response.status, response.statusText);
+        console.error('❌ Failed to initialize Firebase');
+        const rosterContainer = document.getElementById('rosterContainer');
+        if (rosterContainer) {
+          rosterContainer.innerHTML = '<div class="roster-error">Failed to connect to database. Please refresh the page.</div>';
+        }
       }
     } catch (error) {
-      console.log('❌ Google Sheets access failed:', error.message);
-      console.log('This might be due to CORS restrictions or network issues');
+      console.error('❌ Error in initialization:', error);
+      const rosterContainer = document.getElementById('rosterContainer');
+      if (rosterContainer) {
+        rosterContainer.innerHTML = '<div class="roster-error">Error: ' + error.message + '</div>';
+      }
     }
-  }
-
-  // Start roster updates when page loads
-  document.addEventListener('DOMContentLoaded', () => {
-    // Test access first
-    testGoogleSheetsAccess();
-    
-    // Then start normal updates
-    startRosterUpdates();
   });
     </script>
     </body>
