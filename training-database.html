@@ -2949,10 +2949,14 @@
     }
 
     function disableInterface() {
-      // Disable all inputs except collapse button
+      // Disable all inputs except collapse button and login form inputs
       const inputs = document.querySelectorAll('input, button, select');
       inputs.forEach(input => {
-        if (input.id !== 'collapseBtn') {
+        // Don't disable login form inputs, login button, or collapse button
+        if (input.id !== 'collapseBtn' && 
+            input.id !== 'emailInput' && 
+            input.id !== 'passwordInput' &&
+            !input.classList.contains('auth-login-btn')) {
           input.disabled = true;
         }
       });
