@@ -382,6 +382,63 @@
 
       // Make initializeFirebase available globally
       window.initializeFirebase = initializeFirebase;
+
+      // ===== DISCORD WEBHOOK INTEGRATION =====
+      // 
+      // SETUP INSTRUCTIONS:
+      // 1. Go to your Discord server settings
+      // 2. Navigate to Integrations > Webhooks
+      // 3. Click "New Webhook" or "Create Webhook"
+      // 4. Give it a name (e.g., "FIB Training Database")
+      // 5. Select the channel where you want notifications
+      // 6. Click "Copy Webhook URL"
+      // 7. Replace 'YOUR_DISCORD_WEBHOOK_URL_HERE' below with your webhook URL
+      // 
+      // Example: const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/123456789/abcdefghijk';
+      //
+      const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1438099336809676861/LUpP92D5HKY-Ts-N4kznw5HeBbZtAGDXWVMj2PjMSm-iVyjmvKADYZ_ENTjN42PYeUyS';
+
+      // Function to send Discord webhook with fancy embed
+      async function sendDiscordWebhook(title, description, fields = [], color = 0x5865F2, actorName = 'System') {
+        if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL === 'YOUR_DISCORD_WEBHOOK_URL_HERE') {
+          console.warn('Discord webhook URL not configured');
+          return;
+        }
+
+        try {
+          const embed = {
+            title: title,
+            description: description,
+            color: color,
+            fields: fields,
+            footer: {
+              text: `Action by: ${actorName}`
+            },
+            timestamp: new Date().toISOString()
+          };
+
+          const payload = {
+            username: 'FIB Training Database',
+            avatar_url: 'https://kappa.lol/aDnGzF',
+            embeds: [embed]
+          };
+
+          await fetch(DISCORD_WEBHOOK_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+          });
+
+          console.log('Discord webhook sent successfully');
+        } catch (error) {
+          console.error('Error sending Discord webhook:', error);
+        }
+      }
+
+      // Make Discord webhook function available globally
+      window.sendDiscordWebhook = sendDiscordWebhook;
     </script>
     <style>
       :root { color-scheme: dark; }
@@ -3072,6 +3129,18 @@
           // Refresh the profile view
           showProfile({...trainee, profilePicture: imageUrl});
 
+          // Send Discord notification
+          sendDiscordWebhook(
+            '🖼️ Profile Picture Updated',
+            `A trainee's profile picture has been updated.`,
+            [
+              { name: 'Trainee Name', value: trainee.name || 'Unknown', inline: true },
+              { name: 'Collection', value: collection, inline: true }
+            ],
+            0x9B59B6, // Purple color
+            'System'
+          );
+
           console.log('Successfully updated profile picture for trainee:', trainee.id);
         } catch (error) {
           console.error('Error saving profile image:', error);
@@ -3304,6 +3373,19 @@
         await fbUpdate(fbRef(fbDatabase), updates);
         console.log('Successfully added trainee:', traineeId);
 
+        // Send Discord notification
+        await sendDiscordWebhook(
+          '👤 New Trainee Added',
+          `A new trainee has been added to the training program.`,
+          [
+            { name: 'Trainee Name', value: name, inline: true },
+            { name: 'Handler', value: handler, inline: true },
+            { name: 'Rank', value: 'Intern', inline: true }
+          ],
+          0x00FF00, // Green color
+          handler
+        );
+
         // Clear inputs
         nameInput.value = '';
         handlerInput.value = '';
@@ -3372,6 +3454,7 @@
             option.innerHTML = `<span class="rank-badge ${rank.id}">${rank.abbr}</span> ${rank.name}`;
             option.onclick = (e) => {
               e.stopPropagation();
+              const oldRank = RANKS.find(r => r.id === trainee.rank)?.name || 'Unknown';
               trainee.rank = rank.id;
               trainee.timeline.push({
                 date: new Date().toISOString(),
@@ -3381,6 +3464,19 @@
               saveTrainees();
               updateRosterTable();
               rankSelect.classList.remove('open');
+              
+              // Send Discord notification
+              sendDiscordWebhook(
+                '🎖️ Rank Changed',
+                `A roster member's rank has been changed.`,
+                [
+                  { name: 'Name', value: trainee.name || 'Unknown', inline: true },
+                  { name: 'Old Rank', value: oldRank, inline: true },
+                  { name: 'New Rank', value: rank.name, inline: true }
+                ],
+                0xFFD700, // Gold color
+                'System'
+              );
             };
             rankDropdown.appendChild(option);
           });
@@ -3738,6 +3834,18 @@
                 content: `Added to ${dept.name} speciality`,
                 instructor: 'System'
               });
+              
+              // Send Discord notification
+              sendDiscordWebhook(
+                '🏢 Department Added',
+                `A member has been added to a speciality.`,
+                [
+                  { name: 'Name', value: trainee.name || 'Unknown', inline: true },
+                  { name: 'Speciality', value: dept.name, inline: true }
+                ],
+                0x3498DB, // Blue color
+                'System'
+              );
             }
           } else {
             const index = trainee.departments.indexOf(dept.id);
@@ -3748,6 +3856,18 @@
                 content: `Removed from ${dept.name} speciality`,
                 instructor: 'System'
               });
+              
+              // Send Discord notification
+              sendDiscordWebhook(
+                '🚪 Department Removed',
+                `A member has been removed from a speciality.`,
+                [
+                  { name: 'Name', value: trainee.name || 'Unknown', inline: true },
+                  { name: 'Speciality', value: dept.name, inline: true }
+                ],
+                0xE74C3C, // Red color
+                'System'
+              );
             }
           }
           // If all departments are removed, make sure the array exists but is empty
@@ -3822,6 +3942,18 @@
                 content: `Added to ${div.name} division`,
                 instructor: 'System'
               });
+              
+              // Send Discord notification
+              sendDiscordWebhook(
+                '📋 Division Added',
+                `A member has been added to a division.`,
+                [
+                  { name: 'Name', value: trainee.name || 'Unknown', inline: true },
+                  { name: 'Division', value: div.name, inline: true }
+                ],
+                0x2ECC71, // Green color
+                'System'
+              );
             }
           } else {
             const index = trainee.divisions.indexOf(div.id);
@@ -3832,6 +3964,18 @@
                 content: `Removed from ${div.name} division`,
                 instructor: 'System'
               });
+              
+              // Send Discord notification
+              sendDiscordWebhook(
+                '📤 Division Removed',
+                `A member has been removed from a division.`,
+                [
+                  { name: 'Name', value: trainee.name || 'Unknown', inline: true },
+                  { name: 'Division', value: div.name, inline: true }
+                ],
+                0xE67E22, // Orange color
+                'System'
+              );
             }
           }
           // If all divisions are removed, make sure the array exists but is empty
@@ -4068,6 +4212,20 @@
           
           await fbUpdate(fbRef(fbDatabase), updates);
         console.log('Successfully moved trainee to deleted:', traineeId);
+        
+        // Send Discord notification
+        await sendDiscordWebhook(
+          '🗑️ Trainee Removed',
+          `A trainee has been removed from the training program.`,
+          [
+            { name: 'Trainee Name', value: trainee.name || 'Unknown', inline: true },
+            { name: 'Rank', value: trainee.rank || 'intern', inline: true },
+            { name: 'Removed By', value: deletedBy, inline: true }
+          ],
+          0xFF0000, // Red color
+          deletedBy
+        );
+        
         dialog.remove();
       } catch (error) {
         console.error('Error deleting trainee:', error);
@@ -4121,6 +4279,19 @@
         
         await fbUpdate(fbRef(fbDatabase), updates);
         console.log('Successfully promoted trainee:', traineeId);
+        
+        // Send Discord notification
+        await sendDiscordWebhook(
+          '⬆️ Trainee Promoted',
+          `A trainee has been promoted to the FIB Roster!`,
+          [
+            { name: 'Trainee Name', value: trainee.name || 'Unknown', inline: true },
+            { name: 'Handler', value: trainee.handler || 'Unknown', inline: true },
+            { name: 'Status', value: 'Moved to Roster', inline: true }
+          ],
+          0xFFD700, // Gold color
+          'System'
+        );
       } catch (error) {
         console.error('Error promoting trainee:', error);
         showDatabaseError('Failed to promote trainee. Please try again.');
@@ -4222,10 +4393,29 @@
             option.innerHTML = `<span class="rank-badge ${rank.id}">${rank.abbr}</span> ${rank.name}`;
             option.onclick = (e) => {
               e.stopPropagation();
+              const oldRank = RANKS.find(r => r.id === trainee.rank)?.name || 'Unknown';
               trainee.rank = rank.id;
+              trainee.timeline.push({
+                date: new Date().toISOString(),
+                content: `Rank updated to ${rank.name}`,
+                instructor: 'System'
+              });
               saveTrainees();
               updateTrainingTable();
               rankSelect.classList.remove('open');
+              
+              // Send Discord notification
+              sendDiscordWebhook(
+                '🎖️ Rank Changed',
+                `A trainee's rank has been changed.`,
+                [
+                  { name: 'Name', value: trainee.name || 'Unknown', inline: true },
+                  { name: 'Old Rank', value: oldRank, inline: true },
+                  { name: 'New Rank', value: rank.name, inline: true }
+                ],
+                0xFFD700, // Gold color
+                'System'
+              );
             };
             rankDropdown.appendChild(option);
           });
@@ -4650,6 +4840,7 @@
       
       if (trainee.skills[skill].completed) {
         if (confirm(`Remove completion status for ${skill.replace(/([A-Z])/g, ' $1').trim()}?`)) {
+          const oldInstructor = trainee.skills[skill].instructor;
           trainee.skills[skill].completed = false;
           trainee.skills[skill].instructor = '';
           trainee.skills[skill].completedDate = null;
@@ -4658,6 +4849,19 @@
           );
               saveTrainees();
               updateTrainingTable();
+              
+          // Send Discord notification for skill removal
+          sendDiscordWebhook(
+            '❌ Training Skill Removed',
+            `A training skill completion has been removed.`,
+            [
+              { name: 'Trainee Name', value: trainee.name || 'Unknown', inline: true },
+              { name: 'Skill', value: skill.replace(/([A-Z])/g, ' $1').trim(), inline: true },
+              { name: 'Previous Instructor', value: oldInstructor || 'Unknown', inline: true }
+            ],
+            0xFFA500, // Orange color
+            'System'
+          );
         }
           } else {
         const instructor = prompt(`Enter instructor name for ${skill.replace(/([A-Z])/g, ' $1').trim()}:`);
@@ -4673,6 +4877,19 @@
           });
               saveTrainees();
               updateTrainingTable();
+              
+          // Send Discord notification for skill completion
+          sendDiscordWebhook(
+            '✅ Training Skill Completed',
+            `A trainee has completed a training skill!`,
+            [
+              { name: 'Trainee Name', value: trainee.name || 'Unknown', inline: true },
+              { name: 'Skill', value: skill.replace(/([A-Z])/g, ' $1').trim(), inline: true },
+              { name: 'Instructor', value: instructor, inline: true }
+            ],
+            0x00FF00, // Green color
+            instructor
+          );
         }
       }
     }
@@ -4758,6 +4975,21 @@
 
           await fbUpdate(fbRef(fbDatabase), updates);
           console.log(`Successfully added ${type} to trainee:`, trainee.id);
+          
+          // Send Discord notification
+          await sendDiscordWebhook(
+            type === 'strike' ? '⚠️ Strike Issued' : '🌟 Commendation Awarded',
+            type === 'strike' ? 
+              `A strike has been issued to a trainee.` : 
+              `A commendation has been awarded to a trainee!`,
+            [
+              { name: 'Trainee Name', value: trainee.name || 'Unknown', inline: true },
+              { name: 'Submitted By', value: agent, inline: true },
+              { name: 'Details', value: reason.length > 100 ? reason.substring(0, 100) + '...' : reason, inline: false }
+            ],
+            type === 'strike' ? 0xFF0000 : 0x00FF00, // Red for strike, Green for commendation
+            agent
+          );
           
           dialog.remove();
           showProfile(trainee);
@@ -4847,6 +5079,7 @@
       const save = () => {
         const newValue = input.value.trim();
         if (newValue !== trainee[field]) {
+          const oldValue = trainee[field];
           trainee[field] = newValue;
           trainee.timeline.push({
             date: new Date().toISOString(),
@@ -4856,6 +5089,20 @@
           saveTrainees();
           updateTrainingTable();
           if (onSave) onSave(newValue);
+          
+          // Send Discord notification for field update
+          sendDiscordWebhook(
+            '✏️ Trainee Field Updated',
+            `A trainee's ${field} has been updated.`,
+            [
+              { name: 'Trainee Name', value: trainee.name || 'Unknown', inline: true },
+              { name: 'Field', value: field.charAt(0).toUpperCase() + field.slice(1), inline: true },
+              { name: 'Old Value', value: oldValue || 'None', inline: false },
+              { name: 'New Value', value: newValue || 'None', inline: false }
+            ],
+            0x3498DB, // Blue color
+            'System'
+          );
         }
         element.textContent = newValue || '-';
       };
@@ -5320,6 +5567,17 @@
         
         await fbUpdate(fbRef(fbDatabase), updates);
         
+        // Send Discord notification
+        sendDiscordWebhook(
+          '🖼️ Profile Picture Updated',
+          `A trainee's profile picture has been updated via URL.`,
+          [
+            { name: 'Trainee Name', value: trainee.name || 'Unknown', inline: true }
+          ],
+          0x9B59B6, // Purple color
+          'System'
+        );
+        
         // Update UI
         document.querySelectorAll(`.profile-picture[data-trainee-id="${trainee.id}"]`).forEach(img => {
           img.src = url;
@@ -5343,6 +5601,18 @@
         updates[`/trainees/${trainee.id}/notes`] = notes;
         
         await fbUpdate(fbRef(fbDatabase), updates);
+        
+        // Send Discord notification
+        sendDiscordWebhook(
+          '📝 Notes Updated',
+          `Training notes have been updated for a trainee.`,
+          [
+            { name: 'Trainee Name', value: trainee.name || 'Unknown', inline: true },
+            { name: 'Notes', value: notes.length > 150 ? notes.substring(0, 150) + '...' : notes || 'Notes cleared', inline: false }
+          ],
+          0x3498DB, // Blue color
+          'System'
+        );
       } catch (error) {
         console.error('Error updating notes:', error);
         alert('Failed to save notes. Please try again.');
